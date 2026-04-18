@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { PageTransition, PulseGlow, motion } from "@/components/shared/motion";
 import { PrepBriefView } from "@/components/meeting/prep-brief-view";
 import { SummaryView } from "@/components/meeting/summary-view";
 
@@ -66,7 +67,8 @@ export default function MeetingDetailPage({
   const phase = hasSummary ? "complete" : prepBrief ? "ready" : "prep";
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 page-enter">
+    <PageTransition>
+    <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" render={<Link href={`/students/${studentId}/meetings`} />}>
@@ -178,6 +180,7 @@ export default function MeetingDetailPage({
         />
       )}
     </div>
+    </PageTransition>
   );
 }
 

@@ -2,6 +2,7 @@
 
 import { User, AlertTriangle, Clock, Target, MessageSquare, TrendingUp, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { StaggerList, StaggerItem } from "@/components/shared/motion";
 import type { MeetingPrep } from "@/ai/schemas/meetingPrep";
 
 const significanceColors = {
@@ -18,13 +19,13 @@ const severityConfig = {
 
 export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
   return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-2">
+    <StaggerList className="space-y-5">
+      <StaggerItem className="flex items-center gap-2">
         <div className="h-2 w-2 rounded-full bg-[oklch(0.65_0.2_265)] pulse-glow" />
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           AI Prep Brief
         </h2>
-      </div>
+      </StaggerItem>
 
       {/* Student Snapshot */}
       <div className="rounded-2xl border border-white/[0.06] bg-card p-5">
@@ -148,7 +149,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
           </ul>
         </div>
       )}
-    </div>
+    </StaggerList>
   );
 }
 

@@ -3,6 +3,7 @@
 import { use } from "react";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
+import { PageTransition, StaggerList, StaggerItem, motion } from "@/components/shared/motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StudentHeader } from "@/components/student/student-header";
 import { PhaseCard } from "@/components/student/phase-card";
@@ -43,29 +44,37 @@ export default function StudentDetailPage({
   }
 
   return (
-    <div className="space-y-6 page-enter">
-      {/* Hero header */}
-      <StudentHeader student={student} />
+    <PageTransition>
+      <div className="space-y-6">
+        {/* Hero header */}
+        <StudentHeader student={student} />
 
-      {/* Quick action bar */}
-      <QuickActions studentId={student.id} />
+        {/* Quick action bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <QuickActions studentId={student.id} />
+        </motion.div>
 
-      {/* Main grid */}
-      <div className="grid gap-5 lg:grid-cols-3">
-        {/* Left column — 2/3 */}
-        <div className="space-y-5 lg:col-span-2">
-          <ProfileCard student={student} />
-          <TasksCard tasks={student.tasks} studentId={student.id} />
-          <MeetingsCard meetings={student.meetings} studentId={student.id} />
-        </div>
+        {/* Main grid */}
+        <StaggerList className="grid gap-5 lg:grid-cols-3">
+          {/* Left column — 2/3 */}
+          <div className="space-y-5 lg:col-span-2">
+            <StaggerItem><ProfileCard student={student} /></StaggerItem>
+            <StaggerItem><TasksCard tasks={student.tasks} studentId={student.id} /></StaggerItem>
+            <StaggerItem><MeetingsCard meetings={student.meetings} studentId={student.id} /></StaggerItem>
+          </div>
 
-        {/* Right column — 1/3 */}
-        <div className="space-y-5">
-          <PhaseCard phase={student.phase} />
-          <MilestonesCard milestones={student.milestones} />
-          <RisksCard risks={student.riskFlags} />
-        </div>
+          {/* Right column — 1/3 */}
+          <div className="space-y-5">
+            <StaggerItem><PhaseCard phase={student.phase} /></StaggerItem>
+            <StaggerItem><MilestonesCard milestones={student.milestones} /></StaggerItem>
+            <StaggerItem><RisksCard risks={student.riskFlags} /></StaggerItem>
+          </div>
+        </StaggerList>
       </div>
-    </div>
+    </PageTransition>
   );
 }

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageTransition, StaggerList, AnimatedCard, motion } from "@/components/shared/motion";
 import {
   Dialog,
   DialogContent,
@@ -39,7 +40,8 @@ export default function StudentsPage() {
   );
 
   return (
-    <div className="space-y-6 page-enter">
+    <PageTransition>
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Students</h1>
@@ -85,14 +87,14 @@ export default function StudentsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <StaggerList className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.students.map((student) => {
             const phase = phaseConfig[student.phase] || { label: student.phase, color: "from-gray-500 to-gray-400" };
             return (
+              <AnimatedCard key={student.id}>
               <Link
-                key={student.id}
                 href={`/students/${student.id}`}
-                className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-card p-5 transition-all hover:border-white/[0.12] hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5"
+                className="block group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-card p-5 transition-all hover:border-white/[0.12] hover:shadow-lg hover:shadow-black/20"
               >
                 {/* Gradient accent line */}
                 <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${phase.color} opacity-60`} />
@@ -123,11 +125,13 @@ export default function StudentsPage() {
                   )}
                 </div>
               </Link>
+              </AnimatedCard>
             );
           })}
-        </div>
+        </StaggerList>
       )}
     </div>
+    </PageTransition>
   );
 }
 
