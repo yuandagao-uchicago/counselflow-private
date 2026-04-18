@@ -16,7 +16,7 @@ CounselFlow is a counselor-in-the-loop workflow system. The AI agent handles rep
 - **Database:** PostgreSQL (Neon) + Prisma
 - **API:** tRPC v11
 - **UI:** Tailwind CSS v4 + shadcn/ui
-- **Auth:** Better Auth (Prisma adapter, email+password + Google)
+- **Auth:** Clerk (@clerk/nextjs)
 - **AI:** Claude API (@anthropic-ai/sdk) with structured outputs + prompt caching
 - **File Storage:** Vercel Blob
 - **Background Jobs:** Inngest
@@ -31,7 +31,8 @@ counselFlow/
 │   └── seed.ts                # Seed milestone templates + sample data
 ├── src/
 │   ├── app/                   # Next.js App Router pages
-│   │   ├── (auth)/            # Login, register (no sidebar)
+│   │   ├── sign-in/           # Clerk sign-in (auto UI)
+│   │   ├── sign-up/           # Clerk sign-up (auto UI)
 │   │   ├── (app)/             # Authenticated app (sidebar layout)
 │   │   │   ├── dashboard/     # Counselor home
 │   │   │   ├── students/      # Student list + [studentId]/ case pages
@@ -49,8 +50,8 @@ counselFlow/
 │   │   └── provenance.ts      # AIOutput record creation helper
 │   ├── lib/
 │   │   ├── prisma.ts          # Prisma singleton
-│   │   ├── auth.ts            # Better Auth server config
-│   │   ├── auth-client.ts     # Better Auth client hooks
+│   │   ├── auth-server.ts     # Clerk server helpers + DB user sync
+│   │   ├── trpc.ts            # tRPC React client
 │   │   └── utils.ts           # Shared utilities (already created by shadcn)
 │   ├── components/
 │   │   ├── ui/                # shadcn/ui primitives (auto-generated)
@@ -102,11 +103,12 @@ npm run db:studio    # Open Prisma Studio
 
 ## Environment Variables
 
-Required in `.env.local`:
+Required in `.env`:
 ```
-DATABASE_URL=              # Neon PostgreSQL connection string
-ANTHROPIC_API_KEY=         # Claude API key
-BETTER_AUTH_SECRET=        # Random secret for auth
-BETTER_AUTH_URL=http://localhost:3000
-BLOB_READ_WRITE_TOKEN=     # Vercel Blob token (optional for MVP)
+DATABASE_URL=                          # PostgreSQL connection string
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=     # Clerk publishable key
+CLERK_SECRET_KEY=                      # Clerk secret key
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+ANTHROPIC_API_KEY=                     # Claude API key (for AI features)
 ```

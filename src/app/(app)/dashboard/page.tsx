@@ -1,13 +1,14 @@
-import { requireSession } from "@/lib/auth-server";
+import { currentUser } from "@clerk/nextjs/server";
 
 export default async function DashboardPage() {
-  const session = await requireSession();
+  const user = await currentUser();
+  const firstName = user?.firstName || "Counselor";
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
-          Good morning, {session.user.name?.split(" ")[0] || "Counselor"}.
+          Good morning, {firstName}.
         </h1>
         <p className="text-muted-foreground">
           Here&apos;s what needs your attention today.

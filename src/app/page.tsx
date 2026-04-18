@@ -1,15 +1,12 @@
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 
 export default async function Home() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const { userId } = await auth();
 
-  if (session) {
+  if (userId) {
     redirect("/dashboard");
   } else {
-    redirect("/login");
+    redirect("/sign-in");
   }
 }

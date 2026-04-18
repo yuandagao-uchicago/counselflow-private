@@ -1,17 +1,14 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 
 export type Context = {
-  session: Awaited<ReturnType<typeof auth.api.getSession>> | null;
+  userId: string | null;
 };
 
 export async function createContext(): Promise<Context> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  return { session };
+  const { userId } = await auth();
+  return { userId };
 }
 
 const t = initTRPC.context<Context>().create({
@@ -22,14 +19,13 @@ export const router = t.router;
 export const publicProcedure = t.procedure;
 
 const enforceAuth = t.middleware(({ ctx, next }) => {
-  if (!ctx.session?.user) {
+  if (!ctx.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({
     ctx: {
       ...ctx,
-      session: ctx.session,
-      counselorId: ctx.session.user.id,
+      counselorId: ctx.userId,
     },
   });
 });
