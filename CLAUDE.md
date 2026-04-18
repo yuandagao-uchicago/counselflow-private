@@ -17,7 +17,7 @@ CounselFlow is a counselor-in-the-loop workflow system. The AI agent handles rep
 - **API:** tRPC v11
 - **UI:** Tailwind CSS v4 + shadcn/ui
 - **Auth:** Clerk (@clerk/nextjs)
-- **AI:** Claude API (@anthropic-ai/sdk) with structured outputs + prompt caching
+- **AI:** Gemini 2.0 Flash (@google/generative-ai) with structured JSON outputs
 - **File Storage:** Vercel Blob
 - **Background Jobs:** Inngest
 - **Deployment:** Vercel
@@ -110,5 +110,5 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=     # Clerk publishable key
 CLERK_SECRET_KEY=                      # Clerk secret key
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-ANTHROPIC_API_KEY=                     # Claude API key (for AI features)
+GEMINI_API_KEY=                        # Gemini API key (free at ai.google.dev)
 ```

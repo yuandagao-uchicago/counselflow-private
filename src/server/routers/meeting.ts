@@ -5,7 +5,7 @@ import { verifyStudentOwnership } from "../lib/tenant";
 import { generateMeetingPrep } from "@/ai/prompts/meetingPrep";
 import { generateMeetingSummary } from "@/ai/prompts/meetingSummary";
 import { createAIOutput } from "@/ai/provenance";
-import { MODELS } from "@/ai/client";
+import { MODEL } from "@/ai/client";
 
 export const meetingRouter = router({
   list: protectedProcedure
@@ -124,7 +124,7 @@ export const meetingRouter = router({
         ],
         confidence: "HIGH",
         output: prep,
-        modelId: MODELS.smart,
+        modelId: MODEL,
         tokenUsage: usage,
       });
 
@@ -186,7 +186,7 @@ export const meetingRouter = router({
         ],
         confidence: "HIGH",
         output: summary,
-        modelId: MODELS.smart,
+        modelId: MODEL,
         tokenUsage: usage,
       });
 

@@ -1,6 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { z } from "zod";
-import { anthropic, MODELS } from "../client";
+import { SchemaType, type ResponseSchema } from "@google/generative-ai";
+import { genai, MODEL } from "../client";
 import { MeetingPrepSchema, type MeetingPrep } from "../schemas/meetingPrep";
 
 const SYSTEM_PROMPT = `You are CounselFlow, an AI assistant for independent college counselors.
@@ -12,10 +11,98 @@ Your task is to generate a pre-meeting preparation brief. You help the counselor
 - If data is missing, say so explicitly.
 - Be concise and actionable — this is a working document, not an essay.
 - Prioritize items by urgency and importance.
-- Flag risks clearly but don't be alarmist.
+- Flag risks clearly but don't be alarmist.`;
 
-## Output
-Return a structured JSON object with the meeting prep brief.`;
+// Gemini JSON schema for structured output
+const responseSchema: ResponseSchema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    studentSnapshot: {
+      type: SchemaType.OBJECT,
+      properties: {
+        name: { type: SchemaType.STRING },
+        grade: { type: SchemaType.STRING },
+        phase: { type: SchemaType.STRING },
+        gpa: { type: SchemaType.STRING },
+        testScores: { type: SchemaType.STRING },
+        schoolList: { type: SchemaType.STRING },
+      },
+      required: ["name", "grade", "phase"],
+    },
+    changesSinceLastMeeting: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          change: { type: SchemaType.STRING },
+          significance: { type: SchemaType.STRING, format: "enum", enum: ["high", "medium", "low"] },
+        },
+        required: ["change", "significance"],
+      },
+    },
+    unfinishedItems: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          item: { type: SchemaType.STRING },
+          status: { type: SchemaType.STRING },
+          urgency: { type: SchemaType.STRING, format: "enum", enum: ["high", "medium", "low"] },
+        },
+        required: ["item", "status", "urgency"],
+      },
+    },
+    upcomingDeadlines: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          deadline: { type: SchemaType.STRING },
+          date: { type: SchemaType.STRING },
+          daysAway: { type: SchemaType.NUMBER },
+        },
+        required: ["deadline", "date", "daysAway"],
+      },
+    },
+    suggestedAgenda: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          topic: { type: SchemaType.STRING },
+          reason: { type: SchemaType.STRING },
+          priority: { type: SchemaType.NUMBER },
+        },
+        required: ["topic", "reason", "priority"],
+      },
+    },
+    risksToDiscuss: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          risk: { type: SchemaType.STRING },
+          severity: { type: SchemaType.STRING, format: "enum", enum: ["critical", "warning", "info"] },
+          recommendation: { type: SchemaType.STRING },
+        },
+        required: ["risk", "severity", "recommendation"],
+      },
+    },
+    talkingPoints: {
+      type: SchemaType.ARRAY,
+      items: { type: SchemaType.STRING },
+    },
+  },
+  required: [
+    "studentSnapshot",
+    "changesSinceLastMeeting",
+    "unfinishedItems",
+    "upcomingDeadlines",
+    "suggestedAgenda",
+    "risksToDiscuss",
+    "talkingPoints",
+  ],
+};
 
 interface PrepContext {
   student: {
@@ -115,44 +202,30 @@ ${context.riskFlags.length > 0
     ? context.riskFlags
         .map((r) => `- [${r.severity}] ${r.title}: ${r.description}`)
         .join("\n")
-    : "No active risks."}
+    : "No active risks."}`;
 
-Return the prep brief as a JSON object matching the required schema.`;
-
-  const response = await anthropic.messages.create({
-    model: MODELS.smart,
-    max_tokens: 4096,
-    system: [
-      {
-        type: "text",
-        text: SYSTEM_PROMPT,
-        cache_control: { type: "ephemeral" },
-      },
-    ],
-    messages: [{ role: "user", content: userMessage }],
-    tools: [
-      {
-        name: "meeting_prep_brief",
-        description: "Output the structured meeting prep brief",
-        input_schema: z.toJSONSchema(MeetingPrepSchema) as Anthropic.Tool.InputSchema,
-      },
-    ],
-    tool_choice: { type: "tool", name: "meeting_prep_brief" },
+  const model = genai.getGenerativeModel({
+    model: MODEL,
+    systemInstruction: SYSTEM_PROMPT,
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema,
+    },
   });
 
-  // Extract the tool use result
-  const toolUse = response.content.find((c) => c.type === "tool_use");
-  if (!toolUse || toolUse.type !== "tool_use") {
-    throw new Error("AI did not return a structured prep brief");
-  }
+  const result = await model.generateContent(userMessage);
+  const response = result.response;
+  const text = response.text();
+  const parsed = JSON.parse(text);
+  const prep = MeetingPrepSchema.parse(parsed);
 
-  const prep = MeetingPrepSchema.parse(toolUse.input);
+  const usage = response.usageMetadata;
 
   return {
     prep,
     usage: {
-      inputTokens: response.usage.input_tokens,
-      outputTokens: response.usage.output_tokens,
+      inputTokens: usage?.promptTokenCount ?? 0,
+      outputTokens: usage?.candidatesTokenCount ?? 0,
     },
   };
 }

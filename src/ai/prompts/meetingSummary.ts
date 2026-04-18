@@ -1,6 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { z } from "zod";
-import { anthropic, MODELS } from "../client";
+import { SchemaType, type ResponseSchema } from "@google/generative-ai";
+import { genai, MODEL } from "../client";
 import { MeetingSummarySchema, type MeetingSummary } from "../schemas/meetingSummary";
 
 const SYSTEM_PROMPT = `You are CounselFlow, an AI assistant for independent college counselors.
@@ -13,10 +12,61 @@ Your task is to process raw meeting notes into a structured summary with actiona
 - Action items should be specific and assignable.
 - The follow-up email should be professional, warm, and concise.
 - If the notes are brief, produce a proportionally brief summary — don't pad.
-- Assign priority to action items based on deadlines and urgency cues in the notes.
+- Assign priority to action items based on deadlines and urgency cues in the notes.`;
 
-## Output
-Return a structured JSON object with the meeting summary.`;
+const responseSchema: ResponseSchema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    summary: { type: SchemaType.STRING, description: "2-3 paragraph structured summary of the meeting" },
+    keyDecisions: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          decision: { type: SchemaType.STRING },
+          context: { type: SchemaType.STRING },
+        },
+        required: ["decision", "context"],
+      },
+    },
+    actionItems: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          title: { type: SchemaType.STRING },
+          owner: { type: SchemaType.STRING, format: "enum", enum: ["counselor", "student", "parent", "other"] },
+          dueDate: { type: SchemaType.STRING, description: "ISO date string if mentioned" },
+          priority: { type: SchemaType.STRING, format: "enum", enum: ["urgent", "high", "medium", "low"] },
+          notes: { type: SchemaType.STRING },
+        },
+        required: ["title", "owner", "priority"],
+      },
+    },
+    studentMoodAndEngagement: { type: SchemaType.STRING, description: "Brief note on student engagement if observable" },
+    followUpDraft: {
+      type: SchemaType.OBJECT,
+      properties: {
+        subject: { type: SchemaType.STRING },
+        body: { type: SchemaType.STRING, description: "Draft follow-up email to student/family" },
+      },
+      required: ["subject", "body"],
+    },
+    caseFileUpdates: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          field: { type: SchemaType.STRING },
+          suggestedValue: { type: SchemaType.STRING },
+          reason: { type: SchemaType.STRING },
+        },
+        required: ["field", "suggestedValue", "reason"],
+      },
+    },
+  },
+  required: ["summary", "keyDecisions", "actionItems", "followUpDraft", "caseFileUpdates"],
+};
 
 interface SummaryContext {
   student: {
@@ -48,41 +98,30 @@ ${context.previousMeetingSummary ? `## Previous Meeting Summary\n${context.previ
 ## Raw Meeting Notes
 ${context.rawNotes}
 
-Process these notes into a structured summary with action items, decisions, a follow-up email draft, and any suggested case file updates. Return as a JSON object matching the required schema.`;
+Process these notes into a structured summary with action items, decisions, a follow-up email draft, and any suggested case file updates.`;
 
-  const response = await anthropic.messages.create({
-    model: MODELS.smart,
-    max_tokens: 4096,
-    system: [
-      {
-        type: "text",
-        text: SYSTEM_PROMPT,
-        cache_control: { type: "ephemeral" },
-      },
-    ],
-    messages: [{ role: "user", content: userMessage }],
-    tools: [
-      {
-        name: "meeting_summary",
-        description: "Output the structured meeting summary",
-        input_schema: z.toJSONSchema(MeetingSummarySchema) as Anthropic.Tool.InputSchema,
-      },
-    ],
-    tool_choice: { type: "tool", name: "meeting_summary" },
+  const model = genai.getGenerativeModel({
+    model: MODEL,
+    systemInstruction: SYSTEM_PROMPT,
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema,
+    },
   });
 
-  const toolUse = response.content.find((c) => c.type === "tool_use");
-  if (!toolUse || toolUse.type !== "tool_use") {
-    throw new Error("AI did not return a structured summary");
-  }
+  const result = await model.generateContent(userMessage);
+  const response = result.response;
+  const text = response.text();
+  const parsed = JSON.parse(text);
+  const summary = MeetingSummarySchema.parse(parsed);
 
-  const summary = MeetingSummarySchema.parse(toolUse.input);
+  const usage = response.usageMetadata;
 
   return {
     summary,
     usage: {
-      inputTokens: response.usage.input_tokens,
-      outputTokens: response.usage.output_tokens,
+      inputTokens: usage?.promptTokenCount ?? 0,
+      outputTokens: usage?.candidatesTokenCount ?? 0,
     },
   };
 }

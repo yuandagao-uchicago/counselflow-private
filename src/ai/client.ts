@@ -1,19 +1,13 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const globalForAnthropic = globalThis as unknown as {
-  anthropic: Anthropic | undefined;
+const globalForGemini = globalThis as unknown as {
+  genai: GoogleGenerativeAI | undefined;
 };
 
-export const anthropic =
-  globalForAnthropic.anthropic ??
-  new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-  });
+export const genai =
+  globalForGemini.genai ??
+  new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-if (process.env.NODE_ENV !== "production")
-  globalForAnthropic.anthropic = anthropic;
+if (process.env.NODE_ENV !== "production") globalForGemini.genai = genai;
 
-export const MODELS = {
-  fast: "claude-sonnet-4-5-20250514",
-  smart: "claude-sonnet-4-5-20250514",
-} as const;
+export const MODEL = "gemini-2.0-flash";
