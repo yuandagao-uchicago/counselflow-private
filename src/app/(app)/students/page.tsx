@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Search, GraduationCap } from "lucide-react";
+import { Plus, Search, GraduationCap, ArrowRight } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,23 +19,15 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
-const phaseLabels: Record<string, string> = {
-  EXPLORATION: "Exploration",
-  LIST_BUILDING: "List Building",
-  TESTING: "Testing",
-  APPLICATIONS: "Applications",
-  ESSAYS: "Essays",
-  SUBMISSIONS: "Submissions",
-  DECISIONS: "Decisions",
-  ENROLLMENT: "Enrollment",
-};
-
-const statusColors: Record<string, string> = {
-  ACTIVE: "bg-green-100 text-green-800",
-  PROSPECT: "bg-blue-100 text-blue-800",
-  DEFERRED: "bg-yellow-100 text-yellow-800",
-  GRADUATED: "bg-purple-100 text-purple-800",
-  ARCHIVED: "bg-gray-100 text-gray-800",
+const phaseConfig: Record<string, { label: string; color: string }> = {
+  EXPLORATION: { label: "Exploration", color: "from-blue-500 to-cyan-400" },
+  LIST_BUILDING: { label: "List Building", color: "from-violet-500 to-purple-400" },
+  TESTING: { label: "Testing", color: "from-amber-500 to-orange-400" },
+  APPLICATIONS: { label: "Applications", color: "from-emerald-500 to-green-400" },
+  ESSAYS: { label: "Essays", color: "from-pink-500 to-rose-400" },
+  SUBMISSIONS: { label: "Submissions", color: "from-indigo-500 to-blue-400" },
+  DECISIONS: { label: "Decisions", color: "from-yellow-500 to-amber-400" },
+  ENROLLMENT: { label: "Enrollment", color: "from-green-500 to-emerald-400" },
 };
 
 export default function StudentsPage() {
@@ -47,16 +39,16 @@ export default function StudentsPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Students</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight">Students</h1>
+          <p className="text-muted-foreground mt-1">
             Manage your student caseload
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger render={<Button />}>
+          <DialogTrigger render={<Button className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0 shadow-lg shadow-[oklch(0.65_0.2_265_/_20%)] hover:brightness-110 transition-all" />}>
             <Plus className="mr-2 h-4 w-4" />
             Add Student
           </DialogTrigger>
@@ -71,66 +63,68 @@ export default function StudentsPage() {
             placeholder="Search students..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="pl-9 bg-white/5 border-white/10"
           />
         </div>
       </div>
 
       {isLoading ? (
-        <div className="space-y-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-lg" />
+            <Skeleton key={i} className="h-40 rounded-2xl" />
           ))}
         </div>
       ) : !data?.students.length ? (
-        <div className="rounded-lg border bg-card p-12 text-center">
-          <GraduationCap className="mx-auto h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 text-lg font-semibold">No students yet</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Click &quot;Add Student&quot; to start building your caseload.
+        <div className="rounded-2xl border border-white/[0.06] bg-card p-16 text-center">
+          <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] flex items-center justify-center mb-4 shadow-lg shadow-[oklch(0.65_0.2_265_/_20%)]">
+            <GraduationCap className="h-8 w-8 text-white" />
+          </div>
+          <h3 className="text-lg font-semibold">No students yet</h3>
+          <p className="mt-2 text-sm text-muted-foreground max-w-sm mx-auto">
+            Click &quot;Add Student&quot; to start building your caseload. Each student gets their own case file with milestones, tasks, and AI-powered tools.
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {data.students.map((student) => (
-            <Link
-              key={student.id}
-              href={`/students/${student.id}`}
-              className="flex items-center justify-between rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50"
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold">
-                  {student.firstName[0]}
-                  {student.lastName[0]}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {data.students.map((student) => {
+            const phase = phaseConfig[student.phase] || { label: student.phase, color: "from-gray-500 to-gray-400" };
+            return (
+              <Link
+                key={student.id}
+                href={`/students/${student.id}`}
+                className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-card p-5 transition-all hover:border-white/[0.12] hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5"
+              >
+                {/* Gradient accent line */}
+                <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${phase.color} opacity-60`} />
+
+                <div className="flex items-start gap-4">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${phase.color} text-lg font-bold text-white shadow-md`}>
+                    {student.firstName[0]}{student.lastName[0]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-base">
+                      {student.firstName} {student.lastName}
+                    </p>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {student.highSchool || "No school"} &middot; {student.graduationYear}
+                    </p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <div>
-                  <p className="font-medium">
-                    {student.firstName} {student.lastName}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {student.highSchool || "No school"} &middot; Class of{" "}
-                    {student.graduationYear}
-                  </p>
+
+                <div className="mt-4 flex items-center gap-2">
+                  <Badge className={`bg-gradient-to-r ${phase.color} text-white border-0 text-[10px] px-2`}>
+                    {phase.label}
+                  </Badge>
+                  {student._count.tasks > 0 && (
+                    <Badge variant="secondary" className="bg-white/5 text-muted-foreground border-white/10 text-[10px]">
+                      {student._count.tasks} tasks
+                    </Badge>
+                  )}
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="outline">
-                  {phaseLabels[student.phase] || student.phase}
-                </Badge>
-                <Badge
-                  className={statusColors[student.status] || ""}
-                  variant="secondary"
-                >
-                  {student.status.toLowerCase()}
-                </Badge>
-                {student._count.tasks > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {student._count.tasks} open tasks
-                  </span>
-                )}
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>
@@ -165,7 +159,7 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <DialogContent>
+    <DialogContent className="border-white/10 bg-[oklch(0.13_0.005_270)]">
       <form onSubmit={handleSubmit}>
         <DialogHeader>
           <DialogTitle>Add New Student</DialogTitle>
@@ -180,9 +174,8 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
               <Input
                 id="firstName"
                 value={form.firstName}
-                onChange={(e) =>
-                  setForm({ ...form, firstName: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                className="bg-white/5 border-white/10"
                 required
               />
             </div>
@@ -191,9 +184,8 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
               <Input
                 id="lastName"
                 value={form.lastName}
-                onChange={(e) =>
-                  setForm({ ...form, lastName: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                className="bg-white/5 border-white/10"
                 required
               />
             </div>
@@ -205,6 +197,7 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="bg-white/5 border-white/10"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -213,9 +206,8 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
               <Input
                 id="highSchool"
                 value={form.highSchool}
-                onChange={(e) =>
-                  setForm({ ...form, highSchool: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, highSchool: e.target.value })}
+                className="bg-white/5 border-white/10"
               />
             </div>
             <div className="space-y-2">
@@ -224,12 +216,8 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
                 id="graduationYear"
                 type="number"
                 value={form.graduationYear}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    graduationYear: parseInt(e.target.value),
-                  })
-                }
+                onChange={(e) => setForm({ ...form, graduationYear: parseInt(e.target.value) })}
+                className="bg-white/5 border-white/10"
                 required
               />
             </div>
@@ -239,6 +227,7 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
           <Button
             type="submit"
             disabled={createStudent.isPending}
+            className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0"
           >
             {createStudent.isPending ? "Creating..." : "Add Student"}
           </Button>
