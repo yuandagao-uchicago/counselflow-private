@@ -1,13 +1,788 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================
+// ENUMS
+// =============================================
+
+enum StudentStatus {
+  PROSPECT
+  ACTIVE
+  DEFERRED
+  GRADUATED
+  ARCHIVED
+}
+
+enum GradeLevel {
+  FRESHMAN
+  SOPHOMORE
+  JUNIOR
+  SENIOR
+  GAP_YEAR
+  TRANSFER
+}
+
+enum StudentPhase {
+  EXPLORATION
+  LIST_BUILDING
+  TESTING
+  APPLICATIONS
+  ESSAYS
+  SUBMISSIONS
+  DECISIONS
+  ENROLLMENT
+}
+
+enum ApplicationPlatform {
+  COMMON_APP
+  COALITION
+  UC_APPLICATION
+  APPLY_TEXAS
+  SCHOOL_DIRECT
+  OTHER
+}
+
+enum ApplicationType {
+  EARLY_DECISION
+  EARLY_DECISION_2
+  EARLY_ACTION
+  RESTRICTIVE_EARLY_ACTION
+  REGULAR_DECISION
+  ROLLING
+}
+
+enum ApplicationStatus {
+  PLANNING
+  IN_PROGRESS
+  READY_FOR_REVIEW
+  SUBMITTED
+  WITHDRAWN
+}
+
+enum MilestoneStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+  SKIPPED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  WAITING_ON_EXTERNAL
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskSource {
+  MANUAL
+  AI_EXTRACTED
+  SYSTEM_GENERATED
+}
+
+enum DocumentType {
+  QUESTIONNAIRE
+  TRANSCRIPT
+  TEST_SCORE
+  RESUME
+  ESSAY_DRAFT
+  RECOMMENDATION_LETTER
+  FINANCIAL_AID
+  MEETING_NOTES
+  COMMUNICATION
+  OTHER
+}
+
+enum EssayStatus {
+  BRAINSTORMING
+  OUTLINE
+  FIRST_DRAFT
+  REVISION
+  FINAL
+  SUBMITTED
+}
+
+enum AIConfidence {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum AutonomyMode {
+  SUGGEST
+  DRAFT
+  EXECUTE
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVISED
+}
+
+enum CommunicationType {
+  EMAIL
+  TEXT
+  PHONE_CALL
+  IN_APP_NOTE
+  PORTAL_MESSAGE
+}
+
+enum CommunicationDirection {
+  OUTBOUND
+  INBOUND
+}
+
+enum RecommenderType {
+  TEACHER
+  COUNSELOR
+  EMPLOYER
+  MENTOR
+  PEER
+  OTHER
+}
+
+enum RecommenderRequestStatus {
+  NOT_REQUESTED
+  REQUESTED
+  REMINDED
+  RECEIVED
+  SUBMITTED
+}
+
+enum RiskSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+// =============================================
+// AUTH (Better Auth managed tables)
+// =============================================
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  timezone      String    @default("America/New_York")
+
+  sessions      Session[]
+  accounts      Account[]
+
+  // CounselFlow relations
+  students      Student[]
+  meetings      Meeting[]
+  assignedTasks Task[]         @relation("AssignedTasks")
+  createdTasks  Task[]         @relation("CreatedTasks")
+  communications Communication[]
+  reviewQueue   ReviewQueueItem[]
+  aiOutputs     AIOutput[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@map("verification")
+}
+
+// =============================================
+// STUDENT & FAMILY
+// =============================================
+
+model Student {
+  id             String        @id @default(cuid())
+  counselorId    String
+  counselor      User          @relation(fields: [counselorId], references: [id])
+
+  // Demographics
+  firstName      String
+  lastName       String
+  preferredName  String?
+  email          String?
+  phone          String?
+  dateOfBirth    DateTime?
+  gradeLevel     GradeLevel
+  highSchool     String?
+  graduationYear Int
+
+  // Academic snapshot
+  gpaUnweighted  Float?
+  gpaWeighted    Float?
+  satScore       Int?
+  actScore       Int?
+  classRank      String?
+  courseRigor     String?
+
+  // Profile
+  intendedMajors String[]
+  interests      String[]
+  personalNotes  String?
+  rawProfile     Json?
+
+  status         StudentStatus @default(ACTIVE)
+  phase          StudentPhase  @default(EXPLORATION)
+
+  // Relations
+  guardians      Guardian[]
+  applications   Application[]
+  activities     Activity[]
+  essayArtifacts EssayArtifact[]
+  milestones     Milestone[]
+  tasks          Task[]
+  documents      Document[]
+  meetings       Meeting[]
+  communications Communication[]
+  recommenders   StudentRecommender[]
+  riskFlags      RiskFlag[]
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([counselorId])
+  @@index([counselorId, status])
+  @@index([counselorId, graduationYear])
+}
+
+model Guardian {
+  id               String          @id @default(cuid())
+  studentId        String
+  student          Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  firstName        String
+  lastName         String
+  relationship     String
+  email            String?
+  phone            String?
+  preferredContact String?
+  notes            String?
+
+  communications   Communication[]
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+// =============================================
+// SCHOOLS & APPLICATIONS
+// =============================================
+
+model School {
+  id             String              @id @default(cuid())
+  name           String
+  commonName     String?
+  city           String?
+  state          String?
+  country        String              @default("US")
+  type           String?
+  website        String?
+
+  acceptanceRate Float?
+  medianSAT      Int?
+  medianACT      Int?
+
+  requirements   SchoolRequirement[]
+  applications   Application[]
+
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@unique([name, city, state])
+}
+
+model SchoolRequirement {
+  id                    String              @id @default(cuid())
+  schoolId              String
+  school                School              @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  applicationPlatform   ApplicationPlatform
+  applicationType       ApplicationType
+  deadline              DateTime?
+  academicYear          String
+
+  essaysRequired        Json?
+  testPolicy            String?
+  recommendationCount   Int?
+  supplementalMaterials String?
+  interviewPolicy       String?
+  additionalNotes       String?
+  sourceUrl             String?
+  lastVerified          DateTime?
+
+  applications          Application[]
+
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([schoolId, academicYear])
+}
+
+model Application {
+  id                String             @id @default(cuid())
+  studentId         String
+  student           Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  schoolId          String
+  school            School             @relation(fields: [schoolId], references: [id])
+  requirementId     String?
+  requirement       SchoolRequirement? @relation(fields: [requirementId], references: [id])
+
+  applicationType   ApplicationType
+  platform          ApplicationPlatform
+  status            ApplicationStatus  @default(PLANNING)
+
+  deadline          DateTime?
+  submittedAt       DateTime?
+  decisionDate      DateTime?
+  decision          String?
+
+  completionPct     Float?             @default(0)
+  blockers          Json?
+
+  essays            EssayArtifact[]
+  recommenders      StudentRecommender[]
+  submissionEvents  SubmissionEvent[]
+
+  notes             String?
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([studentId])
+  @@unique([studentId, schoolId, applicationType])
+}
+
+// =============================================
+// ACTIVITIES & ESSAYS
+// =============================================
+
+model Activity {
+  id             String   @id @default(cuid())
+  studentId      String
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  name           String
+  category       String
+  role           String?
+  organization   String?
+  description    String?
+  hoursPerWeek   Float?
+  weeksPerYear   Float?
+  yearsActive    String?
+  honors         String?
+  significance   String?
+
+  sortOrder      Int      @default(0)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([studentId])
+}
+
+model EssayArtifact {
+  id             String       @id @default(cuid())
+  studentId      String
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  applicationId  String?
+  application    Application? @relation(fields: [applicationId], references: [id])
+
+  title          String
+  prompt         String?
+  wordLimit      Int?
+  currentContent String?
+  status         EssayStatus  @default(BRAINSTORMING)
+  versionNumber  Int          @default(1)
+  aiNotes        String?
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([studentId])
+  @@index([applicationId])
+}
+
+// =============================================
+// MILESTONES & TASKS
+// =============================================
+
+model Milestone {
+  id             String          @id @default(cuid())
+  studentId      String
+  student        Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  title          String
+  description    String?
+  category       String
+
+  status         MilestoneStatus @default(NOT_STARTED)
+
+  targetDate     DateTime?
+  hardDeadline   DateTime?
+  completedAt    DateTime?
+  sortOrder      Int             @default(0)
+
+  dependsOnId    String?
+  dependsOn      Milestone?      @relation("MilestoneDeps", fields: [dependsOnId], references: [id])
+  dependedOnBy   Milestone[]     @relation("MilestoneDeps")
+
+  templateKey    String?
+
+  tasks          Task[]
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([studentId])
+  @@index([studentId, status])
+}
+
+model Task {
+  id             String       @id @default(cuid())
+  studentId      String
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  milestoneId    String?
+  milestone      Milestone?   @relation(fields: [milestoneId], references: [id])
+
+  title          String
+  description    String?
+
+  status         TaskStatus   @default(TODO)
+  priority       TaskPriority @default(MEDIUM)
+  source         TaskSource   @default(MANUAL)
+
+  assignedToId   String?
+  assignedTo     User?        @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  createdById    String
+  createdBy      User         @relation("CreatedTasks", fields: [createdById], references: [id])
+
+  dueDate        DateTime?
+  completedAt    DateTime?
+
+  aiOutputId     String?
+  aiOutput       AIOutput?    @relation(fields: [aiOutputId], references: [id])
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([studentId])
+  @@index([assignedToId, status])
+  @@index([dueDate])
+}
+
+// =============================================
+// RECOMMENDERS
+// =============================================
+
+model StudentRecommender {
+  id               String                   @id @default(cuid())
+  studentId        String
+  student          Student                  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  applicationId    String?
+  application      Application?             @relation(fields: [applicationId], references: [id])
+
+  name             String
+  email            String?
+  type             RecommenderType
+  relationship     String?
+  organization     String?
+
+  requestStatus    RecommenderRequestStatus @default(NOT_REQUESTED)
+  requestedAt      DateTime?
+  reminderSentAt   DateTime?
+  receivedAt       DateTime?
+  submittedAt      DateTime?
+
+  bragSheetDraft   String?
+  bragSheetFinal   String?
+  requestEmailDraft String?
+
+  notes            String?
+
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+
+  @@index([studentId])
+}
+
+// =============================================
+// MEETINGS
+// =============================================
+
+model Meeting {
+  id             String   @id @default(cuid())
+  counselorId    String
+  counselor      User     @relation(fields: [counselorId], references: [id])
+  studentId      String
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  scheduledAt    DateTime
+  duration       Int?
+  type           String
+  location       String?
+
+  // Pre-meeting AI
+  prepBrief      String?
+  prepBriefAiId  String?
+
+  // Post-meeting
+  rawNotes       String?
+  summary        String?
+  summaryAiId    String?
+
+  actionItems    Json?
+  decisions      Json?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([counselorId])
+  @@index([studentId])
+  @@index([scheduledAt])
+}
+
+// =============================================
+// COMMUNICATIONS
+// =============================================
+
+model Communication {
+  id             String                 @id @default(cuid())
+  counselorId    String
+  counselor      User                   @relation(fields: [counselorId], references: [id])
+  studentId      String
+  student        Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardianId     String?
+  guardian       Guardian?              @relation(fields: [guardianId], references: [id])
+
+  type           CommunicationType
+  direction      CommunicationDirection
+  subject        String?
+  body           String
+
+  isDraft        Boolean                @default(true)
+  draftAiId      String?
+  approvedAt     DateTime?
+  sentAt         DateTime?
+
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  @@index([studentId])
+  @@index([counselorId, isDraft])
+}
+
+// =============================================
+// DOCUMENTS
+// =============================================
+
+model Document {
+  id             String       @id @default(cuid())
+  studentId      String
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  fileName       String
+  fileType       String
+  fileSize       Int
+  documentType   DocumentType
+
+  storageUrl     String
+  storageKey     String
+
+  extractedText  String?
+  structuredData Json?
+  processedAt    DateTime?
+  aiOutputId     String?
+
+  notes          String?
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([studentId])
+  @@index([studentId, documentType])
+}
+
+// =============================================
+// SUBMISSION TRACKING
+// =============================================
+
+model SubmissionEvent {
+  id             String      @id @default(cuid())
+  applicationId  String
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  component      String
+  submittedAt    DateTime
+  confirmationId String?
+  submittedBy    String?
+  notes          String?
+
+  createdAt      DateTime    @default(now())
+}
+
+// =============================================
+// RISK FLAGS
+// =============================================
+
+model RiskFlag {
+  id             String       @id @default(cuid())
+  studentId      String
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  severity       RiskSeverity
+  category       String
+  title          String
+  description    String
+
+  resolvedAt     DateTime?
+  resolvedBy     String?
+  resolution     String?
+
+  aiOutputId     String?
+  aiOutput       AIOutput?    @relation(fields: [aiOutputId], references: [id])
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([studentId])
+  @@index([studentId, severity])
+}
+
+// =============================================
+// AI PROVENANCE
+// =============================================
+
+model AIOutput {
+  id             String       @id @default(cuid())
+  counselorId    String
+  studentId      String?
+
+  feature        String
+  sourceBasis    Json
+  confidence     AIConfidence
+  autonomyMode   AutonomyMode
+
+  input          Json?
+  output         Json
+  modelId        String
+  tokenUsage     Json?
+
+  reviewStatus   ReviewStatus @default(PENDING)
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  reviewNotes    String?
+
+  // Relations
+  counselor      User         @relation(fields: [counselorId], references: [id])
+  tasks          Task[]
+  riskFlags      RiskFlag[]
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([counselorId])
+  @@index([studentId, feature])
+}
+
+// =============================================
+// REVIEW QUEUE
+// =============================================
+
+model ReviewQueueItem {
+  id             String       @id @default(cuid())
+  counselorId    String
+  counselor      User         @relation(fields: [counselorId], references: [id])
+
+  entityType     String
+  entityId       String
+  aiOutputId     String?
+
+  title          String
+  summary        String?
+
+  status         ReviewStatus @default(PENDING)
+  reviewedAt     DateTime?
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([counselorId, status])
+}
+
+// =============================================
+// MILESTONE TEMPLATES
+// =============================================
+
+model MilestoneTemplate {
+  id             String   @id @default(cuid())
+  key            String   @unique
+  title          String
+  description    String?
+  category       String
+
+  relativeTo     String?
+  offsetDays     Int?
+  dependsOnKey   String?
+
+  sortOrder      Int      @default(0)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
