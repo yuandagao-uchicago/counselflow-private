@@ -50,6 +50,96 @@ export const meetingRouter = router({
       });
     }),
 
+  // One-click: create meeting + generate brief in a single call
+  quickPrepBrief: protectedProcedure
+    .input(z.object({ studentId: z.string(), meetingType: z.string().default("Check-in") }))
+    .mutation(async ({ ctx, input }) => {
+      await verifyStudentOwnership(ctx.counselorId, input.studentId);
+
+      // Create meeting
+      const meeting = await prisma.meeting.create({
+        data: {
+          studentId: input.studentId,
+          counselorId: ctx.counselorId,
+          scheduledAt: new Date(),
+          type: input.meetingType,
+        },
+      });
+
+      // Fetch full student context
+      const student = await prisma.student.findUniqueOrThrow({
+        where: { id: input.studentId },
+        include: {
+          tasks: {
+            where: { status: { in: ["TODO", "IN_PROGRESS", "WAITING_ON_EXTERNAL"] } },
+            orderBy: { priority: "desc" },
+          },
+          milestones: {
+            where: { status: { in: ["IN_PROGRESS", "BLOCKED", "NOT_STARTED"] } },
+            orderBy: { sortOrder: "asc" },
+          },
+          meetings: {
+            where: { id: { not: meeting.id } },
+            orderBy: { scheduledAt: "desc" },
+            take: 3,
+          },
+          riskFlags: {
+            where: { resolvedAt: null },
+          },
+        },
+      });
+
+      const { prep, usage } = await generateMeetingPrep({
+        student,
+        meetingType: input.meetingType,
+        recentMeetings: student.meetings.map((m) => ({
+          scheduledAt: m.scheduledAt,
+          type: m.type,
+          summary: m.summary,
+        })),
+        openTasks: student.tasks.map((t) => ({
+          title: t.title,
+          status: t.status,
+          priority: t.priority,
+          dueDate: t.dueDate,
+        })),
+        activeMilestones: student.milestones.map((m) => ({
+          title: m.title,
+          status: m.status,
+          category: m.category,
+          targetDate: m.targetDate,
+        })),
+        riskFlags: student.riskFlags.map((r) => ({
+          title: r.title,
+          severity: r.severity,
+          description: r.description,
+        })),
+      });
+
+      const aiOutput = await createAIOutput({
+        counselorId: ctx.counselorId,
+        studentId: input.studentId,
+        feature: "meeting_prep",
+        sourceBasis: [
+          { type: "profile", id: input.studentId, label: `${student.firstName} ${student.lastName} profile` },
+        ],
+        confidence: "HIGH",
+        output: prep,
+        modelId: MODEL,
+        tokenUsage: usage,
+      });
+
+      await prisma.meeting.update({
+        where: { id: meeting.id },
+        data: {
+          prepBrief: JSON.stringify(prep),
+          prepBriefAiId: aiOutput.id,
+        },
+      });
+
+      return { meetingId: meeting.id, prep };
+    }),
+
   generatePrepBrief: protectedProcedure
     .input(z.object({ meetingId: z.string() }))
     .mutation(async ({ ctx, input }) => {
