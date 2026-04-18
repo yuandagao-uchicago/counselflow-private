@@ -3,6 +3,8 @@
 import { CheckCircle2, Circle, Clock, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 interface Task {
   id: string;
@@ -27,6 +29,17 @@ const sourceLabels: Record<string, { label: string; style: string }> = {
 };
 
 export function TasksCard({ tasks, studentId }: { tasks: Task[]; studentId: string }) {
+  const utils = trpc.useUtils();
+
+  const completeTask = trpc.student.completeTask.useMutation({
+    onSuccess: () => {
+      utils.student.getById.invalidate({ id: studentId });
+      utils.dashboard.stats.invalidate();
+      toast.success("Task completed!");
+    },
+    onError: (err) => toast.error(err.message || "Failed to update task"),
+  });
+
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-card p-5 glow-card">
       <div className="flex items-center justify-between mb-4">
@@ -54,14 +67,18 @@ export function TasksCard({ tasks, studentId }: { tasks: Task[]; studentId: stri
                 key={task.id}
                 className="flex items-start gap-3 rounded-xl bg-white/[0.03] p-3 hover:bg-white/[0.06] transition-colors group"
               >
-                {/* Status icon */}
-                <div className="mt-0.5">
+                {/* Clickable status icon to complete */}
+                <button
+                  onClick={() => completeTask.mutate({ taskId: task.id })}
+                  className="mt-0.5 hover:scale-110 transition-transform"
+                  title="Mark as complete"
+                >
                   {task.status === "WAITING_ON_EXTERNAL" ? (
                     <Clock className="h-4 w-4 text-amber-400" />
                   ) : (
-                    <Circle className={`h-4 w-4 ${priority.color}`} />
+                    <Circle className={`h-4 w-4 ${priority.color} hover:text-emerald-400 transition-colors`} />
                   )}
-                </div>
+                </button>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">

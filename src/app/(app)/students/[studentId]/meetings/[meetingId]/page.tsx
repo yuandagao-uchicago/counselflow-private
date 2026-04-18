@@ -50,9 +50,14 @@ export default function MeetingDetailPage({
 
   const deleteMeeting = trpc.meeting.delete.useMutation({
     onSuccess: () => {
+      utils.meeting.list.invalidate({ studentId });
+      utils.student.getById.invalidate({ id: studentId });
+      utils.dashboard.stats.invalidate();
+      utils.dashboard.upcomingMeetings.invalidate();
       toast.success("Meeting deleted");
       router.push(`/students/${studentId}/meetings`);
     },
+    onError: (err) => toast.error(err.message || "Failed to delete meeting"),
   });
 
   if (isLoading) {

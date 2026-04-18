@@ -184,4 +184,17 @@ export const studentRouter = router({
         data: { status: "ARCHIVED" },
       });
     }),
+
+  completeTask: protectedProcedure
+    .input(z.object({ taskId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const task = await prisma.task.findFirst({
+        where: { id: input.taskId, student: { counselorId: ctx.counselorId } },
+      });
+      if (!task) throw new Error("Task not found");
+      return prisma.task.update({
+        where: { id: input.taskId },
+        data: { status: "COMPLETED", completedAt: new Date() },
+      });
+    }),
 });

@@ -20,8 +20,13 @@ export function QuickActions({ studentId }: { studentId: string }) {
   const router = useRouter();
   const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
 
+  const utils = trpc.useUtils();
+
   const quickPrep = trpc.meeting.quickPrepBrief.useMutation({
     onSuccess: (data) => {
+      utils.student.getById.invalidate({ id: studentId });
+      utils.dashboard.stats.invalidate();
+      utils.dashboard.upcomingMeetings.invalidate();
       toast.success("Prep brief generated!");
       router.push(`/students/${studentId}/meetings/${data.meetingId}`);
     },
@@ -104,6 +109,9 @@ function MeetingDialog({
   const createMeeting = trpc.meeting.create.useMutation({
     onSuccess: () => {
       utils.student.getById.invalidate({ id: studentId });
+      utils.meeting.list.invalidate({ studentId });
+      utils.dashboard.stats.invalidate();
+      utils.dashboard.upcomingMeetings.invalidate();
       onOpenChange(false);
       toast.success("Meeting scheduled!");
     },

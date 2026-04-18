@@ -33,8 +33,12 @@ export default function MeetingsPage({
   const deleteMeeting = trpc.meeting.delete.useMutation({
     onSuccess: () => {
       utils.meeting.list.invalidate({ studentId });
+      utils.student.getById.invalidate({ id: studentId });
+      utils.dashboard.stats.invalidate();
+      utils.dashboard.upcomingMeetings.invalidate();
       toast.success("Meeting deleted");
     },
+    onError: (err) => toast.error(err.message || "Failed to delete meeting"),
   });
 
   return (
@@ -148,9 +152,14 @@ function NewMeetingDialog({ studentId, onClose }: { studentId: string; onClose: 
 
   const createMeeting = trpc.meeting.create.useMutation({
     onSuccess: () => {
-      utils.meeting.list.invalidate();
+      utils.meeting.list.invalidate({ studentId });
+      utils.student.getById.invalidate({ id: studentId });
+      utils.dashboard.stats.invalidate();
+      utils.dashboard.upcomingMeetings.invalidate();
       onClose();
+      toast.success("Meeting scheduled!");
     },
+    onError: (err) => toast.error(err.message || "Failed to create meeting"),
   });
 
   return (
