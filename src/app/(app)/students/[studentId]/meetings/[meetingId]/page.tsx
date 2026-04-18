@@ -1,8 +1,9 @@
 "use client";
 
 import { use, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Loader2, CheckCircle2, FileText, Send, Clock, User, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Sparkles, Loader2, CheckCircle2, FileText, Send, Clock, User, AlertTriangle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ export default function MeetingDetailPage({
   params: Promise<{ studentId: string; meetingId: string }>;
 }) {
   const { studentId, meetingId } = use(params);
+  const router = useRouter();
   const [rawNotes, setRawNotes] = useState("");
   const utils = trpc.useUtils();
 
@@ -43,6 +45,13 @@ export default function MeetingDetailPage({
     },
     onError: (err) => {
       toast.error(err.message || "Failed to process notes");
+    },
+  });
+
+  const deleteMeeting = trpc.meeting.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Meeting deleted");
+      router.push(`/students/${studentId}/meetings`);
     },
   });
 
@@ -70,10 +79,23 @@ export default function MeetingDetailPage({
     <PageTransition>
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between">
         <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" render={<Link href={`/students/${studentId}/meetings`} />}>
           <ArrowLeft className="mr-1 h-4 w-4" />
           Meetings
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+          onClick={() => {
+            if (confirm("Delete this meeting?")) {
+              deleteMeeting.mutate({ id: meetingId });
+            }
+          }}
+        >
+          <Trash2 className="mr-1 h-4 w-4" />
+          Delete
         </Button>
       </div>
 

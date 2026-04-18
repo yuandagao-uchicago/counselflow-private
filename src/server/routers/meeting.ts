@@ -50,6 +50,17 @@ export const meetingRouter = router({
       });
     }),
 
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const meeting = await prisma.meeting.findFirst({
+        where: { id: input.id, counselorId: ctx.counselorId },
+      });
+      if (!meeting) throw new Error("Meeting not found");
+      await prisma.meeting.delete({ where: { id: input.id } });
+      return { success: true };
+    }),
+
   // One-click: create meeting + generate brief in a single call
   quickPrepBrief: protectedProcedure
     .input(z.object({ studentId: z.string(), meetingType: z.string().default("Check-in") }))

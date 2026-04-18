@@ -2,7 +2,7 @@
 
 import { use, useState } from "react";
 import Link from "next/link";
-import { Plus, Calendar, ArrowLeft } from "lucide-react";
+import { Plus, Calendar, ArrowLeft, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 export default function MeetingsPage({
   params,
@@ -27,6 +28,14 @@ export default function MeetingsPage({
   const { studentId } = use(params);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { data: meetings, isLoading } = trpc.meeting.list.useQuery({ studentId });
+  const utils = trpc.useUtils();
+
+  const deleteMeeting = trpc.meeting.delete.useMutation({
+    onSuccess: () => {
+      utils.meeting.list.invalidate({ studentId });
+      toast.success("Meeting deleted");
+    },
+  });
 
   return (
     <div className="space-y-6 page-enter">
@@ -108,6 +117,18 @@ export default function MeetingsPage({
                     </Badge>
                   )}
                 </div>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (confirm("Delete this meeting?")) {
+                      deleteMeeting.mutate({ id: meeting.id });
+                    }
+                  }}
+                  className="opacity-0 group-hover:opacity-100 p-2 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-all"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </Link>
             );
           })}

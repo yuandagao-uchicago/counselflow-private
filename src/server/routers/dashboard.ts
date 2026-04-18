@@ -1,8 +1,16 @@
 import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 
+function startOfToday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 export const dashboardRouter = router({
   stats: protectedProcedure.query(async ({ ctx }) => {
+    const today = startOfToday();
+
     const [
       activeStudents,
       upcomingMeetings,
@@ -15,7 +23,7 @@ export const dashboardRouter = router({
       prisma.meeting.count({
         where: {
           counselorId: ctx.counselorId,
-          scheduledAt: { gte: new Date() },
+          scheduledAt: { gte: today },
         },
       }),
       prisma.task.count({
@@ -37,10 +45,12 @@ export const dashboardRouter = router({
   }),
 
   upcomingMeetings: protectedProcedure.query(async ({ ctx }) => {
+    const today = startOfToday();
+
     return prisma.meeting.findMany({
       where: {
         counselorId: ctx.counselorId,
-        scheduledAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, // include today's past meetings
+        scheduledAt: { gte: today },
       },
       orderBy: { scheduledAt: "asc" },
       take: 5,
