@@ -1,5 +1,4 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { Users, Calendar, CheckCircle, AlertTriangle, Sparkles } from "lucide-react";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 
 export default async function DashboardPage() {
