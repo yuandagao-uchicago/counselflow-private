@@ -22,6 +22,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
+import { trpc } from "@/lib/trpc";
 
 const navItems = [
   {
@@ -50,8 +51,13 @@ const bottomItems = [
   },
 ];
 
-export function AppSidebar({ pendingApprovals = 0 }: { pendingApprovals?: number }) {
+export function AppSidebar() {
   const pathname = usePathname();
+  const { data: pendingApprovals } = trpc.review.pendingCount.useQuery(undefined, {
+    // Refetch every 30s so approvals dropped by other tabs/webhooks appear
+    refetchInterval: 30_000,
+  });
+  const badgeCount = pendingApprovals ?? 0;
 
   return (
     <Sidebar>
@@ -88,9 +94,9 @@ export function AppSidebar({ pendingApprovals = 0 }: { pendingApprovals?: number
                     >
                       <item.icon className="h-4 w-4" />
                       <span className="font-medium">{item.title}</span>
-                      {item.badge && pendingApprovals > 0 && (
+                      {item.badge && badgeCount > 0 && (
                         <Badge className="ml-auto h-5 min-w-5 px-1.5 text-[10px] font-bold bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.6_0.22_290)] text-white border-0">
-                          {pendingApprovals}
+                          {badgeCount}
                         </Badge>
                       )}
                     </SidebarMenuButton>

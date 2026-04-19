@@ -21,8 +21,10 @@ export function ZoomImportPanel({
     { enabled: expanded }
   );
 
+  const utils = trpc.useUtils();
   const importMutation = trpc.integration.zoom.importRecording.useMutation({
     onSuccess: (res) => {
+      utils.review.pendingCount.invalidate();
       toast.success(
         `Imported Zoom transcript (${res.transcriptChars.toLocaleString()} chars) — ${res.tasksCreated} tasks created`
       );

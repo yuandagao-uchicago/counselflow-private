@@ -2,6 +2,7 @@ import { z } from "zod";
 import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 import { verifyStudentOwnership } from "../lib/tenant";
+import { computeMilestoneDates } from "@/lib/milestone-templates";
 
 export const studentRouter = router({
   list: protectedProcedure
@@ -61,7 +62,6 @@ export const studentRouter = router({
           guardians: true,
           milestones: {
             orderBy: { sortOrder: "asc" },
-            take: 10,
           },
           tasks: {
             where: { status: { in: ["TODO", "IN_PROGRESS", "WAITING_ON_EXTERNAL"] } },
@@ -121,12 +121,28 @@ export const studentRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      return prisma.student.create({
+      const student = await prisma.student.create({
         data: {
           ...input,
           counselorId: ctx.counselorId,
         },
       });
+
+      // Auto-seed milestones from templates, dated against this student's graduation year
+      const milestones = computeMilestoneDates(input.graduationYear);
+      await prisma.milestone.createMany({
+        data: milestones.map(({ template, targetDate }) => ({
+          studentId: student.id,
+          title: template.title,
+          description: template.description,
+          category: template.category,
+          targetDate,
+          templateKey: template.key,
+          sortOrder: template.sortOrder,
+        })),
+      });
+
+      return student;
     }),
 
   update: protectedProcedure
@@ -135,6 +151,7 @@ export const studentRouter = router({
         id: z.string(),
         firstName: z.string().min(1).optional(),
         lastName: z.string().min(1).optional(),
+        preferredName: z.string().optional().nullable(),
         email: z.string().email().optional().nullable(),
         phone: z.string().optional().nullable(),
         gradeLevel: z
@@ -146,6 +163,8 @@ export const studentRouter = router({
         gpaWeighted: z.number().optional().nullable(),
         satScore: z.number().optional().nullable(),
         actScore: z.number().optional().nullable(),
+        classRank: z.string().optional().nullable(),
+        courseRigor: z.string().optional().nullable(),
         intendedMajors: z.array(z.string()).optional(),
         interests: z.array(z.string()).optional(),
         personalNotes: z.string().optional().nullable(),

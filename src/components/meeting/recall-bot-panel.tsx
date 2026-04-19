@@ -51,6 +51,7 @@ export function RecallBotPanel({
   const refresh = trpc.integration.recall.refreshBotStatus.useMutation({
     onSuccess: (res) => {
       if (res.processed) {
+        utils.review.pendingCount.invalidate();
         toast.success(`Transcript processed — ${res.tasksCreated} tasks created`);
         onProcessed?.();
       } else {

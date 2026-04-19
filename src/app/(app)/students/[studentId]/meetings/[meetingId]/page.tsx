@@ -77,7 +77,10 @@ export default function MeetingDetailPage({
   const submitNotes = trpc.meeting.submitNotes.useMutation({
     onSuccess: (data) => {
       utils.meeting.getById.invalidate({ id: meetingId });
-      toast.success(`Summary generated! ${data.tasksCreated} tasks created.`);
+      utils.review.pendingCount.invalidate();
+      const parts: string[] = [`${data.tasksCreated} tasks created`];
+      if (data.reviewQueueItemId) parts.push("follow-up email awaiting approval");
+      toast.success(`Summary generated — ${parts.join(", ")}.`);
       setRawNotes("");
     },
     onError: (err) => {

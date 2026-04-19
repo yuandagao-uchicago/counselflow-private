@@ -1,16 +1,30 @@
 "use client";
 
-import { BookOpen, Target, Heart } from "lucide-react";
+import { useState } from "react";
+import { BookOpen, Target, Heart, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EditProfileDialog } from "./edit-profile-dialog";
 
 interface ProfileCardProps {
   student: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    preferredName: string | null;
+    email: string | null;
+    phone: string | null;
+    highSchool: string | null;
+    graduationYear: number;
+    phase: string;
     intendedMajors: string[];
     interests: string[];
     personalNotes: string | null;
     gradeLevel: string;
     gpaUnweighted: number | null;
     gpaWeighted: number | null;
+    satScore: number | null;
+    actScore: number | null;
     classRank: string | null;
     courseRigor: string | null;
   };
@@ -26,11 +40,35 @@ const gradeLevelLabels: Record<string, string> = {
 };
 
 export function ProfileCard({ student }: ProfileCardProps) {
+  const [editOpen, setEditOpen] = useState(false);
+
+  const hasAnyData =
+    student.gpaUnweighted ||
+    student.gpaWeighted ||
+    student.satScore ||
+    student.actScore ||
+    student.classRank ||
+    student.courseRigor ||
+    student.intendedMajors.length > 0 ||
+    student.interests.length > 0 ||
+    student.personalNotes;
+
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-card p-5 glow-card">
-      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-        Profile Overview
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Profile Overview
+        </h3>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-foreground -mr-2"
+          onClick={() => setEditOpen(true)}
+        >
+          <Pencil className="h-3.5 w-3.5 mr-1.5" />
+          Edit
+        </Button>
+      </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
         {/* Academics */}
@@ -41,12 +79,14 @@ export function ProfileCard({ student }: ProfileCardProps) {
           </div>
           <div className="space-y-2 text-sm">
             <Row label="Grade" value={gradeLevelLabels[student.gradeLevel] || student.gradeLevel} />
-            {student.gpaUnweighted && (
+            {student.gpaUnweighted != null && (
               <Row label="GPA (UW)" value={student.gpaUnweighted.toFixed(2)} />
             )}
-            {student.gpaWeighted && (
+            {student.gpaWeighted != null && (
               <Row label="GPA (W)" value={student.gpaWeighted.toFixed(2)} />
             )}
+            {student.satScore != null && <Row label="SAT" value={student.satScore.toString()} />}
+            {student.actScore != null && <Row label="ACT" value={student.actScore.toString()} />}
             {student.classRank && <Row label="Rank" value={student.classRank} />}
             {student.courseRigor && <Row label="Rigor" value={student.courseRigor} />}
           </div>
@@ -90,6 +130,11 @@ export function ProfileCard({ student }: ProfileCardProps) {
               </div>
             </div>
           )}
+          {student.intendedMajors.length === 0 && student.interests.length === 0 && (
+            <p className="text-xs text-muted-foreground/60">
+              No majors or interests yet.
+            </p>
+          )}
         </div>
       </div>
 
@@ -100,21 +145,20 @@ export function ProfileCard({ student }: ProfileCardProps) {
             <Heart className="h-4 w-4 text-[oklch(0.7_0.2_330)]" />
             Counselor Notes
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
             {student.personalNotes}
           </p>
         </div>
       )}
 
       {/* Empty state */}
-      {!student.gpaUnweighted &&
-        student.intendedMajors.length === 0 &&
-        student.interests.length === 0 &&
-        !student.personalNotes && (
-          <p className="text-sm text-muted-foreground/50 text-center py-4">
-            No profile details yet. Edit the student to add academic info, majors, and interests.
-          </p>
-        )}
+      {!hasAnyData && (
+        <p className="text-sm text-muted-foreground/50 text-center py-4">
+          No profile details yet. Click <strong>Edit</strong> to add academics, majors, interests, and notes.
+        </p>
+      )}
+
+      <EditProfileDialog student={student} open={editOpen} onOpenChange={setEditOpen} />
     </div>
   );
 }

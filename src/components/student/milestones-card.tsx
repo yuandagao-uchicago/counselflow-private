@@ -1,24 +1,64 @@
 "use client";
 
-import { CheckCircle2, Circle, Lock, SkipForward } from "lucide-react";
+import { CheckCircle2, Circle, Lock, SkipForward, Sparkles } from "lucide-react";
+import { format } from "date-fns";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Milestone {
   id: string;
   title: string;
+  description?: string | null;
   status: string;
   category: string;
   targetDate: string | Date | null;
 }
 
-const statusConfig: Record<string, { icon: typeof Circle; color: string }> = {
-  COMPLETED: { icon: CheckCircle2, color: "text-emerald-400" },
-  IN_PROGRESS: { icon: Circle, color: "text-[oklch(0.65_0.2_265)]" },
-  BLOCKED: { icon: Lock, color: "text-red-400" },
-  SKIPPED: { icon: SkipForward, color: "text-muted-foreground" },
-  NOT_STARTED: { icon: Circle, color: "text-white/20" },
+const statusConfig: Record<string, { icon: typeof Circle; color: string; label: string }> = {
+  COMPLETED: { icon: CheckCircle2, color: "text-emerald-400", label: "Completed" },
+  IN_PROGRESS: { icon: Circle, color: "text-[oklch(0.65_0.2_265)]", label: "In progress" },
+  BLOCKED: { icon: Lock, color: "text-red-400", label: "Blocked" },
+  SKIPPED: { icon: SkipForward, color: "text-muted-foreground", label: "Skipped" },
+  NOT_STARTED: { icon: Circle, color: "text-white/20", label: "Not started" },
 };
 
-export function MilestonesCard({ milestones }: { milestones: Milestone[] }) {
+const STATUS_OPTIONS = ["NOT_STARTED", "IN_PROGRESS", "COMPLETED", "BLOCKED", "SKIPPED"] as const;
+
+export function MilestonesCard({
+  milestones,
+  studentId,
+}: {
+  milestones: Milestone[];
+  studentId: string;
+}) {
+  const utils = trpc.useUtils();
+
+  const updateStatus = trpc.milestone.updateStatus.useMutation({
+    onSuccess: () => {
+      utils.student.getById.invalidate({ id: studentId });
+    },
+    onError: (err) => toast.error(err.message || "Failed to update milestone"),
+  });
+
+  const seed = trpc.milestone.seedForStudent.useMutation({
+    onSuccess: (res) => {
+      utils.student.getById.invalidate({ id: studentId });
+      if (res.created === 0) {
+        toast.info("Already up to date");
+      } else {
+        toast.success(`Generated ${res.created} milestones`);
+      }
+    },
+    onError: (err) => toast.error(err.message || "Failed to seed"),
+  });
+
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-card p-5 glow-card">
       <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
@@ -26,36 +66,93 @@ export function MilestonesCard({ milestones }: { milestones: Milestone[] }) {
       </h3>
 
       {milestones.length === 0 ? (
-        <p className="text-sm text-muted-foreground/50 text-center py-6">
-          No milestones yet.
-        </p>
+        <div className="py-6 text-center space-y-3">
+          <p className="text-sm text-muted-foreground/70">No milestones yet.</p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-white/10 bg-white/5 hover:bg-white/10"
+            onClick={() => seed.mutate({ studentId })}
+            disabled={seed.isPending}
+          >
+            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+            Generate application timeline
+          </Button>
+        </div>
       ) : (
         <div className="space-y-1">
           {milestones.map((milestone, i) => {
             const config = statusConfig[milestone.status] || statusConfig.NOT_STARTED;
             const Icon = config.icon;
             const isLast = i === milestones.length - 1;
+            const targetDate = milestone.targetDate
+              ? new Date(milestone.targetDate)
+              : null;
 
             return (
-              <div key={milestone.id} className="flex items-start gap-3 py-1.5">
-                {/* Timeline line + dot */}
+              <div key={milestone.id} className="flex items-start gap-3 py-1.5 group">
+                {/* Timeline line + dot — click to cycle */}
                 <div className="flex flex-col items-center">
-                  <Icon className={`h-4 w-4 shrink-0 ${config.color}`} />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <button
+                          title="Change status"
+                          className="rounded-full hover:bg-white/5 p-0.5 transition-colors disabled:opacity-50"
+                          disabled={updateStatus.isPending}
+                        />
+                      }
+                    >
+                      <Icon className={`h-4 w-4 shrink-0 ${config.color}`} />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="border-white/10 bg-[oklch(0.13_0.005_270)]">
+                      {STATUS_OPTIONS.map((s) => {
+                        const optConfig = statusConfig[s];
+                        const OptIcon = optConfig.icon;
+                        return (
+                          <DropdownMenuItem
+                            key={s}
+                            onClick={() =>
+                              updateStatus.mutate({ id: milestone.id, status: s })
+                            }
+                            disabled={s === milestone.status}
+                          >
+                            <OptIcon className={`h-3.5 w-3.5 mr-2 ${optConfig.color}`} />
+                            {optConfig.label}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   {!isLast && (
                     <div className="w-px flex-1 min-h-[16px] bg-white/10 mt-1" />
                   )}
                 </div>
 
                 {/* Content */}
-                <div className="pb-1">
-                  <p className={`text-sm leading-tight ${
-                    milestone.status === "COMPLETED" ? "text-muted-foreground line-through" : "font-medium"
-                  }`}>
+                <div className="pb-1 flex-1 min-w-0">
+                  <p
+                    className={`text-sm leading-tight ${
+                      milestone.status === "COMPLETED"
+                        ? "text-muted-foreground line-through"
+                        : "font-medium"
+                    }`}
+                  >
                     {milestone.title}
                   </p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">
-                    {milestone.category}
-                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-muted-foreground/60">
+                      {milestone.category}
+                    </span>
+                    {targetDate && (
+                      <>
+                        <span className="text-xs text-muted-foreground/40">·</span>
+                        <span className="text-xs text-muted-foreground/60">
+                          Target {format(targetDate, "MMM yyyy")}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             );

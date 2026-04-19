@@ -6,6 +6,8 @@ import { MODEL } from "@/ai/client";
 export interface ProcessNotesResult {
   tasksCreated: number;
   aiOutputId: string;
+  communicationDraftId: string | null;
+  reviewQueueItemId: string | null;
 }
 
 /**
@@ -96,8 +98,43 @@ export async function processMeetingNotes(opts: {
     },
   });
 
+  // Create a Communication draft from the AI's follow-up email suggestion,
+  // and queue it for counselor review.
+  let communicationDraftId: string | null = null;
+  let reviewQueueItemId: string | null = null;
+
+  if (summary.followUpDraft?.body?.trim()) {
+    const draft = await prisma.communication.create({
+      data: {
+        counselorId: opts.counselorId,
+        studentId: meeting.studentId,
+        type: "EMAIL",
+        direction: "OUTBOUND",
+        subject: summary.followUpDraft.subject || `Follow-up: ${meeting.type}`,
+        body: summary.followUpDraft.body,
+        isDraft: true,
+        draftAiId: aiOutput.id,
+      },
+    });
+    communicationDraftId = draft.id;
+
+    const queueItem = await prisma.reviewQueueItem.create({
+      data: {
+        counselorId: opts.counselorId,
+        entityType: "communication_draft",
+        entityId: draft.id,
+        aiOutputId: aiOutput.id,
+        title: `Follow-up email · ${meeting.student.firstName} ${meeting.student.lastName}`,
+        summary: draft.subject,
+      },
+    });
+    reviewQueueItemId = queueItem.id;
+  }
+
   return {
     tasksCreated: createdTasks.length,
     aiOutputId: aiOutput.id,
+    communicationDraftId,
+    reviewQueueItemId,
   };
 }

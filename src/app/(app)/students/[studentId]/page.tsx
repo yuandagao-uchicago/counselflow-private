@@ -70,7 +70,7 @@ export default function StudentDetailPage({
           {/* Right column — 1/3 */}
           <div className="space-y-5">
             <StaggerItem><PhaseCard phase={student.phase} /></StaggerItem>
-            <StaggerItem><MilestonesCard milestones={student.milestones} /></StaggerItem>
+            <StaggerItem><MilestonesCard milestones={student.milestones} studentId={student.id} /></StaggerItem>
             <StaggerItem><RisksCard risks={student.riskFlags} /></StaggerItem>
           </div>
         </StaggerList>
