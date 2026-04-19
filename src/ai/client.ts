@@ -10,4 +10,4 @@ export const genai =
 
 if (process.env.NODE_ENV !== "production") globalForGemini.genai = genai;
 
-export const MODEL = "gemini-2.0-flash";
+export const MODEL = "gemini-2.5-flash";

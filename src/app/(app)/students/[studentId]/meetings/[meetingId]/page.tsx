@@ -1,9 +1,9 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Loader2, CheckCircle2, FileText, Send, Clock, User, AlertTriangle, Trash2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Loader2, CheckCircle2, FileText, Send, Clock, User, AlertTriangle, Trash2, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { PageTransition, PulseGlow, motion } from "@/components/shared/motion";
 import { PrepBriefView } from "@/components/meeting/prep-brief-view";
 import { SummaryView } from "@/components/meeting/summary-view";
+import { parseVTT } from "@/lib/vtt-parser";
 
 export default function MeetingDetailPage({
   params,
@@ -23,7 +24,41 @@ export default function MeetingDetailPage({
   const { studentId, meetingId } = use(params);
   const router = useRouter();
   const [rawNotes, setRawNotes] = useState("");
+  const [importedFileName, setImportedFileName] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
+
+  async function handleTranscriptUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const MAX_SIZE = 2 * 1024 * 1024; // 2MB — transcripts are text; this is generous
+    if (file.size > MAX_SIZE) {
+      toast.error("Transcript too large (max 2MB). Make sure you're uploading the .vtt/.txt transcript, not the video.");
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const isVTT = file.name.toLowerCase().endsWith(".vtt") || text.trimStart().startsWith("WEBVTT");
+      const parsed = isVTT ? parseVTT(text) : text.trim();
+
+      if (parsed.length < 10) {
+        toast.error("Transcript appears to be empty.");
+        return;
+      }
+
+      setRawNotes(parsed);
+      setImportedFileName(file.name);
+      toast.success(`Imported ${file.name}`);
+    } catch (err) {
+      toast.error("Failed to read file");
+      console.error(err);
+    } finally {
+      // Reset so the same file can be re-picked if needed
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
 
   const { data: meeting, isLoading } = trpc.meeting.getById.useQuery({ id: meetingId });
 
@@ -163,20 +198,53 @@ export default function MeetingDetailPage({
       {/* Phase 2: Post-Meeting Notes */}
       {prepBrief && !hasSummary && (
         <div className="rounded-2xl border border-white/[0.06] bg-card p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-[oklch(0.65_0.2_265)]" />
-            <h2 className="text-lg font-semibold">Post-Meeting Notes</h2>
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-[oklch(0.65_0.2_265)]" />
+              <h2 className="text-lg font-semibold">Post-Meeting Notes</h2>
+            </div>
+            <div className="flex items-center gap-2">
+              {importedFileName && (
+                <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-400 border-0">
+                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                  {importedFileName}
+                </Badge>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".vtt,.txt"
+                onChange={handleTranscriptUpload}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-white/10 bg-white/5 hover:bg-white/10"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Import Transcript (.vtt)
+              </Button>
+            </div>
           </div>
           <p className="text-sm text-muted-foreground">
-            Paste your meeting notes or transcript below. AI will extract a structured summary, action items, and draft a follow-up email.
+            Paste notes below, or import a <code className="px-1 py-0.5 rounded bg-white/5 text-xs">.vtt</code> transcript
+            from Zoom / Meet / Teams. AI will extract a summary, action items, and draft a follow-up email.
           </p>
           <Textarea
-            placeholder="Paste your meeting notes here...&#10;&#10;Example:&#10;- Discussed college list, decided to drop Northwestern&#10;- Sarah finished Common App essay, needs to start UC essays&#10;- SAT score came back: 1480 (up from 1420)&#10;- Need to request LOR from Mr. Chen by next week..."
+            placeholder="Paste your meeting notes or transcript here, or click Import Transcript above...&#10;&#10;Example:&#10;- Discussed college list, decided to drop Northwestern&#10;- Sarah finished Common App essay, needs to start UC essays&#10;- SAT score came back: 1480 (up from 1420)&#10;- Need to request LOR from Mr. Chen by next week..."
             value={rawNotes}
-            onChange={(e) => setRawNotes(e.target.value)}
+            onChange={(e) => {
+              setRawNotes(e.target.value);
+              if (importedFileName) setImportedFileName(null);
+            }}
             className="min-h-[200px] bg-white/5 border-white/10 text-sm"
           />
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+              {rawNotes.length > 0 && `${rawNotes.length.toLocaleString()} characters`}
+            </p>
             <Button
               className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0 shadow-lg shadow-[oklch(0.65_0.2_265_/_20%)]"
               onClick={() => submitNotes.mutate({ meetingId, rawNotes })}
