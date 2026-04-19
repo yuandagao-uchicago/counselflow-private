@@ -3,9 +3,9 @@ import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 import { verifyStudentOwnership } from "../lib/tenant";
 import { generateMeetingPrep } from "@/ai/prompts/meetingPrep";
-import { generateMeetingSummary } from "@/ai/prompts/meetingSummary";
 import { createAIOutput } from "@/ai/provenance";
 import { MODEL } from "@/ai/client";
+import { processMeetingNotes } from "../lib/process-meeting-notes";
 
 export const meetingRouter = router({
   list: protectedProcedure
@@ -249,82 +249,18 @@ export const meetingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Verify ownership first
       const meeting = await prisma.meeting.findFirst({
         where: { id: input.meetingId, counselorId: ctx.counselorId },
-        include: {
-          student: true,
-        },
+        select: { id: true },
       });
-
       if (!meeting) throw new Error("Meeting not found");
 
-      // Get previous meeting summary for context
-      const prevMeeting = await prisma.meeting.findFirst({
-        where: {
-          studentId: meeting.studentId,
-          counselorId: ctx.counselorId,
-          id: { not: meeting.id },
-          summary: { not: null },
-        },
-        orderBy: { scheduledAt: "desc" },
-      });
-
-      const { summary, usage } = await generateMeetingSummary({
-        student: meeting.student,
-        meetingType: meeting.type,
-        rawNotes: input.rawNotes,
-        previousMeetingSummary: prevMeeting?.summary || null,
-      });
-
-      // Save provenance
-      const aiOutput = await createAIOutput({
+      const result = await processMeetingNotes({
+        meetingId: input.meetingId,
         counselorId: ctx.counselorId,
-        studentId: meeting.studentId,
-        feature: "meeting_summary",
-        sourceBasis: [
-          { type: "meeting", id: meeting.id, label: `Meeting notes (${meeting.type})` },
-          { type: "profile", id: meeting.studentId, label: `${meeting.student.firstName} ${meeting.student.lastName}` },
-        ],
-        confidence: "HIGH",
-        output: summary,
-        modelId: MODEL,
-        tokenUsage: usage,
+        rawNotes: input.rawNotes,
       });
-
-      // Create tasks from action items
-      const createdTasks = await Promise.all(
-        summary.actionItems.map((item) =>
-          prisma.task.create({
-            data: {
-              studentId: meeting.studentId,
-              title: item.title,
-              description: item.notes || undefined,
-              priority: item.priority.toUpperCase() as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
-              source: "AI_EXTRACTED",
-              dueDate: item.dueDate ? new Date(item.dueDate) : undefined,
-              createdById: ctx.counselorId,
-              aiOutputId: aiOutput.id,
-            },
-          })
-        )
-      );
-
-      // Update meeting with summary
-      await prisma.meeting.update({
-        where: { id: input.meetingId },
-        data: {
-          rawNotes: input.rawNotes,
-          summary: summary.summary,
-          summaryAiId: aiOutput.id,
-          actionItems: JSON.parse(JSON.stringify(summary.actionItems)),
-          decisions: JSON.parse(JSON.stringify(summary.keyDecisions)),
-        },
-      });
-
-      return {
-        summary,
-        tasksCreated: createdTasks.length,
-        aiOutputId: aiOutput.id,
-      };
+      return result;
     }),
 });

@@ -192,6 +192,34 @@ model User {
   communications Communication[]
   reviewQueue   ReviewQueueItem[]
   aiOutputs     AIOutput[]
+  integrations  Integration[]
+}
+
+// =============================================
+// INTEGRATIONS (Zoom OAuth, etc.)
+// =============================================
+
+model Integration {
+  id             String   @id @default(cuid())
+  counselorId    String
+  counselor      User     @relation(fields: [counselorId], references: [id], onDelete: Cascade)
+
+  provider       String   // "zoom"
+  providerUserId String?
+  accountLabel   String?
+
+  accessToken    String
+  refreshToken   String?
+  expiresAt      DateTime?
+  scopes         String?
+
+  metadata       Json?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([counselorId, provider])
+  @@index([counselorId])
 }
 
 // =============================================
@@ -527,6 +555,17 @@ model Meeting {
   duration       Int?
   type           String
   location       String?
+
+  // External meeting identity (Zoom / Meet / Teams URL)
+  meetingUrl         String?
+
+  // Which system recorded this meeting
+  recordingSource    String?  // "zoom" | "recall" | "manual_upload"
+  externalRecordingId String? // Zoom recording id or Recall bot id
+
+  // Recall.ai bot lifecycle
+  recallBotId        String?
+  recallBotStatus    String?  // "scheduled" | "in_call" | "done" | "failed"
 
   // Pre-meeting AI
   prepBrief      String?

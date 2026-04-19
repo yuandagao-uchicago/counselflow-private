@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import { PageTransition, PulseGlow, motion } from "@/components/shared/motion";
 import { PrepBriefView } from "@/components/meeting/prep-brief-view";
 import { SummaryView } from "@/components/meeting/summary-view";
+import { ZoomImportPanel } from "@/components/meeting/zoom-import-panel";
+import { RecallBotPanel } from "@/components/meeting/recall-bot-panel";
 import { parseVTT } from "@/lib/vtt-parser";
 
 export default function MeetingDetailPage({
@@ -264,6 +266,23 @@ export default function MeetingDetailPage({
             </Button>
           </div>
         </div>
+      )}
+
+      {/* Alternative input methods — only before a summary exists */}
+      {prepBrief && !hasSummary && (
+        <>
+          <ZoomImportPanel
+            meetingId={meetingId}
+            onImported={() => utils.meeting.getById.invalidate({ id: meetingId })}
+          />
+          <RecallBotPanel
+            meetingId={meetingId}
+            existingMeetingUrl={meeting.meetingUrl}
+            existingBotId={meeting.recallBotId}
+            existingBotStatus={meeting.recallBotStatus}
+            onProcessed={() => utils.meeting.getById.invalidate({ id: meetingId })}
+          />
+        </>
       )}
 
       {/* Phase 3: Summary Display */}
