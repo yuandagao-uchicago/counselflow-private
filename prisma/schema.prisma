@@ -594,11 +594,11 @@ model Meeting {
 model Communication {
   id             String                 @id @default(cuid())
   counselorId    String
-  counselor      User                   @relation(fields: [counselorId], references: [id])
+  counselor      User                   @relation(fields: [counselorId], references: [id], onDelete: Cascade)
   studentId      String
   student        Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
   guardianId     String?
-  guardian       Guardian?              @relation(fields: [guardianId], references: [id])
+  guardian       Guardian?              @relation(fields: [guardianId], references: [id], onDelete: SetNull)
 
   type           CommunicationType
   direction      CommunicationDirection
@@ -607,6 +607,7 @@ model Communication {
 
   isDraft        Boolean                @default(true)
   draftAiId      String?
+  draftAi        AIOutput?              @relation("CommunicationDraftAI", fields: [draftAiId], references: [id], onDelete: SetNull)
   approvedAt     DateTime?
   sentAt         DateTime?
 
@@ -719,9 +720,10 @@ model AIOutput {
   reviewNotes    String?
 
   // Relations
-  counselor      User         @relation(fields: [counselorId], references: [id])
+  counselor      User         @relation(fields: [counselorId], references: [id], onDelete: Cascade)
   tasks          Task[]
   riskFlags      RiskFlag[]
+  communicationDrafts Communication[] @relation("CommunicationDraftAI")
 
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -737,7 +739,7 @@ model AIOutput {
 model ReviewQueueItem {
   id             String       @id @default(cuid())
   counselorId    String
-  counselor      User         @relation(fields: [counselorId], references: [id])
+  counselor      User         @relation(fields: [counselorId], references: [id], onDelete: Cascade)
 
   entityType     String
   entityId       String

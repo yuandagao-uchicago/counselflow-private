@@ -17,6 +17,7 @@ import { SummaryView } from "@/components/meeting/summary-view";
 import { ZoomImportPanel } from "@/components/meeting/zoom-import-panel";
 import { RecallBotPanel } from "@/components/meeting/recall-bot-panel";
 import { parseVTT } from "@/lib/vtt-parser";
+import type { MeetingPrep } from "@/ai/schemas/meetingPrep";
 
 export default function MeetingDetailPage({
   params,
@@ -114,7 +115,7 @@ export default function MeetingDetailPage({
   }
 
   const date = new Date(meeting.scheduledAt);
-  const prepBrief = meeting.prepBrief ? JSON.parse(meeting.prepBrief) : null;
+  const prepBrief = safeParse(meeting.prepBrief) as MeetingPrep | null;
   const hasSummary = !!meeting.summary;
 
   // Determine phase
@@ -299,6 +300,16 @@ export default function MeetingDetailPage({
     </div>
     </PageTransition>
   );
+}
+
+function safeParse(raw: string | null): unknown {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    console.error("Failed to parse stored JSON");
+    return null;
+  }
 }
 
 function PhaseStep({ label, done, active }: { label: string; done: boolean; active: boolean }) {

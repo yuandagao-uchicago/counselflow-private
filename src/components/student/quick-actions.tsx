@@ -27,11 +27,12 @@ export function QuickActions({ studentId }: { studentId: string }) {
       utils.student.getById.invalidate({ id: studentId });
       utils.dashboard.stats.invalidate();
       utils.dashboard.upcomingMeetings.invalidate();
-      toast.success("Prep brief generated!");
+      utils.meeting.list.invalidate({ studentId });
+      toast.success("Meeting started — AI prep brief ready.");
       router.push(`/students/${studentId}/meetings/${data.meetingId}`);
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to generate prep brief");
+      toast.error(err.message || "Failed to start meeting");
     },
   });
 
@@ -41,17 +42,18 @@ export function QuickActions({ studentId }: { studentId: string }) {
         <Button
           onClick={() => quickPrep.mutate({ studentId })}
           disabled={quickPrep.isPending}
+          title="Creates a new meeting (now) and generates an AI prep brief for it"
           className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0 shadow-lg shadow-[oklch(0.65_0.2_265_/_20%)] hover:shadow-[oklch(0.65_0.2_265_/_30%)] hover:brightness-110 transition-all"
         >
           {quickPrep.isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
+              Starting meeting…
             </>
           ) : (
             <>
               <Sparkles className="mr-2 h-4 w-4" />
-              Generate Prep Brief
+              Start meeting · AI brief
             </>
           )}
         </Button>

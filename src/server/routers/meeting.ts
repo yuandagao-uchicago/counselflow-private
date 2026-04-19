@@ -132,7 +132,16 @@ export const meetingRouter = router({
         studentId: input.studentId,
         feature: "meeting_prep",
         sourceBasis: [
-          { type: "profile", id: input.studentId, label: `${student.firstName} ${student.lastName} profile` },
+          {
+            type: "profile",
+            id: input.studentId,
+            label: `${student.firstName} ${student.lastName} profile`,
+          },
+          ...student.meetings.map((m) => ({
+            type: "meeting" as const,
+            id: m.id,
+            label: `Meeting ${m.scheduledAt.toLocaleDateString()}`,
+          })),
         ],
         confidence: "HIGH",
         output: prep,

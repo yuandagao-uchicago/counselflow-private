@@ -102,6 +102,11 @@ export function EditProfileDialog({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const gradYear = Number(form.graduationYear);
+    if (!Number.isFinite(gradYear)) {
+      toast.error("Graduation year must be a number");
+      return;
+    }
     update.mutate({
       id: student.id,
       firstName: form.firstName,
@@ -109,13 +114,13 @@ export function EditProfileDialog({
       email: form.email || null,
       phone: form.phone || null,
       highSchool: form.highSchool || null,
-      graduationYear: form.graduationYear,
+      graduationYear: gradYear,
       gradeLevel: form.gradeLevel,
       phase: form.phase,
-      gpaUnweighted: form.gpaUnweighted ? parseFloat(form.gpaUnweighted) : null,
-      gpaWeighted: form.gpaWeighted ? parseFloat(form.gpaWeighted) : null,
-      satScore: form.satScore ? parseInt(form.satScore) : null,
-      actScore: form.actScore ? parseInt(form.actScore) : null,
+      gpaUnweighted: toNum(form.gpaUnweighted),
+      gpaWeighted: toNum(form.gpaWeighted),
+      satScore: toInt(form.satScore),
+      actScore: toInt(form.actScore),
       classRank: form.classRank || null,
       courseRigor: form.courseRigor || null,
       preferredName: form.preferredName || null,
@@ -369,6 +374,18 @@ export function EditProfileDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+function toNum(s: string): number | null {
+  if (!s.trim()) return null;
+  const n = parseFloat(s);
+  return Number.isFinite(n) ? n : null;
+}
+
+function toInt(s: string): number | null {
+  if (!s.trim()) return null;
+  const n = parseInt(s, 10);
+  return Number.isFinite(n) ? n : null;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
