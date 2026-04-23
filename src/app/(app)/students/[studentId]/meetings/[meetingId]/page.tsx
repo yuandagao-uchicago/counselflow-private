@@ -76,7 +76,14 @@ export default function MeetingDetailPage({
   const submitNotes = trpc.meeting.submitNotes.useMutation({
     onSuccess: (data) => {
       utils.meeting.getById.invalidate({ id: meetingId });
+      utils.meeting.list.invalidate({ studentId });
+      // Action items created by the AI land on the student's open tasks list,
+      // and the follow-up email draft lands in the approval queue. Invalidate
+      // everything that surfaces those so the UI reflects reality.
+      utils.student.getById.invalidate({ id: studentId });
       utils.review.pendingCount.invalidate();
+      utils.review.list.invalidate();
+      utils.dashboard.stats.invalidate();
       const parts: string[] = [`${data.tasksCreated} tasks created`];
       if (data.reviewQueueItemId) parts.push("follow-up email awaiting approval");
       toast.success(`Summary generated — ${parts.join(", ")}.`);
