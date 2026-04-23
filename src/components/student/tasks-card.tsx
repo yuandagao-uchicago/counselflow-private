@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Circle, Clock, AlertTriangle } from "lucide-react";
+import { CheckCircle2, Circle, Clock, AlertTriangle, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { trpc } from "@/lib/trpc";
@@ -40,6 +40,15 @@ export function TasksCard({ tasks, studentId }: { tasks: Task[]; studentId: stri
     onError: (err) => toast.error(err.message || "Failed to update task"),
   });
 
+  const deleteTask = trpc.student.deleteTask.useMutation({
+    onSuccess: () => {
+      utils.student.getById.invalidate({ id: studentId });
+      utils.dashboard.stats.invalidate();
+      toast.success("Task deleted");
+    },
+    onError: (err) => toast.error(err.message || "Failed to delete task"),
+  });
+
   return (
     <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 glow-card">
       <div className="flex items-center justify-between mb-4">
@@ -67,10 +76,11 @@ export function TasksCard({ tasks, studentId }: { tasks: Task[]; studentId: stri
                 key={task.id}
                 className="flex items-start gap-3 rounded-xl bg-foreground/[0.03] p-3 hover:bg-foreground/[0.06] transition-colors group"
               >
-                {/* Clickable status icon to complete */}
+                {/* Clickable status icon — complete */}
                 <button
                   onClick={() => completeTask.mutate({ taskId: task.id })}
-                  className="mt-0.5 hover:scale-110 transition-transform"
+                  disabled={completeTask.isPending}
+                  className="mt-0.5 hover:scale-110 transition-transform disabled:opacity-50"
                   title="Mark as complete"
                 >
                   {task.status === "WAITING_ON_EXTERNAL" ? (
@@ -101,6 +111,20 @@ export function TasksCard({ tasks, studentId }: { tasks: Task[]; studentId: stri
                 {task.priority === "URGENT" && (
                   <AlertTriangle className="h-4 w-4 text-red-400 shrink-0" />
                 )}
+
+                {/* Delete button — appears on hover */}
+                <button
+                  onClick={() => {
+                    if (confirm(`Delete task "${task.title}"?`)) {
+                      deleteTask.mutate({ taskId: task.id });
+                    }
+                  }}
+                  disabled={deleteTask.isPending}
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-red-500/10 text-muted-foreground/60 hover:text-red-400 transition-all disabled:opacity-30 shrink-0"
+                  title="Delete task"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
               </div>
             );
           })}

@@ -216,4 +216,16 @@ export const studentRouter = router({
         data: { status: "COMPLETED", completedAt: new Date() },
       });
     }),
+
+  deleteTask: protectedProcedure
+    .input(z.object({ taskId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Verify ownership through the student → counselor chain
+      const task = await prisma.task.findFirst({
+        where: { id: input.taskId, student: { counselorId: ctx.counselorId } },
+      });
+      if (!task) throw new Error("Task not found");
+      await prisma.task.delete({ where: { id: input.taskId } });
+      return { ok: true };
+    }),
 });
