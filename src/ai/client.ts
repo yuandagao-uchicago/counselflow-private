@@ -15,10 +15,15 @@ export const genai =
 
 if (process.env.NODE_ENV !== "production") globalForGemini.genai = genai;
 
-/** Primary model — newest + best structured-output support. */
-export const MODEL = "gemini-2.5-flash";
+// Model selection strategy for the shared (free) tier:
+// - gemini-2.5-flash-lite has the highest availability on shared infra
+//   and is more than capable for our structured JSON extraction tasks.
+// - gemini-flash-latest is Google's health-routed alias; if lite is down
+//   for a moment, latest picks whichever sibling is alive.
+/** Primary model — high availability on shared tier. */
+export const MODEL = "gemini-2.5-flash-lite";
 /** Fallback used when the primary is overloaded (503). */
-export const MODEL_FALLBACK = "gemini-2.5-flash-lite";
+export const MODEL_FALLBACK = "gemini-flash-latest";
 
 // ----------------------------------------------------------------------
 // Resilient generateContent wrapper
