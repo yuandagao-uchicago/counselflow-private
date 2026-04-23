@@ -1,5 +1,5 @@
 import { SchemaType, type ResponseSchema } from "@google/generative-ai";
-import { genai, MODEL } from "../client";
+import { genai, generateContentWithRetry } from "../client";
 import { MeetingSummarySchema, type MeetingSummary } from "../schemas/meetingSummary";
 
 const SYSTEM_PROMPT = `You are CounselFlow, an AI assistant for independent college counselors.
@@ -100,16 +100,18 @@ ${context.rawNotes}
 
 Process these notes into a structured summary with action items, decisions, a follow-up email draft, and any suggested case file updates.`;
 
-  const model = genai.getGenerativeModel({
-    model: MODEL,
-    systemInstruction: SYSTEM_PROMPT,
-    generationConfig: {
-      responseMimeType: "application/json",
-      responseSchema,
-    },
-  });
-
-  const result = await model.generateContent(userMessage);
+  const result = await generateContentWithRetry(
+    (modelName) =>
+      genai.getGenerativeModel({
+        model: modelName,
+        systemInstruction: SYSTEM_PROMPT,
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema,
+        },
+      }),
+    userMessage
+  );
   const response = result.response;
   const text = response.text();
   const parsed = JSON.parse(text);

@@ -1,5 +1,5 @@
 import { SchemaType, type ResponseSchema } from "@google/generative-ai";
-import { genai, MODEL } from "../client";
+import { genai, generateContentWithRetry } from "../client";
 import {
   ProfileExtractionSchema,
   type ProfileExtraction,
@@ -92,15 +92,6 @@ export async function extractProfileFromDocument(
   const buffer = Buffer.from(await res.arrayBuffer());
   const base64 = buffer.toString("base64");
 
-  const model = genai.getGenerativeModel({
-    model: MODEL,
-    systemInstruction: SYSTEM_PROMPT,
-    generationConfig: {
-      responseMimeType: "application/json",
-      responseSchema,
-    },
-  });
-
   const studentContext = `## Student context (for disambiguation)
 - Known name: ${input.currentStudent.firstName} ${input.currentStudent.lastName}
 - GPA recorded already: ${input.currentStudent.hasGPA ? "yes" : "no"}
@@ -110,15 +101,26 @@ export async function extractProfileFromDocument(
 If the document is clearly about a different person, set extractionNotes
 to flag it and omit the fields.`;
 
-  const result = await model.generateContent([
-    { text: studentContext },
-    {
-      inlineData: {
-        mimeType: input.mimeType,
-        data: base64,
+  const result = await generateContentWithRetry(
+    (modelName) =>
+      genai.getGenerativeModel({
+        model: modelName,
+        systemInstruction: SYSTEM_PROMPT,
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema,
+        },
+      }),
+    [
+      { text: studentContext },
+      {
+        inlineData: {
+          mimeType: input.mimeType,
+          data: base64,
+        },
       },
-    },
-  ]);
+    ]
+  );
 
   const response = result.response;
   const text = response.text();
