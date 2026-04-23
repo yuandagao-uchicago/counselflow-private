@@ -3,7 +3,7 @@
 import { use, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Loader2, CheckCircle2, FileText, Send, Clock, User, AlertTriangle, Trash2, Upload } from "lucide-react";
+import { ArrowLeft, Sparkles, Loader2, CheckCircle2, FileText, Trash2, Upload, Video, Bot } from "lucide-react";
 import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { PageTransition, PulseGlow, motion } from "@/components/shared/motion";
+import { PageTransition } from "@/components/shared/motion";
 import { PrepBriefView } from "@/components/meeting/prep-brief-view";
 import { SummaryView } from "@/components/meeting/summary-view";
-import { ZoomImportPanel } from "@/components/meeting/zoom-import-panel";
-import { RecallBotPanel } from "@/components/meeting/recall-bot-panel";
 import { parseVTT } from "@/lib/vtt-parser";
 import type { MeetingPrep } from "@/ai/schemas/meetingPrep";
 
@@ -272,22 +270,8 @@ export default function MeetingDetailPage({
         </div>
       )}
 
-      {/* Alternative input methods — only before a summary exists */}
-      {prepBrief && !hasSummary && (
-        <>
-          <ZoomImportPanel
-            meetingId={meetingId}
-            onImported={() => utils.meeting.getById.invalidate({ id: meetingId })}
-          />
-          <RecallBotPanel
-            meetingId={meetingId}
-            existingMeetingUrl={meeting.meetingUrl}
-            existingBotId={meeting.recallBotId}
-            existingBotStatus={meeting.recallBotStatus}
-            onProcessed={() => utils.meeting.getById.invalidate({ id: meetingId })}
-          />
-        </>
-      )}
+      {/* Upcoming integrations — shown as placeholders so counselors know what's coming */}
+      {prepBrief && !hasSummary && <UpcomingIntegrations />}
 
       {/* Phase 3: Summary Display */}
       {hasSummary && meeting.actionItems && meeting.decisions && (
@@ -310,6 +294,45 @@ function safeParse(raw: string | null): unknown {
     console.error("Failed to parse stored JSON");
     return null;
   }
+}
+
+function UpcomingIntegrations() {
+  return (
+    <div className="rounded-2xl border border-dashed border-white/10 bg-card/40 p-5 space-y-3">
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-[oklch(0.75_0.15_265)]" />
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Coming soon
+        </h3>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <UpcomingCard
+          icon={<Video className="h-4 w-4 text-[oklch(0.7_0.18_220)]" />}
+          title="Direct Zoom sync"
+          copy="Pull cloud recording transcripts with one click after each Zoom meeting."
+        />
+        <UpcomingCard
+          icon={<Bot className="h-4 w-4 text-[oklch(0.75_0.15_265)]" />}
+          title="AI meeting bot"
+          copy="A bot joins live Zoom / Meet / Teams calls, records, and summarizes automatically."
+        />
+      </div>
+    </div>
+  );
+}
+
+function UpcomingCard({ icon, title, copy }: { icon: React.ReactNode; title: string; copy: string }) {
+  return (
+    <div className="rounded-xl bg-white/[0.03] p-4 space-y-1.5">
+      <div className="flex items-center gap-2">
+        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white/5">
+          {icon}
+        </div>
+        <p className="text-sm font-medium">{title}</p>
+      </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">{copy}</p>
+    </div>
+  );
 }
 
 function PhaseStep({ label, done, active }: { label: string; done: boolean; active: boolean }) {

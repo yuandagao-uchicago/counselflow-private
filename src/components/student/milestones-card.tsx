@@ -1,6 +1,7 @@
 "use client";
 
-import { CheckCircle2, Circle, Lock, SkipForward, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, Circle, Lock, SkipForward, Sparkles, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -61,9 +62,20 @@ export function MilestonesCard({
 
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-card p-5 glow-card">
-      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-        Milestones
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Milestones
+        </h3>
+        {milestones.length > 0 && (
+          <Link
+            href={`/students/${studentId}/journey`}
+            className="inline-flex items-center gap-1 text-xs text-[oklch(0.75_0.15_265)] hover:underline"
+          >
+            Journey
+            <ArrowRight className="h-3 w-3" />
+          </Link>
+        )}
+      </div>
 
       {milestones.length === 0 ? (
         <div className="py-6 text-center space-y-3">

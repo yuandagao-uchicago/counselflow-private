@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sparkles, Calendar, MessageSquare, FileText, Loader2 } from "lucide-react";
+import { Sparkles, Calendar, MessageSquare, FileText, Loader2, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,6 +57,14 @@ export function QuickActions({ studentId }: { studentId: string }) {
               Start meeting · AI brief
             </>
           )}
+        </Button>
+        <Button
+          variant="outline"
+          className="border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+          render={<Link href={`/students/${studentId}/journey`} />}
+        >
+          <Map className="mr-2 h-4 w-4" />
+          Open journey
         </Button>
         <Button
           variant="outline"
