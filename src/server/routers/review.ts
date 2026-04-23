@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 
@@ -52,10 +53,47 @@ export const reviewRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const status = input?.status ?? "PENDING";
+      const limit = input?.limit ?? 50;
+      const studentFilter = input?.studentId;
+
+      // When filtering by studentId, we need the per-student matches to
+      // survive pagination. Pre-filter the ReviewQueueItem query so the LIMIT
+      // applies to MATCHING rows, not "any rows then filter." We pre-resolve
+      // the matching entity IDs (communications + documents for this student)
+      // and scope ReviewQueueItem to those.
+      let entityIdFilter: string[] | undefined;
+      if (studentFilter) {
+        const [comms, docs] = await Promise.all([
+          prisma.communication.findMany({
+            where: {
+              studentId: studentFilter,
+              counselorId: ctx.counselorId,
+            },
+            select: { id: true },
+          }),
+          prisma.document.findMany({
+            where: {
+              studentId: studentFilter,
+              student: { counselorId: ctx.counselorId },
+            },
+            select: { id: true },
+          }),
+        ]);
+        entityIdFilter = [...comms.map((c) => c.id), ...docs.map((d) => d.id)];
+        // No entities for this student → short-circuit with empty array so we
+        // don't issue a WHERE IN () against an empty set (Prisma treats as
+        // "match everything" on some versions).
+        if (entityIdFilter.length === 0) return [];
+      }
+
       const items = await prisma.reviewQueueItem.findMany({
-        where: { counselorId: ctx.counselorId, status },
+        where: {
+          counselorId: ctx.counselorId,
+          status,
+          ...(entityIdFilter && { entityId: { in: entityIdFilter } }),
+        },
         orderBy: { createdAt: "desc" },
-        take: input?.limit ?? 50,
+        take: limit,
       });
 
       // Batch-load linked Communications
@@ -64,7 +102,7 @@ export const reviewRouter = router({
         .map((i) => i.entityId);
       const communications = commIds.length
         ? await prisma.communication.findMany({
-            where: { id: { in: commIds } },
+            where: { id: { in: commIds }, counselorId: ctx.counselorId },
             include: {
               student: { select: { id: true, firstName: true, lastName: true } },
             },
@@ -79,7 +117,10 @@ export const reviewRouter = router({
         .map((i) => i.entityId);
       const documents = docIds.length
         ? await prisma.document.findMany({
-            where: { id: { in: docIds } },
+            where: {
+              id: { in: docIds },
+              student: { counselorId: ctx.counselorId },
+            },
             include: {
               student: {
                 select: {
@@ -107,7 +148,7 @@ export const reviewRouter = router({
         : [];
       const docById = new Map(documents.map((d) => [d.id, d]));
 
-      const hydrated = items.map((item) => ({
+      return items.map((item) => ({
         ...item,
         communication:
           item.entityType === "communication_draft"
@@ -118,18 +159,6 @@ export const reviewRouter = router({
             ? docById.get(item.entityId) ?? null
             : null,
       }));
-
-      // Optional studentId filter — applied here because the studentId for a
-      // review item lives on the hydrated entity, not on ReviewQueueItem itself.
-      if (input?.studentId) {
-        return hydrated.filter((h) => {
-          if (h.communication) return h.communication.studentId === input.studentId;
-          if (h.document) return h.document.studentId === input.studentId;
-          return false;
-        });
-      }
-
-      return hydrated;
     }),
 
   /** Edit the draft content before approval. */
@@ -149,8 +178,11 @@ export const reviewRouter = router({
       if (item.entityType !== "communication_draft") {
         throw new Error("This review item is not a communication draft");
       }
-      await prisma.communication.update({
-        where: { id: item.entityId },
+      // Defense-in-depth: scope the update by counselorId on the Communication
+      // itself. item was already verified counselor-owned, so this is a no-op
+      // guard against data drift between ReviewQueueItem and Communication.
+      await prisma.communication.updateMany({
+        where: { id: item.entityId, counselorId: ctx.counselorId },
         data: {
           subject: input.subject,
           body: input.body,
@@ -195,15 +227,24 @@ export const reviewRouter = router({
         Object.entries(input.acceptedFields).filter(([, v]) => v !== undefined)
       );
 
-      // Apply only if the counselor actually accepted something
+      // One transaction for all three writes — if any step fails, nothing
+      // persists. Previously the student.update ran outside the transaction,
+      // which could leave the profile updated but the review item still
+      // PENDING if the transaction crashed on the second statement.
+      const writes: Prisma.PrismaPromise<unknown>[] = [];
       if (Object.keys(cleaned).length > 0) {
-        await prisma.student.update({
-          where: { id: doc.studentId },
-          data: cleaned,
-        });
+        writes.push(
+          // updateMany with counselorId on the relation is a defense-in-depth
+          // guard: if doc.studentId ever referenced another counselor's student
+          // (shouldn't be possible since doc was fetched with counselorId),
+          // this is a no-op rather than a cross-tenant write.
+          prisma.student.updateMany({
+            where: { id: doc.studentId, counselorId: ctx.counselorId },
+            data: cleaned,
+          })
+        );
       }
-
-      await prisma.$transaction([
+      writes.push(
         prisma.reviewQueueItem.update({
           where: { id: item.id },
           data: { status: "APPROVED", reviewedAt: now },
@@ -211,8 +252,9 @@ export const reviewRouter = router({
         prisma.document.update({
           where: { id: doc.id },
           data: { extractionStatus: "APPLIED" },
-        }),
-      ]);
+        })
+      );
+      await prisma.$transaction(writes);
 
       return { ok: true, appliedFields: Object.keys(cleaned).length };
     }),
@@ -228,8 +270,8 @@ export const reviewRouter = router({
       const now = new Date();
 
       if (item.entityType === "communication_draft") {
-        await prisma.communication.update({
-          where: { id: item.entityId },
+        await prisma.communication.updateMany({
+          where: { id: item.entityId, counselorId: ctx.counselorId },
           data: { isDraft: false, approvedAt: now },
         });
       }
@@ -238,7 +280,10 @@ export const reviewRouter = router({
       // review item without copying fields.
       if (item.entityType === "profile_extraction") {
         await prisma.document.updateMany({
-          where: { id: item.entityId },
+          where: {
+            id: item.entityId,
+            student: { counselorId: ctx.counselorId },
+          },
           data: { extractionStatus: "APPLIED" },
         });
       }
@@ -263,14 +308,21 @@ export const reviewRouter = router({
       // drafts don't pile up. Keep the ReviewQueueItem for audit.
       if (item.entityType === "communication_draft") {
         await prisma.communication.deleteMany({
-          where: { id: item.entityId, isDraft: true },
+          where: {
+            id: item.entityId,
+            isDraft: true,
+            counselorId: ctx.counselorId,
+          },
         });
       }
       // For profile_extraction, mark the Document as rejected but keep the
       // file blob (counselor may want to re-upload or inspect it manually).
       if (item.entityType === "profile_extraction") {
         await prisma.document.updateMany({
-          where: { id: item.entityId },
+          where: {
+            id: item.entityId,
+            student: { counselorId: ctx.counselorId },
+          },
           data: { extractionStatus: "REJECTED" },
         });
       }

@@ -9,7 +9,8 @@ export async function getAuthUserId(): Promise<string> {
 
 /**
  * Ensure a User record exists in our DB for this Clerk user.
- * Called on first interaction (lazy sync).
+ * Called on first interaction (lazy sync). Uses upsert so concurrent
+ * first-login requests don't race into a unique-constraint violation.
  */
 export async function ensureDbUser() {
   const { userId } = await auth();
@@ -21,13 +22,19 @@ export async function ensureDbUser() {
   const clerkUser = await currentUser();
   if (!clerkUser) throw new Error("Unauthorized");
 
-  return prisma.user.create({
-    data: {
+  const name =
+    `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() ||
+    "Counselor";
+  const email = clerkUser.emailAddresses[0]?.emailAddress || "";
+
+  return prisma.user.upsert({
+    where: { id: userId },
+    // If a parallel request won the insert race, don't clobber their row.
+    update: {},
+    create: {
       id: userId,
-      name:
-        `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() ||
-        "Counselor",
-      email: clerkUser.emailAddresses[0]?.emailAddress || "",
+      name,
+      email,
       image: clerkUser.imageUrl,
     },
   });

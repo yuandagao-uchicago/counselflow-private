@@ -70,22 +70,23 @@ export async function processMeetingNotes(opts: {
     tokenUsage: usage,
   });
 
-  const createdTasks = await Promise.all(
-    summary.actionItems.map((item) =>
-      prisma.task.create({
-        data: {
-          studentId: meeting.studentId,
-          title: item.title,
-          description: item.notes || undefined,
-          priority: item.priority.toUpperCase() as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
-          source: "AI_EXTRACTED",
-          dueDate: item.dueDate ? new Date(item.dueDate) : undefined,
-          createdById: opts.counselorId,
-          aiOutputId: aiOutput.id,
-        },
-      })
-    )
-  );
+  // Use createMany inside a single round-trip so either all AI-extracted
+  // tasks land or none do. Previously Promise.all of N inserts could leave
+  // partial state if insert K of N failed — the meeting would be marked as
+  // summarized but only some action items would exist.
+  const taskData = summary.actionItems.map((item) => ({
+    studentId: meeting.studentId,
+    title: item.title,
+    description: item.notes || undefined,
+    priority: item.priority.toUpperCase() as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
+    source: "AI_EXTRACTED" as const,
+    dueDate: item.dueDate ? new Date(item.dueDate) : undefined,
+    createdById: opts.counselorId,
+    aiOutputId: aiOutput.id,
+  }));
+  const createdTasks = taskData.length
+    ? await prisma.task.createMany({ data: taskData })
+    : { count: 0 };
 
   // updateMany is a no-op (returns { count: 0 }) if the meeting was
   // deleted while the AI was running. Fails silently instead of erroring.
@@ -134,7 +135,7 @@ export async function processMeetingNotes(opts: {
   }
 
   return {
-    tasksCreated: createdTasks.length,
+    tasksCreated: createdTasks.count,
     aiOutputId: aiOutput.id,
     communicationDraftId,
     reviewQueueItemId,
