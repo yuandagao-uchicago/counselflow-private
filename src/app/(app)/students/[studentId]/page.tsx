@@ -1,7 +1,6 @@
 "use client";
 
 import { use } from "react";
-import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { PageTransition, StaggerList, StaggerItem, motion } from "@/components/shared/motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +12,9 @@ import { MeetingsCard } from "@/components/student/meetings-card";
 import { RisksCard } from "@/components/student/risks-card";
 import { ProfileCard } from "@/components/student/profile-card";
 import { QuickActions } from "@/components/student/quick-actions";
+import { UploadDocumentsPanel } from "@/components/document/upload-documents-panel";
+import { ExtractionReviewCard } from "@/components/document/extraction-review-card";
+import { Sparkles } from "lucide-react";
 
 export default function StudentDetailPage({
   params,
@@ -20,8 +22,12 @@ export default function StudentDetailPage({
   params: Promise<{ studentId: string }>;
 }) {
   const { studentId } = use(params);
-  const router = useRouter();
   const { data: student, isLoading } = trpc.student.getById.useQuery({ id: studentId });
+  // Per-student pending extractions — same tRPC endpoint as /approvals, just scoped
+  const { data: pendingReviews } = trpc.review.list.useQuery({
+    status: "PENDING",
+    studentId,
+  });
 
   if (isLoading) {
     return (
@@ -43,13 +49,15 @@ export default function StudentDetailPage({
     );
   }
 
+  const pendingExtractions = (pendingReviews ?? []).filter(
+    (r) => r.entityType === "profile_extraction"
+  );
+
   return (
     <PageTransition>
       <div className="space-y-6">
-        {/* Hero header */}
         <StudentHeader student={student} />
 
-        {/* Quick action bar */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -58,16 +66,32 @@ export default function StudentDetailPage({
           <QuickActions studentId={student.id} />
         </motion.div>
 
-        {/* Main grid */}
+        {/* Pending extractions — surfaces at the top when there's AI work awaiting approval */}
+        {pendingExtractions.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary pulse-glow" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Pending profile updates
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                · {pendingExtractions.length} awaiting your review
+              </span>
+            </div>
+            {pendingExtractions.map((r) => (
+              <ExtractionReviewCard key={r.id} item={r} />
+            ))}
+          </div>
+        )}
+
         <StaggerList className="grid gap-5 lg:grid-cols-3">
-          {/* Left column — 2/3 */}
           <div className="space-y-5 lg:col-span-2">
             <StaggerItem><ProfileCard student={student} /></StaggerItem>
+            <StaggerItem><UploadDocumentsPanel studentId={student.id} /></StaggerItem>
             <StaggerItem><TasksCard tasks={student.tasks} studentId={student.id} /></StaggerItem>
             <StaggerItem><MeetingsCard meetings={student.meetings} studentId={student.id} /></StaggerItem>
           </div>
 
-          {/* Right column — 1/3 */}
           <div className="space-y-5">
             <StaggerItem><PhaseCard phase={student.phase} /></StaggerItem>
             <StaggerItem><MilestonesCard milestones={student.milestones} studentId={student.id} /></StaggerItem>

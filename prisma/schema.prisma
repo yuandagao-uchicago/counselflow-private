@@ -628,17 +628,21 @@ model Document {
   student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   fileName       String
-  fileType       String
+  fileType       String       // MIME type
   fileSize       Int
-  documentType   DocumentType
+  documentType   DocumentType // auto-detected by Gemini; defaults to OTHER
 
   storageUrl     String
   storageKey     String
 
   extractedText  String?
-  structuredData Json?
+  structuredData Json?        // the raw profile extraction output from Gemini
   processedAt    DateTime?
   aiOutputId     String?
+
+  // Extraction pipeline state: PROCESSING | READY | APPLIED | REJECTED | FAILED
+  extractionStatus String?    @default("PROCESSING")
+  extractionError  String?    // populated on FAILED
 
   notes          String?
 
@@ -647,6 +651,7 @@ model Document {
 
   @@index([studentId])
   @@index([studentId, documentType])
+  @@index([studentId, extractionStatus])
 }
 
 // =============================================

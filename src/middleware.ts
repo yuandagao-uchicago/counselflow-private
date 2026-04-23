@@ -7,6 +7,10 @@ const isPublicRoute = createRouteMatcher([
   // Webhooks are called by third-party services (Recall.ai, Zoom event
   // notifications) — must be reachable without a logged-in session.
   "/api/webhooks(.*)",
+  // Vercel Blob's upload-completed callback hits this route from Vercel
+  // infra, not from the signed-in browser. The route validates its own
+  // authenticity via a signature on the body.
+  "/api/blob/upload",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

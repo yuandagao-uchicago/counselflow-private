@@ -2,6 +2,26 @@ import { z } from "zod";
 import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 
+/** Fields the counselor is allowed to approve individually from an extraction. */
+const ApplicableExtractionFieldsSchema = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  preferredName: z.string().optional().nullable(),
+  email: z.string().email().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  highSchool: z.string().optional().nullable(),
+  graduationYear: z.number().optional(),
+  gpaUnweighted: z.number().optional().nullable(),
+  gpaWeighted: z.number().optional().nullable(),
+  satScore: z.number().optional().nullable(),
+  actScore: z.number().optional().nullable(),
+  classRank: z.string().optional().nullable(),
+  courseRigor: z.string().optional().nullable(),
+  intendedMajors: z.array(z.string()).optional(),
+  interests: z.array(z.string()).optional(),
+  personalNotes: z.string().optional().nullable(),
+});
+
 export const reviewRouter = router({
   /** Count of pending review items for the sidebar badge. */
   pendingCount: protectedProcedure.query(async ({ ctx }) => {
@@ -11,15 +31,22 @@ export const reviewRouter = router({
   }),
 
   /**
-   * List review items. For communication_draft entityTypes we hydrate the
-   * Communication row so the UI can show subject + body + student.
+   * List review items. For communication_draft we hydrate the Communication
+   * row. For profile_extraction we hydrate the Document + Student so the UI
+   * can render a side-by-side diff.
+   *
+   * Accepts an optional studentId filter so the same query powers both the
+   * global /approvals page and the per-student panel.
    */
   list: protectedProcedure
     .input(
       z
         .object({
-          status: z.enum(["PENDING", "APPROVED", "REJECTED", "REVISED"]).default("PENDING"),
+          status: z
+            .enum(["PENDING", "APPROVED", "REJECTED", "REVISED"])
+            .default("PENDING"),
           limit: z.number().min(1).max(100).default(50),
+          studentId: z.string().optional(),
         })
         .optional()
     )
@@ -31,7 +58,7 @@ export const reviewRouter = router({
         take: input?.limit ?? 50,
       });
 
-      // Batch-load communications for the items that point at them
+      // Batch-load linked Communications
       const commIds = items
         .filter((i) => i.entityType === "communication_draft")
         .map((i) => i.entityId);
@@ -45,13 +72,64 @@ export const reviewRouter = router({
         : [];
       const commById = new Map(communications.map((c) => [c.id, c]));
 
-      return items.map((item) => ({
+      // Batch-load linked Documents (for profile_extraction items) +
+      // their owning Student so the review card shows current-vs-suggested.
+      const docIds = items
+        .filter((i) => i.entityType === "profile_extraction")
+        .map((i) => i.entityId);
+      const documents = docIds.length
+        ? await prisma.document.findMany({
+            where: { id: { in: docIds } },
+            include: {
+              student: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  preferredName: true,
+                  email: true,
+                  phone: true,
+                  highSchool: true,
+                  graduationYear: true,
+                  gpaUnweighted: true,
+                  gpaWeighted: true,
+                  satScore: true,
+                  actScore: true,
+                  classRank: true,
+                  courseRigor: true,
+                  intendedMajors: true,
+                  interests: true,
+                  personalNotes: true,
+                },
+              },
+            },
+          })
+        : [];
+      const docById = new Map(documents.map((d) => [d.id, d]));
+
+      const hydrated = items.map((item) => ({
         ...item,
         communication:
           item.entityType === "communication_draft"
             ? commById.get(item.entityId) ?? null
             : null,
+        document:
+          item.entityType === "profile_extraction"
+            ? docById.get(item.entityId) ?? null
+            : null,
       }));
+
+      // Optional studentId filter — applied here because the studentId for a
+      // review item lives on the hydrated entity, not on ReviewQueueItem itself.
+      if (input?.studentId) {
+        return hydrated.filter((h) => {
+          if (h.communication) return h.communication.studentId === input.studentId;
+          if (h.document) return h.document.studentId === input.studentId;
+          return false;
+        });
+      }
+
+      return hydrated;
     }),
 
   /** Edit the draft content before approval. */
@@ -81,6 +159,64 @@ export const reviewRouter = router({
       return { ok: true };
     }),
 
+  /**
+   * Apply a selected subset of the extracted fields to the student.
+   * `acceptedFields` is whatever the counselor chose to keep after reviewing;
+   * anything not in that object is silently dropped (rejected per-field).
+   */
+  applyProfileExtraction: protectedProcedure
+    .input(
+      z.object({
+        reviewQueueItemId: z.string(),
+        acceptedFields: ApplicableExtractionFieldsSchema,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const item = await prisma.reviewQueueItem.findFirst({
+        where: { id: input.reviewQueueItemId, counselorId: ctx.counselorId },
+      });
+      if (!item) throw new Error("Review item not found");
+      if (item.entityType !== "profile_extraction") {
+        throw new Error("This review item is not a profile extraction");
+      }
+
+      const doc = await prisma.document.findFirst({
+        where: {
+          id: item.entityId,
+          student: { counselorId: ctx.counselorId },
+        },
+      });
+      if (!doc) throw new Error("Linked document not found");
+
+      const now = new Date();
+
+      // Strip out undefined values (zod's .optional() lets them through)
+      const cleaned = Object.fromEntries(
+        Object.entries(input.acceptedFields).filter(([, v]) => v !== undefined)
+      );
+
+      // Apply only if the counselor actually accepted something
+      if (Object.keys(cleaned).length > 0) {
+        await prisma.student.update({
+          where: { id: doc.studentId },
+          data: cleaned,
+        });
+      }
+
+      await prisma.$transaction([
+        prisma.reviewQueueItem.update({
+          where: { id: item.id },
+          data: { status: "APPROVED", reviewedAt: now },
+        }),
+        prisma.document.update({
+          where: { id: doc.id },
+          data: { extractionStatus: "APPLIED" },
+        }),
+      ]);
+
+      return { ok: true, appliedFields: Object.keys(cleaned).length };
+    }),
+
   approve: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -91,16 +227,19 @@ export const reviewRouter = router({
 
       const now = new Date();
 
-      // Mark the underlying entity as approved/ready
       if (item.entityType === "communication_draft") {
         await prisma.communication.update({
           where: { id: item.entityId },
-          data: {
-            isDraft: false,
-            approvedAt: now,
-            // MVP: we don't actually send the email, just mark it ready.
-            // Counselor can copy/paste the body into their client.
-          },
+          data: { isDraft: false, approvedAt: now },
+        });
+      }
+      // For profile_extraction, callers should use applyProfileExtraction
+      // to specify which fields to apply. Plain approve() just closes the
+      // review item without copying fields.
+      if (item.entityType === "profile_extraction") {
+        await prisma.document.updateMany({
+          where: { id: item.entityId },
+          data: { extractionStatus: "APPLIED" },
         });
       }
 
@@ -120,11 +259,19 @@ export const reviewRouter = router({
       });
       if (!item) throw new Error("Review item not found");
 
-      // For communication drafts, delete the draft Communication row so it
-      // doesn't accumulate abandoned content. Keep the ReviewQueueItem for audit.
+      // For communication drafts, delete the draft Communication so abandoned
+      // drafts don't pile up. Keep the ReviewQueueItem for audit.
       if (item.entityType === "communication_draft") {
         await prisma.communication.deleteMany({
           where: { id: item.entityId, isDraft: true },
+        });
+      }
+      // For profile_extraction, mark the Document as rejected but keep the
+      // file blob (counselor may want to re-upload or inspect it manually).
+      if (item.entityType === "profile_extraction") {
+        await prisma.document.updateMany({
+          where: { id: item.entityId },
+          data: { extractionStatus: "REJECTED" },
         });
       }
 
@@ -136,3 +283,8 @@ export const reviewRouter = router({
       return { ok: true };
     }),
 });
+
+// Expose the schema type so the client can keep in sync.
+export type ProfileExtractionFieldsInput = z.infer<
+  typeof ApplicableExtractionFieldsSchema
+>;

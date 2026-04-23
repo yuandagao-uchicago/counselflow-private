@@ -17,6 +17,7 @@ import {
   TabsTrigger,
   TabsContent,
 } from "@/components/ui/tabs";
+import { ExtractionReviewCard } from "@/components/document/extraction-review-card";
 
 type Status = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -50,7 +51,13 @@ export default function ApprovalsPage() {
           ) : !items?.length ? (
             <EmptyState status={status} />
           ) : (
-            items.map((item) => <ReviewCard key={item.id} item={item} />)
+            items.map((item) =>
+              item.entityType === "profile_extraction" ? (
+                <ExtractionReviewCard key={item.id} item={item} />
+              ) : (
+                <ReviewCard key={item.id} item={item} />
+              )
+            )
           )}
         </TabsContent>
       </Tabs>

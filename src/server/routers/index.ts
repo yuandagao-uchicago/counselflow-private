@@ -5,6 +5,7 @@ import { dashboardRouter } from "./dashboard";
 import { integrationRouter } from "./integration";
 import { milestoneRouter } from "./milestone";
 import { reviewRouter } from "./review";
+import { documentRouter } from "./document";
 
 export const appRouter = router({
   student: studentRouter,
@@ -13,6 +14,7 @@ export const appRouter = router({
   integration: integrationRouter,
   milestone: milestoneRouter,
   review: reviewRouter,
+  document: documentRouter,
 });
 
 export type AppRouter = typeof appRouter;
