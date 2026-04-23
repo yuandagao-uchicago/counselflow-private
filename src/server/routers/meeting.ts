@@ -61,23 +61,16 @@ export const meetingRouter = router({
       return { success: true };
     }),
 
-  // One-click: create meeting + generate brief in a single call
+  // One-click: generate brief FIRST, then persist the meeting with the
+  // brief inline. This avoids leaving orphan Meeting rows when Gemini
+  // fails, and removes the prisma.meeting.update call that was crashing
+  // when the user navigated away or the function timed out mid-request.
   quickPrepBrief: protectedProcedure
     .input(z.object({ studentId: z.string(), meetingType: z.string().default("Check-in") }))
     .mutation(async ({ ctx, input }) => {
       await verifyStudentOwnership(ctx.counselorId, input.studentId);
 
-      // Create meeting
-      const meeting = await prisma.meeting.create({
-        data: {
-          studentId: input.studentId,
-          counselorId: ctx.counselorId,
-          scheduledAt: new Date(),
-          type: input.meetingType,
-        },
-      });
-
-      // Fetch full student context
+      // Fetch full student context (WITHOUT creating a meeting yet)
       const student = await prisma.student.findUniqueOrThrow({
         where: { id: input.studentId },
         include: {
@@ -90,7 +83,6 @@ export const meetingRouter = router({
             orderBy: { sortOrder: "asc" },
           },
           meetings: {
-            where: { id: { not: meeting.id } },
             orderBy: { scheduledAt: "desc" },
             take: 3,
           },
@@ -100,6 +92,7 @@ export const meetingRouter = router({
         },
       });
 
+      // Call Gemini BEFORE touching the DB — if this fails, nothing persists.
       const { prep, usage } = await generateMeetingPrep({
         student,
         meetingType: input.meetingType,
@@ -127,6 +120,7 @@ export const meetingRouter = router({
         })),
       });
 
+      // AI succeeded — now persist everything atomically
       const aiOutput = await createAIOutput({
         counselorId: ctx.counselorId,
         studentId: input.studentId,
@@ -149,9 +143,12 @@ export const meetingRouter = router({
         tokenUsage: usage,
       });
 
-      await prisma.meeting.update({
-        where: { id: meeting.id },
+      const meeting = await prisma.meeting.create({
         data: {
+          studentId: input.studentId,
+          counselorId: ctx.counselorId,
+          scheduledAt: new Date(),
+          type: input.meetingType,
           prepBrief: JSON.stringify(prep),
           prepBriefAiId: aiOutput.id,
         },
@@ -238,9 +235,11 @@ export const meetingRouter = router({
         tokenUsage: usage,
       });
 
-      // Update meeting with prep brief
-      await prisma.meeting.update({
-        where: { id: input.meetingId },
+      // Update meeting with prep brief — updateMany is a no-op if the row
+      // no longer exists (e.g. counselor deleted it in another tab while
+      // the AI was running). Fails silently instead of a Prisma error.
+      await prisma.meeting.updateMany({
+        where: { id: input.meetingId, counselorId: ctx.counselorId },
         data: {
           prepBrief: JSON.stringify(prep),
           prepBriefAiId: aiOutput.id,

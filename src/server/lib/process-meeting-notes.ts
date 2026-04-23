@@ -87,8 +87,10 @@ export async function processMeetingNotes(opts: {
     )
   );
 
-  await prisma.meeting.update({
-    where: { id: opts.meetingId },
+  // updateMany is a no-op (returns { count: 0 }) if the meeting was
+  // deleted while the AI was running. Fails silently instead of erroring.
+  await prisma.meeting.updateMany({
+    where: { id: opts.meetingId, counselorId: opts.counselorId },
     data: {
       rawNotes: opts.rawNotes,
       summary: summary.summary,

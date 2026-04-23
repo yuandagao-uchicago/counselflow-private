@@ -31,7 +31,10 @@ export const MODEL_FALLBACK = "gemini-2.5-flash-lite";
 // ----------------------------------------------------------------------
 
 const TRANSIENT_STATUSES = [429, 500, 502, 503, 504];
-const MAX_ATTEMPTS = 4;
+// Kept modest so total wall time stays well under Vercel's function
+// timeout (configured in vercel.json to 60s). 3 attempts × ~5s each
+// call + 1.5s total backoff = ~17s budget.
+const MAX_ATTEMPTS = 3;
 const BASE_BACKOFF_MS = 500;
 
 function isTransientError(err: unknown): boolean {

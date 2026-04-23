@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "src/app/api/trpc/[trpc]/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/webhooks/recall/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}
