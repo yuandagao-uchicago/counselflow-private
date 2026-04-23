@@ -42,13 +42,17 @@ function formatBytes(n: number): string {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+type Phase = "idle" | "uploading" | "extracting";
+
 export function UploadDocumentsPanel({ studentId }: { studentId: string }) {
   const utils = trpc.useUtils();
   const { data: documents, isLoading } = trpc.document.list.useQuery({ studentId });
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+
+  const uploading = phase !== "idle";
 
   const confirmUpload = trpc.document.confirmUpload.useMutation({
     onSuccess: (res) => {
@@ -85,7 +89,7 @@ export function UploadDocumentsPanel({ studentId }: { studentId: string }) {
       return;
     }
 
-    setUploading(true);
+    setPhase("uploading");
     setUploadProgress(0);
 
     try {
@@ -97,6 +101,7 @@ export function UploadDocumentsPanel({ studentId }: { studentId: string }) {
         onUploadProgress: (p) => setUploadProgress(p.percentage),
       });
 
+      setPhase("extracting");
       toast.info("Upload complete — running AI extraction…");
       await confirmUpload.mutateAsync({
         studentId,
@@ -110,7 +115,7 @@ export function UploadDocumentsPanel({ studentId }: { studentId: string }) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : "Upload failed");
     } finally {
-      setUploading(false);
+      setPhase("idle");
       setUploadProgress(0);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
@@ -178,9 +183,11 @@ export function UploadDocumentsPanel({ studentId }: { studentId: string }) {
           {uploading ? (
             <>
               <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-              {uploadProgress > 0
-                ? `Uploading ${Math.round(uploadProgress)}%`
-                : "Processing…"}
+              {phase === "uploading"
+                ? uploadProgress > 0 && uploadProgress < 100
+                  ? `Uploading ${Math.round(uploadProgress)}%`
+                  : "Finishing upload…"
+                : "Extracting with AI…"}
             </>
           ) : (
             "Choose a file"
