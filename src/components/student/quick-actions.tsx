@@ -61,6 +61,7 @@ export function QuickActions({ studentId }: { studentId: string }) {
         <Button
           variant="outline"
           className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10 transition-colors"
+          nativeButton={false}
           render={<Link href={`/students/${studentId}/journey`} />}
         >
           <Map className="mr-2 h-4 w-4" />

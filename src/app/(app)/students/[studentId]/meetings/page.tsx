@@ -49,6 +49,7 @@ export default function MeetingsPage({
             variant="ghost"
             size="sm"
             className="text-muted-foreground hover:text-foreground"
+            nativeButton={false}
             render={<Link href={`/students/${studentId}`} />}
           >
             <ArrowLeft className="mr-1 h-4 w-4" />

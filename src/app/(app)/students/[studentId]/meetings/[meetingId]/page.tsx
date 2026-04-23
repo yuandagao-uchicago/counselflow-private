@@ -124,7 +124,7 @@ export default function MeetingDetailPage({
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" render={<Link href={`/students/${studentId}/meetings`} />}>
+        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" nativeButton={false} render={<Link href={`/students/${studentId}/meetings`} />}>
           <ArrowLeft className="mr-1 h-4 w-4" />
           Meetings
         </Button>
