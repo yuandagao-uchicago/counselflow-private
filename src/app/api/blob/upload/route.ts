@@ -15,6 +15,23 @@ import { isAllowedMime, MAX_UPLOAD_BYTES } from "@/lib/integrations/blob";
  *      blob URL to a Student (and kick off Gemini extraction).
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Surface missing config before hitting handleUpload — without this, the
+  // client just sees the generic "Failed to retrieve the client token" error
+  // and there's no way to tell whether the store is misconfigured or it's an
+  // auth failure.
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    console.error(
+      "[blob/upload] BLOB_READ_WRITE_TOKEN is not set — connect a Vercel Blob store to this project"
+    );
+    return NextResponse.json(
+      {
+        error:
+          "Blob storage is not configured. Connect a Vercel Blob store to this project (Storage → Create → Blob) and redeploy.",
+      },
+      { status: 500 }
+    );
+  }
+
   const body = (await request.json()) as HandleUploadBody;
 
   try {
@@ -62,6 +79,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json(jsonResponse);
   } catch (error) {
+    console.error("[blob/upload]", error);
     return NextResponse.json(
       { error: (error as Error).message },
       { status: 400 }
