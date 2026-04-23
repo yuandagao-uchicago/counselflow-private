@@ -40,7 +40,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       request,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
         const { userId } = await auth();
-        if (!userId) throw new Error("Unauthorized");
+        if (!userId) {
+          console.error(
+            "[blob/upload] auth() returned no userId — Clerk session missing or expired"
+          );
+          throw new Error("Unauthorized — please sign in again");
+        }
 
         // Parse the studentId from clientPayload so we can enforce that this
         // counselor actually owns the student before minting a token.
@@ -51,7 +56,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         } catch {
           // invalid payload — fall through with null
         }
-        if (!studentId) throw new Error("Missing studentId in clientPayload");
+        if (!studentId) {
+          console.error("[blob/upload] missing studentId in clientPayload");
+          throw new Error("Missing studentId in clientPayload");
+        }
+
+        console.log("[blob/upload] minting token", {
+          userId,
+          studentId,
+          pathname,
+        });
 
         return {
           allowedContentTypes: [
