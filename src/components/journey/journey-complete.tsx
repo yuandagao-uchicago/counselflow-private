@@ -12,7 +12,7 @@ export function JourneyComplete({ completed, total, nextTitle }: JourneyComplete
   const allDone = completed === total;
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[oklch(0.22_0.08_300)] via-[oklch(0.18_0.06_280)] to-[oklch(0.2_0.05_255)] p-8 md:p-10">
+    <div className="relative overflow-hidden rounded-3xl border border-foreground/[0.08] bg-gradient-to-br from-[oklch(0.22_0.08_300)] via-[oklch(0.18_0.06_280)] to-[oklch(0.2_0.05_255)] p-8 md:p-10">
       {/* Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-[oklch(0.65_0.2_265_/_20%)] blur-3xl rounded-full pointer-events-none" />
 

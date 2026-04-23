@@ -35,7 +35,7 @@ export default function ApprovalsPage() {
       </div>
 
       <Tabs value={status} onValueChange={(v) => setStatus(v as Status)}>
-        <TabsList className="bg-white/5 border border-white/10">
+        <TabsList className="bg-foreground/5 border border-foreground/10">
           <TabsTrigger value="PENDING">Pending</TabsTrigger>
           <TabsTrigger value="APPROVED">Approved</TabsTrigger>
           <TabsTrigger value="REJECTED">Rejected</TabsTrigger>
@@ -66,7 +66,7 @@ function EmptyState({ status }: { status: Status }) {
       ? "No approved items yet."
       : "No rejected items.";
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-16 text-center">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-16 text-center">
       <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-500/40 mb-3" />
       <p className="text-sm text-muted-foreground max-w-sm mx-auto">{copy}</p>
     </div>
@@ -125,7 +125,7 @@ function ReviewCard({ item }: { item: ReviewItem }) {
   const isPending = item.status === "PENDING";
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-5 glow-card">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 glow-card">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex items-start gap-3 min-w-0">
@@ -178,7 +178,7 @@ function ReviewCard({ item }: { item: ReviewItem }) {
                 <Input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="bg-white/5 border-white/10"
+                  className="bg-foreground/5 border-foreground/10"
                 />
               </div>
               <div className="space-y-1.5">
@@ -186,12 +186,12 @@ function ReviewCard({ item }: { item: ReviewItem }) {
                 <Textarea
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
-                  className="bg-white/5 border-white/10 min-h-[200px] font-sans text-sm"
+                  className="bg-foreground/5 border-foreground/10 min-h-[200px] font-sans text-sm"
                 />
               </div>
             </>
           ) : (
-            <div className="rounded-xl bg-white/[0.03] p-4 space-y-2">
+            <div className="rounded-xl bg-foreground/[0.03] p-4 space-y-2">
               {item.communication.subject && (
                 <p className="text-sm font-medium">
                   <span className="text-muted-foreground">Subject:</span>{" "}
@@ -212,13 +212,13 @@ function ReviewCard({ item }: { item: ReviewItem }) {
 
       {/* Actions */}
       {isPending && item.communication && (
-        <div className="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-white/[0.06]">
+        <div className="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-foreground/[0.06]">
           {editing ? (
             <>
               <Button
                 variant="outline"
                 size="sm"
-                className="border-white/10 bg-white/5"
+                className="border-foreground/10 bg-foreground/5"
                 onClick={() => {
                   setEditing(false);
                   setSubject(item.communication!.subject ?? "");
@@ -261,7 +261,7 @@ function ReviewCard({ item }: { item: ReviewItem }) {
               <Button
                 variant="outline"
                 size="sm"
-                className="border-white/10 bg-white/5 hover:bg-white/10"
+                className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10"
                 onClick={() => setEditing(true)}
               >
                 <Pencil className="h-3.5 w-3.5 mr-1.5" />

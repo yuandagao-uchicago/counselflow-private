@@ -72,7 +72,7 @@ export default function JourneyPage({
 
         {/* The journey */}
         {total === 0 ? (
-          <div className="rounded-3xl border border-dashed border-white/10 bg-card/50 p-12 text-center space-y-4">
+          <div className="rounded-3xl border border-dashed border-foreground/10 bg-card/50 p-12 text-center space-y-4">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] shadow-lg shadow-[oklch(0.65_0.2_265_/_30%)]">
               <Sparkles className="h-7 w-7 text-white" />
             </div>

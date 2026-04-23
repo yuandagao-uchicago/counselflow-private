@@ -74,7 +74,7 @@ export default function MeetingsPage({
           ))}
         </div>
       ) : !meetings?.length ? (
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-16 text-center">
+        <div className="rounded-2xl border border-foreground/[0.06] bg-card p-16 text-center">
           <Calendar className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
           <h3 className="text-lg font-semibold">No meetings yet</h3>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -89,9 +89,9 @@ export default function MeetingsPage({
               <Link
                 key={meeting.id}
                 href={`/students/${studentId}/meetings/${meeting.id}`}
-                className="flex items-center gap-5 rounded-2xl border border-white/[0.06] bg-card p-4 hover:border-white/[0.12] hover:-translate-y-0.5 transition-all group"
+                className="flex items-center gap-5 rounded-2xl border border-foreground/[0.06] bg-card p-4 hover:border-foreground/[0.12] hover:-translate-y-0.5 transition-all group"
               >
-                <div className="flex flex-col items-center rounded-xl bg-white/5 px-4 py-2.5 min-w-[64px]">
+                <div className="flex flex-col items-center rounded-xl bg-foreground/5 px-4 py-2.5 min-w-[64px]">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
                     {format(date, "MMM")}
                   </span>
@@ -116,7 +116,7 @@ export default function MeetingsPage({
                     </Badge>
                   )}
                   {!meeting.prepBrief && !meeting.summary && (
-                    <Badge variant="secondary" className="bg-white/5 text-muted-foreground border-white/10">
+                    <Badge variant="secondary" className="bg-foreground/5 text-muted-foreground border-foreground/10">
                       Upcoming
                     </Badge>
                   )}
@@ -163,7 +163,7 @@ function NewMeetingDialog({ studentId, onClose }: { studentId: string; onClose: 
   });
 
   return (
-    <DialogContent className="border-white/10 bg-[oklch(0.13_0.005_270)]">
+    <DialogContent className="border-foreground/10 bg-popover">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -184,7 +184,7 @@ function NewMeetingDialog({ studentId, onClose }: { studentId: string; onClose: 
             <Input
               value={form.type}
               onChange={(e) => setForm({ ...form, type: e.target.value })}
-              className="bg-white/5 border-white/10"
+              className="bg-foreground/5 border-foreground/10"
               placeholder="e.g., Check-in, School List Review, Essay Review"
               required
             />
@@ -195,7 +195,7 @@ function NewMeetingDialog({ studentId, onClose }: { studentId: string; onClose: 
               type="datetime-local"
               value={form.scheduledAt}
               onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
-              className="bg-white/5 border-white/10"
+              className="bg-foreground/5 border-foreground/10"
               required
             />
           </div>
@@ -204,7 +204,7 @@ function NewMeetingDialog({ studentId, onClose }: { studentId: string; onClose: 
             <Input
               value={form.location}
               onChange={(e) => setForm({ ...form, location: e.target.value })}
-              className="bg-white/5 border-white/10"
+              className="bg-foreground/5 border-foreground/10"
               placeholder="e.g., Zoom, Office, Phone"
             />
           </div>

@@ -42,7 +42,7 @@ export function StudentHeader({ student }: StudentHeaderProps) {
   const displayName = student.preferredName || student.firstName;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-card to-card/80 p-6">
+    <div className="relative overflow-hidden rounded-2xl border border-foreground/[0.06] bg-gradient-to-br from-card to-card/80 p-6">
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.65_0.2_265_/_5%)] to-transparent pointer-events-none" />
 
@@ -96,19 +96,19 @@ export function StudentHeader({ student }: StudentHeaderProps) {
           {/* Stats pills */}
           <div className="hidden md:flex items-center gap-2">
             {student.gpaUnweighted && (
-              <div className="rounded-xl bg-white/5 px-3 py-1.5 text-center">
+              <div className="rounded-xl bg-foreground/5 px-3 py-1.5 text-center">
                 <p className="text-xs text-muted-foreground">GPA</p>
                 <p className="text-sm font-bold">{student.gpaUnweighted.toFixed(2)}</p>
               </div>
             )}
             {student.satScore && (
-              <div className="rounded-xl bg-white/5 px-3 py-1.5 text-center">
+              <div className="rounded-xl bg-foreground/5 px-3 py-1.5 text-center">
                 <p className="text-xs text-muted-foreground">SAT</p>
                 <p className="text-sm font-bold">{student.satScore}</p>
               </div>
             )}
             {student.actScore && (
-              <div className="rounded-xl bg-white/5 px-3 py-1.5 text-center">
+              <div className="rounded-xl bg-foreground/5 px-3 py-1.5 text-center">
                 <p className="text-xs text-muted-foreground">ACT</p>
                 <p className="text-sm font-bold">{student.actScore}</p>
               </div>

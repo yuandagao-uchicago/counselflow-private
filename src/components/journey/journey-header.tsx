@@ -45,19 +45,21 @@ export function JourneyHeader({ student, completed, total, inProgress }: Journey
       </Link>
 
       {/* Hero — bold typographic, PandaScore-style */}
-      <div className="text-center space-y-4 py-4">
-        <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[oklch(0.65_0.2_265_/_15%)] to-[oklch(0.55_0.22_290_/_15%)] px-4 py-1.5 border border-[oklch(0.65_0.2_265_/_20%)]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[oklch(0.75_0.15_265)] pulse-glow" />
-          <p className="text-xs uppercase tracking-widest font-medium text-[oklch(0.75_0.15_265)]">
+      <div className="text-center space-y-5 py-6">
+        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 border border-primary/20">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary pulse-glow" />
+          <p className="text-xs uppercase tracking-[0.2em] font-semibold text-primary">
             {student.firstName} {student.lastName} · Class of {student.graduationYear}
           </p>
         </div>
 
-        <h1 className="text-5xl md:text-6xl font-black tracking-tight uppercase">
-          Application <span className="gradient-text">Journey</span>
+        <h1 className="font-display text-6xl md:text-7xl lg:text-8xl font-black tracking-tight uppercase leading-[0.95]">
+          Application
+          <br />
+          <span className="gradient-text">Journey</span>
         </h1>
 
-        <p className="text-base text-muted-foreground max-w-xl mx-auto">
+        <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
           Complete each checkpoint to build and submit strong applications. Work at your own pace — every section feeds forward.
         </p>
       </div>
@@ -88,12 +90,12 @@ export function JourneyHeader({ student, completed, total, inProgress }: Journey
       </div>
 
       {/* Progress bar */}
-      <div className="rounded-2xl border border-white/[0.06] bg-card p-5">
+      <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5">
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-medium">Overall progress</p>
           <p className="text-sm font-bold text-[oklch(0.75_0.15_265)]">{pct}%</p>
         </div>
-        <div className="relative h-2 rounded-full bg-white/5 overflow-hidden">
+        <div className="relative h-2 rounded-full bg-foreground/5 overflow-hidden">
           <div
             className="absolute inset-y-0 left-0 bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] transition-all duration-500 rounded-full"
             style={{ width: `${pct}%` }}
@@ -121,7 +123,7 @@ function StatTile({
   accent: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-4 glow-card">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-4 glow-card">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</span>
         <div className={`flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br ${accent} text-white shadow-md`}>

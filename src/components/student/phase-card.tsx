@@ -15,7 +15,7 @@ export function PhaseCard({ phase }: { phase: string }) {
   const currentIndex = phases.findIndex((p) => p.key === phase);
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-5 glow-card">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 glow-card">
       <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
         Current Phase
       </h3>
@@ -35,7 +35,7 @@ export function PhaseCard({ phase }: { phase: string }) {
                       ? "bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.6_0.22_290)] shadow-lg shadow-[oklch(0.65_0.2_265_/_40%)]"
                       : isComplete
                       ? "bg-emerald-500"
-                      : "bg-white/10"
+                      : "bg-foreground/10"
                   }`}
                 />
                 {isCurrent && (

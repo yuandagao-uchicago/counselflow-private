@@ -31,7 +31,7 @@ export function MeetingsCard({ meetings, studentId }: { meetings: Meeting[]; stu
   });
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-5 glow-card">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 glow-card">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Recent Meetings
@@ -64,10 +64,10 @@ export function MeetingsCard({ meetings, studentId }: { meetings: Meeting[]; stu
               <div key={meeting.id} className="group relative">
                 <Link
                   href={`/students/${studentId}/meetings/${meeting.id}`}
-                  className="flex items-center gap-4 rounded-xl bg-white/[0.03] p-3 hover:bg-white/[0.06] transition-colors"
+                  className="flex items-center gap-4 rounded-xl bg-foreground/[0.03] p-3 hover:bg-foreground/[0.06] transition-colors"
                 >
                   {/* Date block */}
-                  <div className="flex flex-col items-center rounded-lg bg-white/5 px-3 py-2 min-w-[56px]">
+                  <div className="flex flex-col items-center rounded-lg bg-foreground/5 px-3 py-2 min-w-[56px]">
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
                       {format(date, "MMM")}
                     </span>

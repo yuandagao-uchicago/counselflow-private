@@ -13,8 +13,11 @@ export default async function AppLayout({
 
   return (
     <SidebarProvider>
+      {/* Cinematic backdrop — sits behind everything, reacts to theme */}
+      <div className="ambient-backdrop" aria-hidden="true" />
+
       <AppSidebar />
-      <div className="flex flex-1 flex-col">
+      <div className="relative z-10 flex flex-1 flex-col">
         <TopBar />
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>

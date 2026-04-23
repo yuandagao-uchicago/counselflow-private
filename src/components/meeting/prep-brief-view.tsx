@@ -28,7 +28,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
       </StaggerItem>
 
       {/* Student Snapshot */}
-      <div className="rounded-2xl border border-white/[0.06] bg-card p-5">
+      <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5">
         <div className="flex items-center gap-2 mb-3">
           <User className="h-4 w-4 text-[oklch(0.65_0.2_265)]" />
           <h3 className="font-semibold">Student Snapshot</h3>
@@ -44,7 +44,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
 
       <div className="grid gap-5 md:grid-cols-2">
         {/* Changes Since Last Meeting */}
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-5">
+        <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="h-4 w-4 text-[oklch(0.7_0.18_155)]" />
             <h3 className="font-semibold">What Changed</h3>
@@ -56,7 +56,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
               {prep.changesSinceLastMeeting.map((c, i) => (
                 <div key={i} className="flex items-start gap-2 text-sm">
                   <div className={`mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 ${
-                    c.significance === "high" ? "bg-red-400" : c.significance === "medium" ? "bg-amber-400" : "bg-white/20"
+                    c.significance === "high" ? "bg-red-400" : c.significance === "medium" ? "bg-amber-400" : "bg-foreground/20"
                   }`} />
                   <span>{c.change}</span>
                 </div>
@@ -66,7 +66,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
         </div>
 
         {/* Unfinished Items */}
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-5">
+        <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5">
           <div className="flex items-center gap-2 mb-3">
             <Clock className="h-4 w-4 text-amber-400" />
             <h3 className="font-semibold">Unfinished Items</h3>
@@ -79,7 +79,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
                 <div key={i} className="flex items-start justify-between gap-2 text-sm">
                   <span>{item.item}</span>
                   <Badge variant="secondary" className={`text-[10px] shrink-0 ${
-                    item.urgency === "high" ? "bg-red-500/10 text-red-400" : "bg-white/5 text-muted-foreground"
+                    item.urgency === "high" ? "bg-red-500/10 text-red-400" : "bg-foreground/5 text-muted-foreground"
                   }`}>
                     {item.status}
                   </Badge>
@@ -91,7 +91,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
       </div>
 
       {/* Suggested Agenda */}
-      <div className="rounded-2xl border border-white/[0.06] bg-card p-5">
+      <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5">
         <div className="flex items-center gap-2 mb-3">
           <MessageSquare className="h-4 w-4 text-[oklch(0.65_0.2_265)]" />
           <h3 className="font-semibold">Suggested Agenda</h3>
@@ -113,7 +113,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
 
       {/* Risks to Discuss */}
       {prep.risksToDiscuss.length > 0 && (
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-5">
+        <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="h-4 w-4 text-amber-400" />
             <h3 className="font-semibold">Risks to Discuss</h3>
@@ -134,7 +134,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
 
       {/* Talking Points */}
       {prep.talkingPoints.length > 0 && (
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-5">
+        <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5">
           <div className="flex items-center gap-2 mb-3">
             <Info className="h-4 w-4 text-blue-400" />
             <h3 className="font-semibold">Talking Points</h3>
@@ -155,7 +155,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-white/[0.03] px-3 py-2">
+    <div className="rounded-lg bg-foreground/[0.03] px-3 py-2">
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
       <p className="text-sm font-medium mt-0.5">{value}</p>
     </div>

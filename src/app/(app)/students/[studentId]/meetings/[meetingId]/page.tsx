@@ -143,7 +143,7 @@ export default function MeetingDetailPage({
         </Button>
       </div>
 
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-card to-card/80 p-6">
+      <div className="relative overflow-hidden rounded-2xl border border-foreground/[0.06] bg-gradient-to-br from-card to-card/80 p-6">
         <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.65_0.2_265_/_5%)] to-transparent pointer-events-none" />
         <div className="relative flex items-center justify-between">
           <div>
@@ -159,9 +159,9 @@ export default function MeetingDetailPage({
           {/* Phase indicator */}
           <div className="flex items-center gap-2">
             <PhaseStep label="Prep" done={!!prepBrief} active={phase === "prep"} />
-            <div className="w-6 h-px bg-white/10" />
+            <div className="w-6 h-px bg-foreground/10" />
             <PhaseStep label="Meeting" done={hasSummary} active={phase === "ready"} />
-            <div className="w-6 h-px bg-white/10" />
+            <div className="w-6 h-px bg-foreground/10" />
             <PhaseStep label="Summary" done={hasSummary} active={phase === "complete"} />
           </div>
         </div>
@@ -169,7 +169,7 @@ export default function MeetingDetailPage({
 
       {/* Phase 1: Prep Brief */}
       {!prepBrief && (
-        <div className="rounded-2xl border border-dashed border-white/10 bg-card/50 p-8 text-center">
+        <div className="rounded-2xl border border-dashed border-foreground/10 bg-card/50 p-8 text-center">
           <Sparkles className="mx-auto h-10 w-10 text-[oklch(0.65_0.2_265)] mb-3" />
           <h2 className="text-lg font-semibold">Generate Prep Brief</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
@@ -201,7 +201,7 @@ export default function MeetingDetailPage({
 
       {/* Phase 2: Post-Meeting Notes */}
       {prepBrief && !hasSummary && (
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-6 space-y-4">
+        <div className="rounded-2xl border border-foreground/[0.06] bg-card p-6 space-y-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-[oklch(0.65_0.2_265)]" />
@@ -224,7 +224,7 @@ export default function MeetingDetailPage({
               <Button
                 variant="outline"
                 size="sm"
-                className="border-white/10 bg-white/5 hover:bg-white/10"
+                className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload className="mr-2 h-4 w-4" />
@@ -233,7 +233,7 @@ export default function MeetingDetailPage({
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
-            Paste notes below, or import a <code className="px-1 py-0.5 rounded bg-white/5 text-xs">.vtt</code> transcript
+            Paste notes below, or import a <code className="px-1 py-0.5 rounded bg-foreground/5 text-xs">.vtt</code> transcript
             from Zoom / Meet / Teams. AI will extract a summary, action items, and draft a follow-up email.
           </p>
           <Textarea
@@ -243,7 +243,7 @@ export default function MeetingDetailPage({
               setRawNotes(e.target.value);
               if (importedFileName) setImportedFileName(null);
             }}
-            className="min-h-[200px] bg-white/5 border-white/10 text-sm"
+            className="min-h-[200px] bg-foreground/5 border-foreground/10 text-sm"
           />
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
@@ -298,7 +298,7 @@ function safeParse(raw: string | null): unknown {
 
 function UpcomingIntegrations() {
   return (
-    <div className="rounded-2xl border border-dashed border-white/10 bg-card/40 p-5 space-y-3">
+    <div className="rounded-2xl border border-dashed border-foreground/10 bg-card/40 p-5 space-y-3">
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-[oklch(0.75_0.15_265)]" />
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -323,9 +323,9 @@ function UpcomingIntegrations() {
 
 function UpcomingCard({ icon, title, copy }: { icon: React.ReactNode; title: string; copy: string }) {
   return (
-    <div className="rounded-xl bg-white/[0.03] p-4 space-y-1.5">
+    <div className="rounded-xl bg-foreground/[0.03] p-4 space-y-1.5">
       <div className="flex items-center gap-2">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white/5">
+        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-foreground/5">
           {icon}
         </div>
         <p className="text-sm font-medium">{title}</p>
@@ -343,7 +343,7 @@ function PhaseStep({ label, done, active }: { label: string; done: boolean; acti
           ? "bg-emerald-500/20 text-emerald-400"
           : active
           ? "bg-[oklch(0.65_0.2_265_/_20%)] text-[oklch(0.75_0.15_265)] ring-2 ring-[oklch(0.65_0.2_265_/_30%)]"
-          : "bg-white/5 text-muted-foreground/50"
+          : "bg-foreground/5 text-muted-foreground/50"
       }`}>
         {done ? <CheckCircle2 className="h-4 w-4" /> : <span>{label[0]}</span>}
       </div>

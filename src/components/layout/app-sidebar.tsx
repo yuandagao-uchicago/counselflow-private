@@ -89,7 +89,7 @@ export function AppSidebar() {
                       className={
                         isActive
                           ? "bg-gradient-to-r from-[oklch(0.65_0.2_265_/_15%)] to-transparent border-l-2 border-[oklch(0.65_0.2_265)] text-white"
-                          : "text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+                          : "text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
                       }
                     >
                       <item.icon className="h-4 w-4" />
@@ -115,7 +115,7 @@ export function AppSidebar() {
               <SidebarMenuButton
                 isActive={pathname.startsWith(item.href)}
                 render={<Link href={item.href} />}
-                className="text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+                className="text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
               >
                 <item.icon className="h-4 w-4" />
                 <span className="font-medium">{item.title}</span>

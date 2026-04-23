@@ -27,7 +27,7 @@ const statusConfig: Record<string, { icon: typeof Circle; color: string; label: 
   IN_PROGRESS: { icon: Circle, color: "text-[oklch(0.65_0.2_265)]", label: "In progress" },
   BLOCKED: { icon: Lock, color: "text-red-400", label: "Blocked" },
   SKIPPED: { icon: SkipForward, color: "text-muted-foreground", label: "Skipped" },
-  NOT_STARTED: { icon: Circle, color: "text-white/20", label: "Not started" },
+  NOT_STARTED: { icon: Circle, color: "text-foreground/20", label: "Not started" },
 };
 
 const STATUS_OPTIONS = ["NOT_STARTED", "IN_PROGRESS", "COMPLETED", "BLOCKED", "SKIPPED"] as const;
@@ -61,7 +61,7 @@ export function MilestonesCard({
   });
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-5 glow-card">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 glow-card">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Milestones
@@ -83,7 +83,7 @@ export function MilestonesCard({
           <Button
             size="sm"
             variant="outline"
-            className="border-white/10 bg-white/5 hover:bg-white/10"
+            className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10"
             onClick={() => seed.mutate({ studentId })}
             disabled={seed.isPending}
           >
@@ -110,14 +110,14 @@ export function MilestonesCard({
                       render={
                         <button
                           title="Change status"
-                          className="rounded-full hover:bg-white/5 p-0.5 transition-colors disabled:opacity-50"
+                          className="rounded-full hover:bg-foreground/5 p-0.5 transition-colors disabled:opacity-50"
                           disabled={updateStatus.isPending}
                         />
                       }
                     >
                       <Icon className={`h-4 w-4 shrink-0 ${config.color}`} />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="border-white/10 bg-[oklch(0.13_0.005_270)]">
+                    <DropdownMenuContent align="start" className="border-foreground/10 bg-popover">
                       {STATUS_OPTIONS.map((s) => {
                         const optConfig = statusConfig[s];
                         const OptIcon = optConfig.icon;
@@ -137,7 +137,7 @@ export function MilestonesCard({
                     </DropdownMenuContent>
                   </DropdownMenu>
                   {!isLast && (
-                    <div className="w-px flex-1 min-h-[16px] bg-white/10 mt-1" />
+                    <div className="w-px flex-1 min-h-[16px] bg-foreground/10 mt-1" />
                   )}
                 </div>
 

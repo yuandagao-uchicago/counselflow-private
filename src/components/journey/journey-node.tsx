@@ -151,7 +151,7 @@ export function JourneyNode({ milestone, side, isLast, studentId, isCurrent }: J
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="start"
-            className="border-white/10 bg-[oklch(0.13_0.005_270)]"
+            className="border-foreground/10 bg-popover"
           >
             {STATUS_OPTIONS.map((s) => (
               <DropdownMenuItem
@@ -260,7 +260,7 @@ function NodeVisual({
   }
   if (isSkipped) {
     return (
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/5 border-2 border-dashed border-white/20 transition-transform hover:scale-105">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground/5 border-2 border-dashed border-foreground/20 transition-transform hover:scale-105">
         <SkipForward className="h-6 w-6 text-muted-foreground" />
       </div>
     );
@@ -282,13 +282,13 @@ function NodeVisual({
   }
   if (isLocked) {
     return (
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/5 border border-white/10 transition-transform hover:scale-105">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground/5 border border-foreground/10 transition-transform hover:scale-105">
         <Lock className="h-5 w-5 text-muted-foreground/50" />
       </div>
     );
   }
   return (
-    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10 transition-transform hover:scale-105">
+    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground/10 transition-transform hover:scale-105">
       <Circle className="h-6 w-6 text-muted-foreground" />
     </div>
   );
@@ -324,7 +324,7 @@ function ProgressCard({
     : "text-muted-foreground";
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-4 glow-card">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-4 glow-card">
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold leading-tight truncate">{milestone.title}</p>
@@ -338,7 +338,7 @@ function ProgressCard({
         <span className="text-muted-foreground">Completion</span>
         <span className={`font-bold font-mono ${accent}`}>{completion}%</span>
       </div>
-      <div className="relative h-1.5 rounded-full bg-white/5 overflow-hidden mb-3">
+      <div className="relative h-1.5 rounded-full bg-foreground/5 overflow-hidden mb-3">
         <div
           className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${
             isDone

@@ -38,7 +38,7 @@ export function TagInput({
   }
 
   return (
-    <div className={`rounded-md border border-white/10 bg-white/5 px-2 py-1.5 flex flex-wrap gap-1.5 items-center ${className || ""}`}>
+    <div className={`rounded-md border border-foreground/10 bg-foreground/5 px-2 py-1.5 flex flex-wrap gap-1.5 items-center ${className || ""}`}>
       {value.map((tag) => (
         <Badge
           key={tag}
@@ -48,7 +48,7 @@ export function TagInput({
           {tag}
           <button
             type="button"
-            className="ml-0.5 rounded-sm hover:bg-white/10 p-0.5"
+            className="ml-0.5 rounded-sm hover:bg-foreground/10 p-0.5"
             onClick={() => onChange(value.filter((t) => t !== tag))}
           >
             <X className="h-3 w-3" />

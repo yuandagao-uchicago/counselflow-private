@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
  */
 export function IntegrationsPanel() {
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-6 space-y-5">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-6 space-y-5">
       <div>
         <h2 className="text-lg font-semibold">Meeting capture</h2>
         <p className="text-sm text-muted-foreground mt-0.5">
@@ -73,9 +73,9 @@ function IntegrationRow(props: {
   status: Status;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded-xl bg-white/[0.03] p-4">
+    <div className="flex items-start justify-between gap-4 rounded-xl bg-foreground/[0.03] p-4">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-foreground/5">
           {props.icon}
         </div>
         <div>

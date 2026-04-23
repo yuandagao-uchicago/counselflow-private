@@ -65,7 +65,7 @@ export default function StudentsPage() {
             placeholder="Search students..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-white/5 border-white/10"
+            className="pl-9 bg-foreground/5 border-foreground/10"
           />
         </div>
       </div>
@@ -77,7 +77,7 @@ export default function StudentsPage() {
           ))}
         </div>
       ) : !data?.students.length ? (
-        <div className="rounded-2xl border border-white/[0.06] bg-card p-16 text-center">
+        <div className="rounded-2xl border border-foreground/[0.06] bg-card p-16 text-center">
           <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] flex items-center justify-center mb-4 shadow-lg shadow-[oklch(0.65_0.2_265_/_20%)]">
             <GraduationCap className="h-8 w-8 text-white" />
           </div>
@@ -94,7 +94,7 @@ export default function StudentsPage() {
               <AnimatedCard key={student.id}>
               <Link
                 href={`/students/${student.id}`}
-                className="block group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-card p-5 transition-all hover:border-white/[0.12] hover:shadow-lg hover:shadow-black/20"
+                className="block group relative overflow-hidden rounded-2xl border border-foreground/[0.06] bg-card p-5 transition-all hover:border-foreground/[0.12] hover:shadow-lg hover:shadow-black/20"
               >
                 {/* Gradient accent line */}
                 <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${phase.color} opacity-60`} />
@@ -119,7 +119,7 @@ export default function StudentsPage() {
                     {phase.label}
                   </Badge>
                   {student._count.tasks > 0 && (
-                    <Badge variant="secondary" className="bg-white/5 text-muted-foreground border-white/10 text-[10px]">
+                    <Badge variant="secondary" className="bg-foreground/5 text-muted-foreground border-foreground/10 text-[10px]">
                       {student._count.tasks} tasks
                     </Badge>
                   )}
@@ -163,7 +163,7 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <DialogContent className="border-white/10 bg-[oklch(0.13_0.005_270)]">
+    <DialogContent className="border-foreground/10 bg-popover">
       <form onSubmit={handleSubmit}>
         <DialogHeader>
           <DialogTitle>Add New Student</DialogTitle>
@@ -179,7 +179,7 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
                 id="firstName"
                 value={form.firstName}
                 onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                className="bg-white/5 border-white/10"
+                className="bg-foreground/5 border-foreground/10"
                 required
               />
             </div>
@@ -189,7 +189,7 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
                 id="lastName"
                 value={form.lastName}
                 onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                className="bg-white/5 border-white/10"
+                className="bg-foreground/5 border-foreground/10"
                 required
               />
             </div>
@@ -201,7 +201,7 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="bg-white/5 border-white/10"
+              className="bg-foreground/5 border-foreground/10"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -211,7 +211,7 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
                 id="highSchool"
                 value={form.highSchool}
                 onChange={(e) => setForm({ ...form, highSchool: e.target.value })}
-                className="bg-white/5 border-white/10"
+                className="bg-foreground/5 border-foreground/10"
               />
             </div>
             <div className="space-y-2">
@@ -221,7 +221,7 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
                 type="number"
                 value={form.graduationYear}
                 onChange={(e) => setForm({ ...form, graduationYear: parseInt(e.target.value) })}
-                className="bg-white/5 border-white/10"
+                className="bg-foreground/5 border-foreground/10"
                 required
               />
             </div>

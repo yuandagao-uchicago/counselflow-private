@@ -65,7 +65,7 @@ export function RecallBotPanel({
   const statusMeta = existingBotStatus ? statusStyles[existingBotStatus] : null;
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-5 space-y-4">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Bot className="h-4 w-4 text-[oklch(0.75_0.15_265)]" />
@@ -88,7 +88,7 @@ export function RecallBotPanel({
           <Button
             variant="outline"
             size="sm"
-            className="border-white/10 bg-white/5 hover:bg-white/10"
+            className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10"
             onClick={() => refresh.mutate({ meetingId })}
             disabled={refresh.isPending}
           >
@@ -116,7 +116,7 @@ export function RecallBotPanel({
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://zoom.us/j/12345… or https://meet.google.com/…"
-              className="bg-white/5 border-white/10 text-sm"
+              className="bg-foreground/5 border-foreground/10 text-sm"
             />
             <Button
               className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0 shrink-0"

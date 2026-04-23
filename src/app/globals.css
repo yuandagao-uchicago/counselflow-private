@@ -10,6 +10,7 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-heading: var(--font-heading);
+  --font-display: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,55 +50,107 @@
 }
 
 /* =============================================
-   CounselFlow Dark Theme — Apple Keynote x Netflix
+   LIGHT theme (default if no .dark on <html>)
    ============================================= */
-
 :root {
-  /* Force dark by default */
-  --background: oklch(0.09 0.005 270);
-  --foreground: oklch(0.95 0 0);
-  --card: oklch(0.13 0.005 270);
-  --card-foreground: oklch(0.95 0 0);
-  --popover: oklch(0.13 0.005 270);
-  --popover-foreground: oklch(0.95 0 0);
+  --background: oklch(0.99 0.005 280);
+  --foreground: oklch(0.18 0.02 265);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.02 265);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.02 265);
 
-  /* Primary: vibrant blue-violet gradient anchor */
-  --primary: oklch(0.65 0.2 265);
-  --primary-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.55 0.22 280);
+  --primary-foreground: oklch(0.99 0 0);
 
-  --secondary: oklch(0.18 0.01 270);
-  --secondary-foreground: oklch(0.9 0 0);
+  --secondary: oklch(0.96 0.01 280);
+  --secondary-foreground: oklch(0.25 0.02 265);
 
-  --muted: oklch(0.18 0.005 270);
-  --muted-foreground: oklch(0.55 0 0);
+  --muted: oklch(0.95 0.008 280);
+  --muted-foreground: oklch(0.48 0.02 265);
 
-  --accent: oklch(0.18 0.015 270);
-  --accent-foreground: oklch(0.95 0 0);
+  --accent: oklch(0.95 0.02 285);
+  --accent-foreground: oklch(0.25 0.02 265);
 
-  --destructive: oklch(0.65 0.2 25);
+  --destructive: oklch(0.58 0.22 25);
 
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.65 0.2 265);
+  --border: oklch(0.25 0.02 265 / 10%);
+  --input: oklch(0.25 0.02 265 / 12%);
+  --ring: oklch(0.55 0.22 280);
 
-  /* Charts — vivid palette */
-  --chart-1: oklch(0.65 0.2 265);
-  --chart-2: oklch(0.7 0.18 155);
-  --chart-3: oklch(0.75 0.15 50);
-  --chart-4: oklch(0.6 0.22 330);
-  --chart-5: oklch(0.7 0.2 200);
+  --chart-1: oklch(0.55 0.22 280);
+  --chart-2: oklch(0.6 0.18 155);
+  --chart-3: oklch(0.65 0.15 50);
+  --chart-4: oklch(0.55 0.22 330);
+  --chart-5: oklch(0.6 0.2 200);
 
   --radius: 0.75rem;
 
-  /* Sidebar — slightly lighter surface */
-  --sidebar: oklch(0.11 0.005 270);
-  --sidebar-foreground: oklch(0.9 0 0);
-  --sidebar-primary: oklch(0.65 0.2 265);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.16 0.015 265);
-  --sidebar-accent-foreground: oklch(0.95 0 0);
+  --sidebar: oklch(0.98 0.008 280);
+  --sidebar-foreground: oklch(0.25 0.02 265);
+  --sidebar-primary: oklch(0.55 0.22 280);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.94 0.02 285);
+  --sidebar-accent-foreground: oklch(0.2 0.02 265);
+  --sidebar-border: oklch(0.25 0.02 265 / 8%);
+  --sidebar-ring: oklch(0.55 0.22 280);
+
+  /* Ambient backdrop colors (light) */
+  --ambient-a: oklch(0.65 0.2 280 / 8%);
+  --ambient-b: oklch(0.7 0.22 325 / 6%);
+  --ambient-c: oklch(0.8 0.15 210 / 5%);
+  --surface-grain: 0.015;
+}
+
+/* =============================================
+   DARK theme — cinematic, PandaScore-inspired
+   ============================================= */
+.dark {
+  --background: oklch(0.08 0.02 280);
+  --foreground: oklch(0.96 0.005 280);
+  --card: oklch(0.14 0.025 280);
+  --card-foreground: oklch(0.96 0.005 280);
+  --popover: oklch(0.14 0.025 280);
+  --popover-foreground: oklch(0.96 0.005 280);
+
+  --primary: oklch(0.7 0.22 285);
+  --primary-foreground: oklch(0.99 0 0);
+
+  --secondary: oklch(0.18 0.03 280);
+  --secondary-foreground: oklch(0.92 0.005 280);
+
+  --muted: oklch(0.18 0.02 280);
+  --muted-foreground: oklch(0.62 0.03 280);
+
+  --accent: oklch(0.2 0.04 285);
+  --accent-foreground: oklch(0.96 0.005 280);
+
+  --destructive: oklch(0.68 0.22 25);
+
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.7 0.22 285);
+
+  --chart-1: oklch(0.7 0.22 285);
+  --chart-2: oklch(0.72 0.18 155);
+  --chart-3: oklch(0.76 0.15 50);
+  --chart-4: oklch(0.62 0.22 330);
+  --chart-5: oklch(0.72 0.2 200);
+
+  --sidebar: oklch(0.1 0.025 280);
+  --sidebar-foreground: oklch(0.92 0.005 280);
+  --sidebar-primary: oklch(0.7 0.22 285);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.18 0.04 285);
+  --sidebar-accent-foreground: oklch(0.96 0.005 280);
   --sidebar-border: oklch(1 0 0 / 6%);
-  --sidebar-ring: oklch(0.65 0.2 265);
+  --sidebar-ring: oklch(0.7 0.22 285);
+
+  /* Ambient backdrop colors (dark — deeper, more saturated) */
+  --ambient-a: oklch(0.55 0.28 285 / 18%);
+  --ambient-b: oklch(0.55 0.3 330 / 12%);
+  --ambient-c: oklch(0.6 0.25 210 / 10%);
+  --surface-grain: 0.04;
 }
 
 @layer base {
@@ -112,6 +165,11 @@
   }
   html {
     @apply font-sans;
+  }
+  html:not(.dark) {
+    color-scheme: light;
+  }
+  html.dark {
     color-scheme: dark;
   }
   h1, h2, h3, h4, h5, h6 {
@@ -127,19 +185,58 @@
    Custom utility classes
    ============================================= */
 
-/* Glass card effect */
-.glass-card {
-  background: oklch(0.13 0.005 270 / 60%);
-  backdrop-filter: blur(20px);
-  border: 1px solid oklch(1 0 0 / 6%);
+/* Use the display font for large hero headlines */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
-/* Gradient text */
+/* Cinematic ambient backdrop — three radial light pools + subtle grain.
+   Sits as a fixed absolute layer behind everything. */
+.ambient-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, var(--ambient-a), transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 20%, var(--ambient-b), transparent 55%),
+    radial-gradient(ellipse 70% 40% at 60% 100%, var(--ambient-c), transparent 60%);
+  opacity: 1;
+}
+.ambient-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='1'/></svg>");
+  opacity: var(--surface-grain);
+  mix-blend-mode: overlay;
+}
+
+/* Glass card effect — adapts to theme */
+.glass-card {
+  background: color-mix(in oklab, var(--card) 70%, transparent);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+}
+
+/* Gradient text — richer, more cinematic */
 .gradient-text {
-  background: linear-gradient(135deg, oklch(0.75 0.18 265), oklch(0.7 0.2 200));
+  background: linear-gradient(
+    135deg,
+    oklch(0.7 0.25 285),
+    oklch(0.65 0.28 320),
+    oklch(0.7 0.22 240)
+  );
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease-in-out infinite;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 /* Subtle glow on hover for cards */
@@ -147,8 +244,9 @@
   transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
 }
 .glow-card:hover {
-  box-shadow: 0 0 20px oklch(0.65 0.2 265 / 10%), 0 4px 16px oklch(0 0 0 / 30%);
-  border-color: oklch(1 0 0 / 12%);
+  box-shadow: 0 0 24px oklch(from var(--primary) l c h / 12%),
+    0 8px 24px oklch(0 0 0 / 10%);
+  border-color: color-mix(in oklab, var(--primary) 20%, var(--border));
   transform: translateY(-1px);
 }
 
@@ -174,4 +272,20 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Subtle shimmer for loading states */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--primary) 10%, transparent),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
 }

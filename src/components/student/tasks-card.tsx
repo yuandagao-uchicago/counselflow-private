@@ -24,8 +24,8 @@ const priorityConfig: Record<string, { color: string; label: string }> = {
 
 const sourceLabels: Record<string, { label: string; style: string }> = {
   AI_EXTRACTED: { label: "AI", style: "bg-[oklch(0.65_0.2_265_/_15%)] text-[oklch(0.75_0.15_265)]" },
-  SYSTEM_GENERATED: { label: "System", style: "bg-white/5 text-muted-foreground" },
-  MANUAL: { label: "Manual", style: "bg-white/5 text-muted-foreground" },
+  SYSTEM_GENERATED: { label: "System", style: "bg-foreground/5 text-muted-foreground" },
+  MANUAL: { label: "Manual", style: "bg-foreground/5 text-muted-foreground" },
 };
 
 export function TasksCard({ tasks, studentId }: { tasks: Task[]; studentId: string }) {
@@ -41,7 +41,7 @@ export function TasksCard({ tasks, studentId }: { tasks: Task[]; studentId: stri
   });
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-5 glow-card">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 glow-card">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Open Tasks
@@ -65,7 +65,7 @@ export function TasksCard({ tasks, studentId }: { tasks: Task[]; studentId: stri
             return (
               <div
                 key={task.id}
-                className="flex items-start gap-3 rounded-xl bg-white/[0.03] p-3 hover:bg-white/[0.06] transition-colors group"
+                className="flex items-start gap-3 rounded-xl bg-foreground/[0.03] p-3 hover:bg-foreground/[0.06] transition-colors group"
               >
                 {/* Clickable status icon to complete */}
                 <button

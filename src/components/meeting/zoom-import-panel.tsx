@@ -34,7 +34,7 @@ export function ZoomImportPanel({
   });
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-5 space-y-4">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Video className="h-4 w-4 text-[oklch(0.7_0.18_220)]" />
@@ -54,7 +54,7 @@ export function ZoomImportPanel({
           <Button
             variant="outline"
             size="sm"
-            className="border-white/10 bg-white/5 hover:bg-white/10"
+            className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10"
             onClick={() => setExpanded((e) => !e)}
           >
             {expanded ? "Hide" : "Show recent recordings"}
@@ -83,7 +83,7 @@ export function ZoomImportPanel({
                 return (
                   <div
                     key={rec.uuid}
-                    className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.03] p-3"
+                    className="flex items-center justify-between gap-3 rounded-xl bg-foreground/[0.03] p-3"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate">{rec.topic}</p>

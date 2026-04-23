@@ -54,7 +54,7 @@ export function ProfileCard({ student }: ProfileCardProps) {
     student.personalNotes;
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-5 glow-card">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 glow-card">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Profile Overview
@@ -122,7 +122,7 @@ export function ProfileCard({ student }: ProfileCardProps) {
                   <Badge
                     key={interest}
                     variant="secondary"
-                    className="bg-white/5 text-muted-foreground border-white/10"
+                    className="bg-foreground/5 text-muted-foreground border-foreground/10"
                   >
                     {interest}
                   </Badge>
@@ -140,7 +140,7 @@ export function ProfileCard({ student }: ProfileCardProps) {
 
       {/* Personal notes */}
       {student.personalNotes && (
-        <div className="mt-5 pt-4 border-t border-white/[0.06]">
+        <div className="mt-5 pt-4 border-t border-foreground/[0.06]">
           <div className="flex items-center gap-2 text-sm font-medium mb-2">
             <Heart className="h-4 w-4 text-[oklch(0.7_0.2_330)]" />
             Counselor Notes

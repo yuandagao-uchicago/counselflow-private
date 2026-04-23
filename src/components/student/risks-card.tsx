@@ -18,7 +18,7 @@ const severityConfig: Record<string, { icon: typeof AlertTriangle; color: string
 
 export function RisksCard({ risks }: { risks: RiskFlag[] }) {
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card p-5 glow-card">
+    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 glow-card">
       <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
         Flagged Risks
       </h3>

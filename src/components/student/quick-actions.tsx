@@ -60,7 +60,7 @@ export function QuickActions({ studentId }: { studentId: string }) {
         </Button>
         <Button
           variant="outline"
-          className="border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+          className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10 transition-colors"
           render={<Link href={`/students/${studentId}/journey`} />}
         >
           <Map className="mr-2 h-4 w-4" />
@@ -68,7 +68,7 @@ export function QuickActions({ studentId }: { studentId: string }) {
         </Button>
         <Button
           variant="outline"
-          className="border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+          className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10 transition-colors"
           onClick={() => setMeetingDialogOpen(true)}
         >
           <Calendar className="mr-2 h-4 w-4" />
@@ -76,7 +76,7 @@ export function QuickActions({ studentId }: { studentId: string }) {
         </Button>
         <Button
           variant="outline"
-          className="border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+          className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10 transition-colors"
           onClick={() => toast.info("Draft communications coming soon!")}
         >
           <MessageSquare className="mr-2 h-4 w-4" />
@@ -84,7 +84,7 @@ export function QuickActions({ studentId }: { studentId: string }) {
         </Button>
         <Button
           variant="outline"
-          className="border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+          className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10 transition-colors"
           onClick={() => toast.info("Quick notes coming soon!")}
         >
           <FileText className="mr-2 h-4 w-4" />
@@ -133,7 +133,7 @@ function MeetingDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-white/10 bg-[oklch(0.13_0.005_270)]">
+      <DialogContent className="border-foreground/10 bg-popover">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -154,7 +154,7 @@ function MeetingDialog({
               <Input
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="bg-white/5 border-white/10"
+                className="bg-foreground/5 border-foreground/10"
                 placeholder="e.g., Check-in, School List Review"
                 required
               />
@@ -165,7 +165,7 @@ function MeetingDialog({
                 type="datetime-local"
                 value={form.scheduledAt}
                 onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
-                className="bg-white/5 border-white/10"
+                className="bg-foreground/5 border-foreground/10"
                 required
               />
             </div>
@@ -174,7 +174,7 @@ function MeetingDialog({
               <Input
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
-                className="bg-white/5 border-white/10"
+                className="bg-foreground/5 border-foreground/10"
                 placeholder="e.g., Zoom, Office, Phone"
               />
             </div>

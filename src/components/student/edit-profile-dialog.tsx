@@ -132,7 +132,7 @@ export function EditProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-white/10 bg-[oklch(0.13_0.005_270)] max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="border-foreground/10 bg-popover max-w-2xl max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Edit student profile</DialogTitle>
@@ -149,7 +149,7 @@ export function EditProfileDialog({
                   <Input
                     value={form.firstName}
                     onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                    className="bg-white/5 border-white/10"
+                    className="bg-foreground/5 border-foreground/10"
                     required
                   />
                 </Field>
@@ -157,7 +157,7 @@ export function EditProfileDialog({
                   <Input
                     value={form.lastName}
                     onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                    className="bg-white/5 border-white/10"
+                    className="bg-foreground/5 border-foreground/10"
                     required
                   />
                 </Field>
@@ -167,7 +167,7 @@ export function EditProfileDialog({
                   <Input
                     value={form.preferredName}
                     onChange={(e) => setForm({ ...form, preferredName: e.target.value })}
-                    className="bg-white/5 border-white/10"
+                    className="bg-foreground/5 border-foreground/10"
                     placeholder="optional"
                   />
                 </Field>
@@ -176,7 +176,7 @@ export function EditProfileDialog({
                     type="email"
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="bg-white/5 border-white/10"
+                    className="bg-foreground/5 border-foreground/10"
                   />
                 </Field>
               </div>
@@ -184,7 +184,7 @@ export function EditProfileDialog({
                 <Input
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="bg-white/5 border-white/10"
+                  className="bg-foreground/5 border-foreground/10"
                 />
               </Field>
             </Section>
@@ -196,7 +196,7 @@ export function EditProfileDialog({
                   <Input
                     value={form.highSchool}
                     onChange={(e) => setForm({ ...form, highSchool: e.target.value })}
-                    className="bg-white/5 border-white/10"
+                    className="bg-foreground/5 border-foreground/10"
                   />
                 </Field>
                 <Field label="Graduation year">
@@ -204,7 +204,7 @@ export function EditProfileDialog({
                     type="number"
                     value={form.graduationYear}
                     onChange={(e) => setForm({ ...form, graduationYear: parseInt(e.target.value) })}
-                    className="bg-white/5 border-white/10"
+                    className="bg-foreground/5 border-foreground/10"
                   />
                 </Field>
               </div>
@@ -214,7 +214,7 @@ export function EditProfileDialog({
                     value={form.gradeLevel}
                     onValueChange={(v) => setForm({ ...form, gradeLevel: v as (typeof GRADES)[number] })}
                   >
-                    <SelectTrigger className="bg-white/5 border-white/10">
+                    <SelectTrigger className="bg-foreground/5 border-foreground/10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -231,7 +231,7 @@ export function EditProfileDialog({
                     value={form.phase}
                     onValueChange={(v) => setForm({ ...form, phase: v as (typeof PHASES)[number] })}
                   >
-                    <SelectTrigger className="bg-white/5 border-white/10">
+                    <SelectTrigger className="bg-foreground/5 border-foreground/10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -257,7 +257,7 @@ export function EditProfileDialog({
                     max="4"
                     value={form.gpaUnweighted}
                     onChange={(e) => setForm({ ...form, gpaUnweighted: e.target.value })}
-                    className="bg-white/5 border-white/10"
+                    className="bg-foreground/5 border-foreground/10"
                     placeholder="3.85"
                   />
                 </Field>
@@ -269,7 +269,7 @@ export function EditProfileDialog({
                     max="5"
                     value={form.gpaWeighted}
                     onChange={(e) => setForm({ ...form, gpaWeighted: e.target.value })}
-                    className="bg-white/5 border-white/10"
+                    className="bg-foreground/5 border-foreground/10"
                     placeholder="4.2"
                   />
                 </Field>
@@ -282,7 +282,7 @@ export function EditProfileDialog({
                     max="1600"
                     value={form.satScore}
                     onChange={(e) => setForm({ ...form, satScore: e.target.value })}
-                    className="bg-white/5 border-white/10"
+                    className="bg-foreground/5 border-foreground/10"
                     placeholder="1480"
                   />
                 </Field>
@@ -293,7 +293,7 @@ export function EditProfileDialog({
                     max="36"
                     value={form.actScore}
                     onChange={(e) => setForm({ ...form, actScore: e.target.value })}
-                    className="bg-white/5 border-white/10"
+                    className="bg-foreground/5 border-foreground/10"
                     placeholder="33"
                   />
                 </Field>
@@ -303,7 +303,7 @@ export function EditProfileDialog({
                   <Input
                     value={form.classRank}
                     onChange={(e) => setForm({ ...form, classRank: e.target.value })}
-                    className="bg-white/5 border-white/10"
+                    className="bg-foreground/5 border-foreground/10"
                     placeholder="e.g., 12/450"
                   />
                 </Field>
@@ -311,7 +311,7 @@ export function EditProfileDialog({
                   <Input
                     value={form.courseRigor}
                     onChange={(e) => setForm({ ...form, courseRigor: e.target.value })}
-                    className="bg-white/5 border-white/10"
+                    className="bg-foreground/5 border-foreground/10"
                     placeholder="e.g., 8 APs, 3 honors"
                   />
                 </Field>
@@ -332,7 +332,7 @@ export function EditProfileDialog({
                   value={form.interests}
                   onChange={(v) => setForm({ ...form, interests: v })}
                   placeholder="Debate team, film photography…"
-                  badgeClassName="bg-white/5 text-muted-foreground border-white/10"
+                  badgeClassName="bg-foreground/5 text-muted-foreground border-foreground/10"
                 />
               </Field>
             </Section>
@@ -341,7 +341,7 @@ export function EditProfileDialog({
               <Textarea
                 value={form.personalNotes}
                 onChange={(e) => setForm({ ...form, personalNotes: e.target.value })}
-                className="bg-white/5 border-white/10 min-h-[80px]"
+                className="bg-foreground/5 border-foreground/10 min-h-[80px]"
                 placeholder="Private notes only you can see — family context, strategy, anything to remember."
               />
             </Section>
@@ -351,7 +351,7 @@ export function EditProfileDialog({
             <Button
               type="button"
               variant="outline"
-              className="border-white/10 bg-white/5"
+              className="border-foreground/10 bg-foreground/5"
               onClick={() => onOpenChange(false)}
             >
               Cancel

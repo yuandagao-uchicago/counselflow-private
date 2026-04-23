@@ -14,7 +14,7 @@ export default function SettingsPage() {
         <IntegrationsPanel />
       </Suspense>
 
-      <div className="rounded-2xl border border-white/[0.06] bg-card p-6">
+      <div className="rounded-2xl border border-foreground/[0.06] bg-card p-6">
         <h2 className="text-lg font-semibold mb-4">Account</h2>
         <UserProfile
           routing="hash"
