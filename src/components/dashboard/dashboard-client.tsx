@@ -20,6 +20,7 @@ import {
   AnimatedCard,
   motion,
 } from "@/components/shared/motion";
+import { SchedulingInboxCard } from "@/components/scheduling/scheduling-inbox-card";
 
 export function DashboardClient({
   greeting,
@@ -106,6 +107,15 @@ export function DashboardClient({
             </AnimatedCard>
           </StaggerList>
         )}
+
+        {/* Scheduling inbox — counter-proposals + awaiting student */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.5 }}
+        >
+          <SchedulingInboxCard />
+        </motion.div>
 
         {/* Content grid */}
         <div className="grid gap-5 md:grid-cols-2">

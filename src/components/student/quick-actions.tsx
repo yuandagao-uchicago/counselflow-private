@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sparkles, Calendar, MessageSquare, FileText, Loader2, Map } from "lucide-react";
+import { Sparkles, Calendar, MessageSquare, FileText, Loader2, Map, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,12 +16,15 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { RequestMeetingDialog } from "@/components/scheduling/request-meeting-dialog";
 
 export function QuickActions({ studentId }: { studentId: string }) {
   const router = useRouter();
   const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
+  const [requestMeetingOpen, setRequestMeetingOpen] = useState(false);
 
   const utils = trpc.useUtils();
+  const { data: student } = trpc.student.getById.useQuery({ id: studentId });
 
   const quickPrep = trpc.meeting.quickPrepBrief.useMutation({
     onSuccess: (data) => {
@@ -70,10 +73,19 @@ export function QuickActions({ studentId }: { studentId: string }) {
         <Button
           variant="outline"
           className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10 transition-colors"
+          onClick={() => setRequestMeetingOpen(true)}
+        >
+          <CalendarPlus className="mr-2 h-4 w-4" />
+          Request meeting
+        </Button>
+        <Button
+          variant="outline"
+          className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10 transition-colors"
           onClick={() => setMeetingDialogOpen(true)}
+          title="Schedule directly without sending the student a request"
         >
           <Calendar className="mr-2 h-4 w-4" />
-          Schedule Meeting
+          Schedule directly
         </Button>
         <Button
           variant="outline"
@@ -97,6 +109,13 @@ export function QuickActions({ studentId }: { studentId: string }) {
         studentId={studentId}
         open={meetingDialogOpen}
         onOpenChange={setMeetingDialogOpen}
+      />
+
+      <RequestMeetingDialog
+        studentId={studentId}
+        open={requestMeetingOpen}
+        onOpenChange={setRequestMeetingOpen}
+        studentEmail={student?.email}
       />
     </>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, Circle, Lock, SkipForward, Sparkles, ArrowRight } from "lucide-react";
+import { CheckCircle2, Circle, Lock, SkipForward, Sparkles, ArrowRight, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -60,21 +60,47 @@ export function MilestonesCard({
     onError: (err) => toast.error(err.message || "Failed to seed"),
   });
 
+  const sync = trpc.milestone.syncFromData.useMutation({
+    onSuccess: (res) => {
+      utils.student.getById.invalidate({ id: studentId });
+      utils.milestone.list.invalidate({ studentId });
+      if (res.updated === 0) {
+        toast.info("Milestones already match the student's state.");
+      } else {
+        toast.success(`Updated ${res.updated} milestone${res.updated === 1 ? "" : "s"} from current data.`);
+      }
+    },
+    onError: (err) => toast.error(err.message || "Failed to sync"),
+  });
+
   return (
     <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 glow-card">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Milestones
         </h3>
-        {milestones.length > 0 && (
-          <Link
-            href={`/students/${studentId}/journey`}
-            className="inline-flex items-center gap-1 text-xs text-[oklch(0.75_0.15_265)] hover:underline"
-          >
-            Journey
-            <ArrowRight className="h-3 w-3" />
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          {milestones.length > 0 && (
+            <button
+              onClick={() => sync.mutate({ studentId })}
+              disabled={sync.isPending}
+              title="Recompute milestone status from current student data (apps, essays, scores, etc.)"
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <RefreshCw className={`h-3 w-3 ${sync.isPending ? "animate-spin" : ""}`} />
+              Sync
+            </button>
+          )}
+          {milestones.length > 0 && (
+            <Link
+              href={`/students/${studentId}/journey`}
+              className="inline-flex items-center gap-1 text-xs text-[oklch(0.75_0.15_265)] hover:underline"
+            >
+              Journey
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          )}
+        </div>
       </div>
 
       {milestones.length === 0 ? (

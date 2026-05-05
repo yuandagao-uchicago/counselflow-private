@@ -3,6 +3,7 @@ import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 import { verifyStudentOwnership } from "../lib/tenant";
 import { computeMilestoneDates } from "@/lib/milestone-templates";
+import { reconcileMilestonesForStudent } from "@/lib/milestone-derivation";
 
 export const studentRouter = router({
   list: protectedProcedure
@@ -56,6 +57,16 @@ export const studentRouter = router({
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
+      // Verify ownership before reconciling so we don't leak a status
+      // update onto a student belonging to a different counselor.
+      const owned = await prisma.student.findFirst({
+        where: { id: input.id, counselorId: ctx.counselorId },
+        select: { id: true },
+      });
+      if (owned) {
+        await reconcileMilestonesForStudent(owned.id);
+      }
+
       const student = await prisma.student.findFirst({
         where: { id: input.id, counselorId: ctx.counselorId },
         include: {

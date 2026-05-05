@@ -11,6 +11,9 @@ const isPublicRoute = createRouteMatcher([
   // infra, not from the signed-in browser. The route validates its own
   // authenticity via a signature on the body.
   "/api/blob/upload",
+  // Public meeting-RSVP page — accessed by students via emailed magic link.
+  // Auth is enforced inside the public router by token verification.
+  "/respond(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

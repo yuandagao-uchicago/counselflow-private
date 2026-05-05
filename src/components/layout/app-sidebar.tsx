@@ -8,6 +8,7 @@ import {
   CheckCircle,
   Settings,
   Sparkles,
+  FileSpreadsheet,
 } from "lucide-react";
 import {
   Sidebar,
@@ -34,6 +35,11 @@ const navItems = [
     title: "Students",
     href: "/students",
     icon: Users,
+  },
+  {
+    title: "Readiness",
+    href: "/readiness",
+    icon: FileSpreadsheet,
   },
   {
     title: "Approvals",

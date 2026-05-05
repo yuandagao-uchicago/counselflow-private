@@ -3,6 +3,7 @@ import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 import { verifyStudentOwnership } from "../lib/tenant";
 import { computeMilestoneDates } from "@/lib/milestone-templates";
+import { reconcileMilestonesForStudent } from "@/lib/milestone-derivation";
 
 const STATUSES = ["NOT_STARTED", "IN_PROGRESS", "BLOCKED", "COMPLETED", "SKIPPED"] as const;
 
@@ -11,6 +12,9 @@ export const milestoneRouter = router({
     .input(z.object({ studentId: z.string() }))
     .query(async ({ ctx, input }) => {
       await verifyStudentOwnership(ctx.counselorId, input.studentId);
+      // Reconcile transparently on read so the timeline always reflects
+      // current student state. Cheap: bounded by ~12 templates.
+      await reconcileMilestonesForStudent(input.studentId);
       return prisma.milestone.findMany({
         where: { studentId: input.studentId },
         orderBy: { sortOrder: "asc" },
@@ -72,6 +76,23 @@ export const milestoneRouter = router({
         })),
       });
 
+      // Auto-resolve from current state right after seeding so the new
+      // milestones don't all start at NOT_STARTED for a mid-cycle student.
+      await reconcileMilestonesForStudent(student.id);
+
       return { created: toCreate.length };
+    }),
+
+  /**
+   * Re-run the derivation rules and report what changed. Used by the
+   * "Sync from data" button on the journey UI for the rare case where
+   * something falls out of sync (e.g. data imported via a backfill).
+   */
+  syncFromData: protectedProcedure
+    .input(z.object({ studentId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await verifyStudentOwnership(ctx.counselorId, input.studentId);
+      const result = await reconcileMilestonesForStudent(input.studentId);
+      return { updated: result.changes.length, changes: result.changes };
     }),
 });

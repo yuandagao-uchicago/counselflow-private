@@ -5,7 +5,12 @@
       "Bash(npm run *)",
       "Bash(curl -s -o /dev/null -w \"Status: %{http_code}\\\\n\" http://localhost:3000)",
       "Bash(curl -s -o /dev/null -w \"sign-in: %{http_code}\\\\n\" http://localhost:3000/sign-in)",
-      "Bash(curl -s -o /dev/null -w \"dashboard: %{http_code}\\\\n\" http://localhost:3000/dashboard)"
+      "Bash(curl -s -o /dev/null -w \"dashboard: %{http_code}\\\\n\" http://localhost:3000/dashboard)",
+      "Bash(npm ls *)",
+      "Bash(nslookup *)",
+      "Bash(ipconfig *)",
+      "PowerShell(Get-DnsClientServerAddress *)",
+      "PowerShell(Test-NetConnection *)"
     ]
   }
 }

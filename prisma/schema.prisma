@@ -171,6 +171,43 @@ enum RiskSeverity {
   CRITICAL
 }
 
+enum RequirementItemKind {
+  TRANSCRIPT
+  TEST_SCORES
+  ACTIVITIES_LIST
+  COMMON_APP_ESSAY
+  SUPPLEMENT_ESSAY
+  RECOMMENDATION
+  COUNSELOR_LETTER
+  PORTFOLIO
+  INTERVIEW
+  FINANCIAL_AID
+  APPLICATION_FORM
+  CUSTOM
+}
+
+enum RequirementItemStatus {
+  PENDING
+  IN_PROGRESS
+  WAITING_ON_EXTERNAL
+  DONE
+  NOT_APPLICABLE
+}
+
+enum MeetingRequestStatus {
+  AWAITING_STUDENT     // sent, waiting for response
+  COUNTER_PROPOSED     // student proposed an alternative time
+  CONFIRMED            // student picked a slot; Meeting created
+  CANCELLED            // counselor cancelled before confirmation
+  EXPIRED              // magic link expired without response
+}
+
+enum MeetingRequestSlotStatus {
+  PROPOSED
+  CHOSEN
+  REJECTED
+}
+
 // =============================================
 // USER (synced from Clerk on first login)
 // =============================================
@@ -193,6 +230,7 @@ model User {
   reviewQueue   ReviewQueueItem[]
   aiOutputs     AIOutput[]
   integrations  Integration[]
+  meetingRequests MeetingRequest[]
 }
 
 // =============================================
@@ -271,6 +309,7 @@ model Student {
   communications Communication[]
   recommenders   StudentRecommender[]
   riskFlags      RiskFlag[]
+  meetingRequests MeetingRequest[]
 
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -294,6 +333,7 @@ model Guardian {
   notes            String?
 
   communications   Communication[]
+  meetingRequests  MeetingRequest[]
 
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
@@ -377,6 +417,7 @@ model Application {
   essays            EssayArtifact[]
   recommenders      StudentRecommender[]
   submissionEvents  SubmissionEvent[]
+  requirementItems  ApplicationRequirementItem[]
 
   notes             String?
 
@@ -579,6 +620,10 @@ model Meeting {
   actionItems    Json?
   decisions      Json?
 
+  // The MeetingRequest that gave rise to this Meeting (if any).
+  // Created via the public RSVP flow, then linked here on confirmation.
+  meetingRequest MeetingRequest?
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -760,6 +805,113 @@ model ReviewQueueItem {
   updatedAt      DateTime     @updatedAt
 
   @@index([counselorId, status])
+}
+
+// =============================================
+// APPLICATION REQUIREMENTS (per-application checklist)
+// =============================================
+
+model ApplicationRequirementItem {
+  id             String                @id @default(cuid())
+  applicationId  String
+  application    Application           @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  kind           RequirementItemKind
+  label          String
+  description    String?
+  required       Boolean               @default(true)
+
+  status         RequirementItemStatus @default(PENDING)
+
+  // When this item is materialized as a specific underlying record, link it.
+  // The readiness engine uses these (or a derivationKey-based lookup) to
+  // auto-resolve status without manual checkboxes.
+  essayId        String?
+  recommenderId  String?
+  documentId     String?
+
+  // For derived items (transcript / test_scores / activities / common_app_essay),
+  // this key is how the readiness engine recomputes status from related records.
+  derivationKey  String?
+
+  dueDate        DateTime?
+  notes          String?
+  sortOrder      Int                   @default(0)
+
+  resolvedAt     DateTime?
+
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@index([applicationId])
+  @@index([applicationId, status])
+}
+
+// =============================================
+// MEETING REQUESTS (counselor → student RSVP via magic link)
+// =============================================
+
+model MeetingRequest {
+  id             String                @id @default(cuid())
+  counselorId    String
+  counselor      User                  @relation(fields: [counselorId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardianId     String?
+  guardian       Guardian?             @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+
+  // Magic-link token used in the public /respond/[token] URL.
+  // Indexed unique so the public RSVP route is a single key lookup.
+  token          String                @unique
+  expiresAt      DateTime              // links expire after N days
+
+  // Counselor's request payload
+  meetingType    String                @default("Check-in")
+  durationMins  Int                    @default(30)
+  message        String?               // optional note shown to student
+  ccGuardian     Boolean               @default(false)
+  location       String?               // "Zoom" / "Phone" / address
+
+  status         MeetingRequestStatus  @default(AWAITING_STUDENT)
+
+  // If student counter-proposed, store it here.
+  // We don't materialize a Slot for it because it's a single time the
+  // counselor must accept/reject, not part of the original menu.
+  counterProposalAt   DateTime?
+  counterProposalNote String?
+
+  // Once confirmed, link to the resulting Meeting.
+  meetingId      String?               @unique
+  meeting        Meeting?              @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+
+  // Lifecycle timestamps
+  sentAt         DateTime              @default(now())
+  respondedAt    DateTime?
+  remindedAt     DateTime?
+  confirmedAt    DateTime?
+  cancelledAt    DateTime?
+
+  slots          MeetingRequestSlot[]
+
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@index([counselorId, status])
+  @@index([studentId])
+}
+
+model MeetingRequestSlot {
+  id        String                    @id @default(cuid())
+  requestId String
+  request   MeetingRequest            @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  startAt   DateTime
+  status    MeetingRequestSlotStatus  @default(PROPOSED)
+  sortOrder Int                       @default(0)
+
+  createdAt DateTime                  @default(now())
+
+  @@index([requestId])
 }
 
 // =============================================
