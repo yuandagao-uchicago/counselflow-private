@@ -169,9 +169,13 @@ export function computeUrgency(deadline: Date | null, submittedAt: Date | null):
   if (submittedAt) return { urgency: "NORMAL", daysUntilDeadline: null };
   if (!deadline) return { urgency: "NORMAL", daysUntilDeadline: null };
 
-  const now = Date.now();
-  const ms = deadline.getTime() - now;
-  const days = Math.ceil(ms / 86_400_000);
+  // Compare by calendar date (midnight-to-midnight) so urgency doesn't
+  // flip mid-day based on the exact timestamp.
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const deadlineDay = new Date(deadline);
+  deadlineDay.setHours(0, 0, 0, 0);
+  const days = Math.ceil((deadlineDay.getTime() - today.getTime()) / 86_400_000);
 
   if (days < 0) return { urgency: "OVERDUE", daysUntilDeadline: days };
   if (days <= 14) return { urgency: "DUE_SOON", daysUntilDeadline: days };
@@ -205,12 +209,13 @@ export function computeReadiness(
       required: r.item.required,
     }));
 
-  const completionPct = totalRequired === 0 ? 0 : Math.round((doneRequired / totalRequired) * 100);
+  // If nothing is required, treat as fully complete (nothing to do).
+  const completionPct = totalRequired === 0 ? 100 : Math.round((doneRequired / totalRequired) * 100);
 
   let state: ReadinessState;
   if (app.submittedAt || app.status === "SUBMITTED") {
     state = "SUBMITTED";
-  } else if (totalRequired > 0 && doneRequired === totalRequired) {
+  } else if (totalRequired === 0 || doneRequired === totalRequired) {
     state = "READY_FOR_REVIEW";
   } else if (doneRequired > 0) {
     state = "IN_PROGRESS";

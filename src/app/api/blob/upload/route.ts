@@ -94,10 +94,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(jsonResponse);
   } catch (error) {
     console.error("[blob/upload]", error);
-    return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 400 }
-    );
+    // Only expose safe, user-facing messages; suppress internal details
+    const message = (error as Error).message;
+    const safeMessage =
+      message.includes("Unauthorized") || message.includes("Missing studentId")
+        ? message
+        : "Upload failed. Please try again.";
+    return NextResponse.json({ error: safeMessage }, { status: 400 });
   }
 }
 

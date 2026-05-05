@@ -186,7 +186,7 @@ export async function reconcileMilestonesForStudent(
   const db = tx ?? prisma;
 
   const [snapshot, activitiesCount, milestones] = await Promise.all([
-    db.student.findUniqueOrThrow({
+    db.student.findUnique({
       where: { id: studentId },
       select: {
         id: true,
@@ -209,6 +209,12 @@ export async function reconcileMilestonesForStudent(
       select: { id: true, templateKey: true, status: true },
     }),
   ]);
+
+  // Student may have been deleted concurrently — exit gracefully.
+  // Also skip reconciliation for archived students (frozen state).
+  if (!snapshot || snapshot.status === "ARCHIVED") {
+    return { studentId, changes: [] };
+  }
 
   const state: StudentSnapshot = {
     id: snapshot.id,

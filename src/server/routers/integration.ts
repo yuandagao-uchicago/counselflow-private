@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 import {
@@ -10,7 +11,7 @@ import {
 import {
   createRecallBot,
   getRecallBot,
-  getRecallBotTranscript,
+  getRecallBotTranscriptWithRetry,
   latestBotStatus,
 } from "@/lib/integrations/recall";
 import { parseVTT } from "@/lib/vtt-parser";
@@ -95,14 +96,14 @@ export const integrationRouter = router({
         const meeting = await prisma.meeting.findFirst({
           where: { id: input.meetingId, counselorId: ctx.counselorId },
         });
-        if (!meeting) throw new Error("Meeting not found");
+        if (!meeting) throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found" });
 
         // Pull the VTT file from Zoom
         const vttText = await fetchZoomTranscript(ctx.counselorId, input.downloadUrl);
         const plainText = parseVTT(vttText);
 
         if (plainText.length < 10) {
-          throw new Error("Zoom transcript was empty");
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Zoom transcript was empty" });
         }
 
         // Mark source
@@ -140,15 +141,16 @@ export const integrationRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
         if (!process.env.RECALL_API_KEY) {
-          throw new Error(
-            "Recall.ai is not configured. Set RECALL_API_KEY in .env."
-          );
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "Recall.ai is not configured",
+          });
         }
 
         const meeting = await prisma.meeting.findFirst({
           where: { id: input.meetingId, counselorId: ctx.counselorId },
         });
-        if (!meeting) throw new Error("Meeting not found");
+        if (!meeting) throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found" });
 
         const bot = await createRecallBot({
           meetingUrl: input.meetingUrl,
@@ -179,7 +181,7 @@ export const integrationRouter = router({
         const meeting = await prisma.meeting.findFirst({
           where: { id: input.meetingId, counselorId: ctx.counselorId },
         });
-        if (!meeting?.recallBotId) throw new Error("No Recall bot for this meeting");
+        if (!meeting?.recallBotId) throw new TRPCError({ code: "NOT_FOUND", message: "No Recall bot for this meeting" });
 
         const bot = await getRecallBot(meeting.recallBotId);
         const status = latestBotStatus(bot);
@@ -193,7 +195,7 @@ export const integrationRouter = router({
         const isTerminal = ["done", "call_ended", "fatal"].includes(status);
         if (isTerminal && !meeting.summary) {
           try {
-            const transcript = await getRecallBotTranscript(meeting.recallBotId);
+            const transcript = await getRecallBotTranscriptWithRetry(meeting.recallBotId);
             if (transcript.length >= 10) {
               const result = await processMeetingNotes({
                 meetingId: meeting.id,

@@ -53,19 +53,30 @@ export const schoolRouter = router({
       // distinct, so normalize empty strings to null on the way in.
       const city = input.city?.trim() || null;
       const state = input.state?.trim() || null;
+      const name = input.name.trim();
 
       const existing = await prisma.school.findFirst({
-        where: { name: input.name, city, state },
+        where: { name, city, state },
       });
       if (existing) return existing;
 
-      return prisma.school.create({
-        data: {
-          name: input.name.trim(),
-          city,
-          state,
-          country: input.country,
-        },
-      });
+      try {
+        return await prisma.school.create({
+          data: { name, city, state, country: input.country },
+        });
+      } catch (err) {
+        // If a concurrent request created the same school between our
+        // findFirst and create, retry the lookup instead of crashing.
+        if (
+          err instanceof Error &&
+          err.message.includes("Unique constraint")
+        ) {
+          const retry = await prisma.school.findFirst({
+            where: { name, city, state },
+          });
+          if (retry) return retry;
+        }
+        throw err;
+      }
     }),
 });

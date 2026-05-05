@@ -27,7 +27,7 @@ export default function MeetingsPage({
 }) {
   const { studentId } = use(params);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { data: meetings, isLoading } = trpc.meeting.list.useQuery({ studentId });
+  const { data: meetings, isLoading, isError } = trpc.meeting.list.useQuery({ studentId });
   const utils = trpc.useUtils();
 
   const deleteMeeting = trpc.meeting.delete.useMutation({
@@ -68,7 +68,11 @@ export default function MeetingsPage({
         </Dialog>
       </div>
 
-      {isLoading ? (
+      {isError ? (
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+          <p className="text-sm text-destructive">Failed to load meetings. Please try refreshing.</p>
+        </div>
+      ) : isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-20 rounded-2xl" />

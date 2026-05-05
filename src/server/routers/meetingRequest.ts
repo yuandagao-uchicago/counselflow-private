@@ -226,6 +226,12 @@ export const meetingRequestRouter = router({
       if (req.status !== "COUNTER_PROPOSED" || !req.counterProposalAt) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "No counter-proposal to accept" });
       }
+      if (req.counterProposalAt.getTime() < Date.now()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "The proposed time has passed. Please propose new slots.",
+        });
+      }
 
       const startAt = req.counterProposalAt;
       const counselor = req.counselor;
@@ -330,6 +336,15 @@ export const meetingRequestRouter = router({
       const counselor = req.counselor;
 
       const updated = await prisma.$transaction(async (tx) => {
+        // Re-check status inside transaction to prevent race with concurrent acceptSlot
+        const current = await tx.meetingRequest.findUniqueOrThrow({ where: { id: req.id } });
+        if (current.status === "CONFIRMED" || current.status === "CANCELLED") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Cannot propose new slots — request is already ${current.status.toLowerCase()}.`,
+          });
+        }
+
         // Wipe old slots and counter-proposal; new menu, new email.
         await tx.meetingRequestSlot.deleteMany({ where: { requestId: req.id } });
         await tx.meetingRequestSlot.createMany({
@@ -401,7 +416,11 @@ export const meetingRequestRouter = router({
       });
       await prisma.meetingRequest.update({
         where: { id: req.id },
-        data: { remindedAt: new Date() },
+        data: {
+          remindedAt: new Date(),
+          // Extend expiry so the student has a fresh window to respond
+          expiresAt: new Date(Date.now() + REQUEST_TTL_DAYS * 86_400_000),
+        },
       });
       return { sent: send.sent };
     }),

@@ -61,7 +61,7 @@ export default function MeetingDetailPage({
     }
   }
 
-  const { data: meeting, isLoading } = trpc.meeting.getById.useQuery({ id: meetingId });
+  const { data: meeting, isLoading, isError } = trpc.meeting.getById.useQuery({ id: meetingId });
 
   const generatePrep = trpc.meeting.generatePrepBrief.useMutation({
     onSuccess: () => {
@@ -111,6 +111,14 @@ export default function MeetingDetailPage({
       <div className="space-y-6 page-enter">
         <Skeleton className="h-16 w-full rounded-2xl" />
         <Skeleton className="h-96 w-full rounded-2xl" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+        <p className="text-sm text-destructive">Failed to load meeting. Please try refreshing.</p>
       </div>
     );
   }

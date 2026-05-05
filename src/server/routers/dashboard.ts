@@ -36,7 +36,7 @@ export const dashboardRouter = router({
         where: {
           student: { counselorId: ctx.counselorId },
           status: { in: ["TODO", "IN_PROGRESS"] },
-          dueDate: { lt: new Date() },
+          dueDate: { lt: today },
         },
       }),
     ]);

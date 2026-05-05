@@ -47,13 +47,10 @@ export type SendResult = { sent: true; id: string } | { sent: false; reason: str
 export async function sendEmail(params: SendEmailParams): Promise<SendResult> {
   const r = client();
   if (!r) {
-    // Loud-but-safe: log the *content* of what would have gone out so the dev
-    // can paste it manually if they need to test the flow before wiring keys.
+    // Log subject only — avoid dumping full email body or recipient PII.
     console.warn(
       "[email] RESEND_API_KEY not set — email NOT sent. Subject:",
       params.subject,
-      "→",
-      params.to,
     );
     return { sent: false, reason: "RESEND_API_KEY not configured" };
   }

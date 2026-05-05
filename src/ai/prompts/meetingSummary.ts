@@ -114,8 +114,14 @@ Process these notes into a structured summary with action items, decisions, a fo
   );
   const response = result.response;
   const text = response.text();
-  const parsed = JSON.parse(text);
-  const summary = MeetingSummarySchema.parse(parsed);
+  let summary;
+  try {
+    const parsed = JSON.parse(text);
+    summary = MeetingSummarySchema.parse(parsed);
+  } catch (err) {
+    console.error("[meetingSummary] AI response parsing failed:", err, "raw:", text.slice(0, 500));
+    throw new Error("AI returned an invalid response. Please try again.");
+  }
 
   const usage = response.usageMetadata;
 

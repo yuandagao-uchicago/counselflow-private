@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Prisma } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 
@@ -174,9 +174,12 @@ export const reviewRouter = router({
       const item = await prisma.reviewQueueItem.findFirst({
         where: { id: input.reviewQueueItemId, counselorId: ctx.counselorId },
       });
-      if (!item) throw new Error("Review item not found");
+      if (!item) throw new TRPCError({ code: "NOT_FOUND", message: "Review item not found" });
+      if (item.status !== "PENDING") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: `Item is already ${item.status.toLowerCase()}` });
+      }
       if (item.entityType !== "communication_draft") {
-        throw new Error("This review item is not a communication draft");
+        throw new TRPCError({ code: "BAD_REQUEST", message: "This review item is not a communication draft" });
       }
       // Defense-in-depth: scope the update by counselorId on the Communication
       // itself. item was already verified counselor-owned, so this is a no-op
@@ -207,9 +210,12 @@ export const reviewRouter = router({
       const item = await prisma.reviewQueueItem.findFirst({
         where: { id: input.reviewQueueItemId, counselorId: ctx.counselorId },
       });
-      if (!item) throw new Error("Review item not found");
+      if (!item) throw new TRPCError({ code: "NOT_FOUND", message: "Review item not found" });
+      if (item.status !== "PENDING") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: `Item is already ${item.status.toLowerCase()}` });
+      }
       if (item.entityType !== "profile_extraction") {
-        throw new Error("This review item is not a profile extraction");
+        throw new TRPCError({ code: "BAD_REQUEST", message: "This review item is not a profile extraction" });
       }
 
       const doc = await prisma.document.findFirst({
@@ -218,7 +224,7 @@ export const reviewRouter = router({
           student: { counselorId: ctx.counselorId },
         },
       });
-      if (!doc) throw new Error("Linked document not found");
+      if (!doc) throw new TRPCError({ code: "NOT_FOUND", message: "Linked document not found" });
 
       const now = new Date();
 
@@ -227,36 +233,38 @@ export const reviewRouter = router({
         Object.entries(input.acceptedFields).filter(([, v]) => v !== undefined)
       );
 
-      // One transaction for all three writes — if any step fails, nothing
-      // persists. Previously the student.update ran outside the transaction,
-      // which could leave the profile updated but the review item still
-      // PENDING if the transaction crashed on the second statement.
-      const writes: Prisma.PrismaPromise<unknown>[] = [];
-      if (Object.keys(cleaned).length > 0) {
-        writes.push(
-          // updateMany with counselorId on the relation is a defense-in-depth
-          // guard: if doc.studentId ever referenced another counselor's student
-          // (shouldn't be possible since doc was fetched with counselorId),
-          // this is a no-op rather than a cross-tenant write.
-          prisma.student.updateMany({
+      // One transaction: apply fields + mark approved + update extraction status.
+      // Verify the student still exists before writing.
+      const result = await prisma.$transaction(async (tx) => {
+        let appliedFields = 0;
+
+        if (Object.keys(cleaned).length > 0) {
+          const updated = await tx.student.updateMany({
             where: { id: doc.studentId, counselorId: ctx.counselorId },
             data: cleaned,
-          })
-        );
-      }
-      writes.push(
-        prisma.reviewQueueItem.update({
+          });
+          if (updated.count === 0) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Student no longer exists — cannot apply extraction",
+            });
+          }
+          appliedFields = Object.keys(cleaned).length;
+        }
+
+        await tx.reviewQueueItem.update({
           where: { id: item.id },
           data: { status: "APPROVED", reviewedAt: now },
-        }),
-        prisma.document.update({
+        });
+        await tx.document.update({
           where: { id: doc.id },
           data: { extractionStatus: "APPLIED" },
-        })
-      );
-      await prisma.$transaction(writes);
+        });
 
-      return { ok: true, appliedFields: Object.keys(cleaned).length };
+        return { appliedFields };
+      });
+
+      return { ok: true, appliedFields: result.appliedFields };
     }),
 
   approve: protectedProcedure
@@ -265,7 +273,10 @@ export const reviewRouter = router({
       const item = await prisma.reviewQueueItem.findFirst({
         where: { id: input.id, counselorId: ctx.counselorId },
       });
-      if (!item) throw new Error("Review item not found");
+      if (!item) throw new TRPCError({ code: "NOT_FOUND", message: "Review item not found" });
+      if (item.status !== "PENDING") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: `Item is already ${item.status.toLowerCase()}` });
+      }
 
       const now = new Date();
 
@@ -302,7 +313,10 @@ export const reviewRouter = router({
       const item = await prisma.reviewQueueItem.findFirst({
         where: { id: input.id, counselorId: ctx.counselorId },
       });
-      if (!item) throw new Error("Review item not found");
+      if (!item) throw new TRPCError({ code: "NOT_FOUND", message: "Review item not found" });
+      if (item.status !== "PENDING") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: `Item is already ${item.status.toLowerCase()}` });
+      }
 
       // For communication drafts, delete the draft Communication so abandoned
       // drafts don't pile up. Keep the ReviewQueueItem for audit.

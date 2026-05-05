@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 import { verifyStudentOwnership } from "../lib/tenant";
@@ -34,7 +35,7 @@ export const milestoneRouter = router({
         where: { id: input.id, student: { counselorId: ctx.counselorId } },
         select: { id: true, status: true },
       });
-      if (!milestone) throw new Error("Milestone not found");
+      if (!milestone) throw new TRPCError({ code: "NOT_FOUND", message: "Milestone not found" });
 
       return prisma.milestone.update({
         where: { id: input.id },

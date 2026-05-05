@@ -218,8 +218,14 @@ ${context.riskFlags.length > 0
   );
   const response = result.response;
   const text = response.text();
-  const parsed = JSON.parse(text);
-  const prep = MeetingPrepSchema.parse(parsed);
+  let prep;
+  try {
+    const parsed = JSON.parse(text);
+    prep = MeetingPrepSchema.parse(parsed);
+  } catch (err) {
+    console.error("[meetingPrep] AI response parsing failed:", err, "raw:", text.slice(0, 500));
+    throw new Error("AI returned an invalid response. Please try again.");
+  }
 
   const usage = response.usageMetadata;
 

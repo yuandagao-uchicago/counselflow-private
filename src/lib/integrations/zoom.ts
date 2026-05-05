@@ -86,6 +86,12 @@ export async function refreshZoomToken(refreshToken: string): Promise<ZoomTokenR
 /**
  * Returns a valid access token for the counselor's Zoom integration,
  * refreshing it in-place if expired.
+ *
+ * Uses optimistic locking to prevent concurrent refreshes from
+ * overwriting each other's refresh tokens: the UPDATE includes a
+ * WHERE clause matching the old refreshToken so only the first
+ * concurrent caller's write succeeds. The loser re-reads and uses
+ * the winner's fresh access token.
  */
 export async function getValidZoomAccessToken(counselorId: string): Promise<string> {
   const integration = await prisma.integration.findUnique({
@@ -99,9 +105,31 @@ export async function getValidZoomAccessToken(counselorId: string): Promise<stri
 
   if (!isExpired) return integration.accessToken;
 
-  const refreshed = await refreshZoomToken(integration.refreshToken);
-  await prisma.integration.update({
-    where: { id: integration.id },
+  let refreshed: ZoomTokenResponse;
+  try {
+    refreshed = await refreshZoomToken(integration.refreshToken);
+  } catch (err) {
+    // If refresh token is fully expired (401/400), delete the integration
+    // so the user is prompted to reconnect on next attempt.
+    const msg = err instanceof Error ? err.message : "";
+    if (msg.includes("401") || msg.includes("400")) {
+      await prisma.integration.deleteMany({
+        where: { counselorId, provider: "zoom" },
+      });
+      throw new Error(
+        "Zoom session has expired. Please reconnect Zoom in Settings."
+      );
+    }
+    throw err;
+  }
+
+  // Optimistic lock: only update if refreshToken hasn't changed since we read it.
+  // If another request already refreshed, this returns { count: 0 }.
+  const updated = await prisma.integration.updateMany({
+    where: {
+      id: integration.id,
+      refreshToken: integration.refreshToken,
+    },
     data: {
       accessToken: refreshed.access_token,
       refreshToken: refreshed.refresh_token,
@@ -109,7 +137,17 @@ export async function getValidZoomAccessToken(counselorId: string): Promise<stri
       scopes: refreshed.scope,
     },
   });
-  return refreshed.access_token;
+
+  if (updated.count > 0) {
+    return refreshed.access_token;
+  }
+
+  // Another concurrent request won the refresh race — re-read their token.
+  const current = await prisma.integration.findUnique({
+    where: { counselorId_provider: { counselorId, provider: "zoom" } },
+  });
+  if (!current) throw new Error("Zoom integration was removed during refresh");
+  return current.accessToken;
 }
 
 export async function zoomGet<T>(

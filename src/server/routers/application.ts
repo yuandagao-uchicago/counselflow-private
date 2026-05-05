@@ -61,17 +61,27 @@ const ITEM_STATUSES = [
 
 /**
  * Verify that this counselor owns the application (via student relation).
- * Returns the student id for downstream operations.
+ * Returns the application id, studentId, and status for downstream checks.
  */
 async function verifyApplicationOwnership(counselorId: string, applicationId: string) {
   const app = await prisma.application.findFirst({
     where: { id: applicationId, student: { counselorId } },
-    select: { id: true, studentId: true },
+    select: { id: true, studentId: true, status: true },
   });
   if (!app) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Application not found" });
   }
   return app;
+}
+
+/** Throw if the application has already been submitted — items are locked. */
+function ensureNotSubmitted(app: { status: string }) {
+  if (app.status === "SUBMITTED") {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Cannot modify a submitted application. Change status first.",
+    });
+  }
 }
 
 // Shape we load for readiness computation. Kept in one place to keep
@@ -210,8 +220,16 @@ export const applicationRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await verifyApplicationOwnership(ctx.counselorId, input.id);
+      const app = await verifyApplicationOwnership(ctx.counselorId, input.id);
       const { id, ...data } = input;
+
+      // Validate status transitions. WITHDRAWN is a terminal state.
+      if (input.status && app.status === "WITHDRAWN" && input.status !== "WITHDRAWN") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot change status of a withdrawn application",
+        });
+      }
 
       // When status flips to SUBMITTED, stamp submittedAt. Counselor can
       // unflip; we don't auto-clear submittedAt on undo to keep the audit trail.
@@ -246,26 +264,30 @@ export const applicationRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await verifyApplicationOwnership(ctx.counselorId, input.applicationId);
+      const app = await verifyApplicationOwnership(ctx.counselorId, input.applicationId);
+      ensureNotSubmitted(app);
 
-      // Append to the bottom of the checklist.
-      const last = await prisma.applicationRequirementItem.findFirst({
-        where: { applicationId: input.applicationId },
-        orderBy: { sortOrder: "desc" },
-        select: { sortOrder: true },
-      });
-      const sortOrder = (last?.sortOrder ?? -1) + 1;
+      // Append to the bottom of the checklist. Use a transaction so
+      // concurrent addItem calls don't produce duplicate sortOrder values.
+      return prisma.$transaction(async (tx) => {
+        const last = await tx.applicationRequirementItem.findFirst({
+          where: { applicationId: input.applicationId },
+          orderBy: { sortOrder: "desc" },
+          select: { sortOrder: true },
+        });
+        const sortOrder = (last?.sortOrder ?? -1) + 1;
 
-      return prisma.applicationRequirementItem.create({
-        data: {
-          applicationId: input.applicationId,
-          kind: input.kind,
-          label: input.label,
-          required: input.required,
-          dueDate: input.dueDate ?? undefined,
-          notes: input.notes ?? undefined,
-          sortOrder,
-        },
+        return tx.applicationRequirementItem.create({
+          data: {
+            applicationId: input.applicationId,
+            kind: input.kind,
+            label: input.label,
+            required: input.required,
+            dueDate: input.dueDate ?? undefined,
+            notes: input.notes ?? undefined,
+            sortOrder,
+          },
+        });
       });
     }),
 
@@ -287,9 +309,10 @@ export const applicationRouter = router({
           id: input.id,
           application: { student: { counselorId: ctx.counselorId } },
         },
-        select: { id: true, status: true },
+        select: { id: true, status: true, application: { select: { status: true } } },
       });
       if (!item) throw new TRPCError({ code: "NOT_FOUND", message: "Item not found" });
+      ensureNotSubmitted(item.application);
 
       const { id, ...data } = input;
       // Stamp resolvedAt only on transitions where status is provided.
@@ -315,9 +338,10 @@ export const applicationRouter = router({
           id: input.id,
           application: { student: { counselorId: ctx.counselorId } },
         },
-        select: { id: true },
+        select: { id: true, application: { select: { status: true } } },
       });
       if (!item) throw new TRPCError({ code: "NOT_FOUND", message: "Item not found" });
+      ensureNotSubmitted(item.application);
 
       await prisma.applicationRequirementItem.delete({ where: { id: input.id } });
       return { ok: true };

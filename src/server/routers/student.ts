@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 import { verifyStudentOwnership } from "../lib/tenant";
@@ -11,7 +12,7 @@ export const studentRouter = router({
       z
         .object({
           status: z.enum(["PROSPECT", "ACTIVE", "DEFERRED", "GRADUATED", "ARCHIVED"]).optional(),
-          search: z.string().optional(),
+          search: z.string().min(1).max(100).optional(),
           limit: z.number().min(1).max(100).default(50),
           cursor: z.string().optional(),
         })
@@ -64,7 +65,11 @@ export const studentRouter = router({
         select: { id: true },
       });
       if (owned) {
-        await reconcileMilestonesForStudent(owned.id);
+        try {
+          await reconcileMilestonesForStudent(owned.id);
+        } catch {
+          // Reconciliation is best-effort — don't block the page load
+        }
       }
 
       const student = await prisma.student.findFirst({
@@ -99,7 +104,7 @@ export const studentRouter = router({
       });
 
       if (!student) {
-        throw new Error("Student not found");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Student not found" });
       }
 
       return student;
@@ -168,7 +173,7 @@ export const studentRouter = router({
         gradeLevel: z
           .enum(["FRESHMAN", "SOPHOMORE", "JUNIOR", "SENIOR", "GAP_YEAR", "TRANSFER"])
           .optional(),
-        graduationYear: z.number().optional(),
+        graduationYear: z.number().min(2024).max(2035).optional(),
         highSchool: z.string().optional().nullable(),
         gpaUnweighted: z.number().optional().nullable(),
         gpaWeighted: z.number().optional().nullable(),
@@ -221,7 +226,7 @@ export const studentRouter = router({
       const task = await prisma.task.findFirst({
         where: { id: input.taskId, student: { counselorId: ctx.counselorId } },
       });
-      if (!task) throw new Error("Task not found");
+      if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "Task not found" });
       return prisma.task.update({
         where: { id: input.taskId },
         data: { status: "COMPLETED", completedAt: new Date() },
@@ -235,7 +240,7 @@ export const studentRouter = router({
       const task = await prisma.task.findFirst({
         where: { id: input.taskId, student: { counselorId: ctx.counselorId } },
       });
-      if (!task) throw new Error("Task not found");
+      if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "Task not found" });
       await prisma.task.delete({ where: { id: input.taskId } });
       return { ok: true };
     }),

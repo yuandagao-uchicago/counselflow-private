@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { del as deleteBlob } from "@vercel/blob";
 import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
@@ -70,6 +71,18 @@ export const documentRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const student = await verifyStudentOwnership(ctx.counselorId, input.studentId);
+
+      // Dedup: reject if a document with this storageKey already exists
+      const existing = await prisma.document.findFirst({
+        where: { storageKey: input.storageKey, studentId: input.studentId },
+        select: { id: true },
+      });
+      if (existing) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "This document has already been uploaded",
+        });
+      }
 
       // 1. Create Document row with status PROCESSING
       const doc = await prisma.document.create({
@@ -156,11 +169,99 @@ export const documentRouter = router({
             extractionError: err instanceof Error ? err.message : String(err),
           },
         });
-        throw new Error(
-          `Upload saved, but AI extraction failed. ${
-            err instanceof Error ? err.message : "Unknown error"
-          }`
-        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Upload saved, but AI extraction failed. Please try again.",
+        });
+      }
+    }),
+
+  /** Re-run extraction on a FAILED document without re-uploading the blob. */
+  retryExtraction: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const doc = await prisma.document.findFirst({
+        where: {
+          id: input.id,
+          student: { counselorId: ctx.counselorId },
+        },
+        include: { student: true },
+      });
+      if (!doc) throw new TRPCError({ code: "NOT_FOUND", message: "Document not found" });
+      if (doc.extractionStatus !== "FAILED") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Only failed extractions can be retried",
+        });
+      }
+
+      await prisma.document.update({
+        where: { id: doc.id },
+        data: { extractionStatus: "PROCESSING", extractionError: null },
+      });
+
+      try {
+        const { extraction, usage } = await extractProfileFromDocument({
+          fileUrl: doc.storageUrl,
+          mimeType: doc.fileType,
+          currentStudent: {
+            firstName: doc.student.firstName,
+            lastName: doc.student.lastName,
+            hasGPA: doc.student.gpaUnweighted != null || doc.student.gpaWeighted != null,
+            hasSAT: doc.student.satScore != null,
+            hasACT: doc.student.actScore != null,
+          },
+        });
+
+        const aiOutput = await createAIOutput({
+          counselorId: ctx.counselorId,
+          studentId: doc.studentId,
+          feature: "profile_extraction",
+          sourceBasis: [
+            { type: "document", id: doc.id, label: `${extraction.detectedDocType} · ${doc.fileName}` },
+            { type: "profile", id: doc.studentId, label: `${doc.student.firstName} ${doc.student.lastName}` },
+          ],
+          confidence: "MEDIUM",
+          output: extraction,
+          modelId: MODEL,
+          tokenUsage: usage,
+        });
+
+        await prisma.document.update({
+          where: { id: doc.id },
+          data: {
+            documentType: mapDocType(extraction.detectedDocType),
+            structuredData: JSON.parse(JSON.stringify(extraction)),
+            processedAt: new Date(),
+            aiOutputId: aiOutput.id,
+            extractionStatus: "READY",
+          },
+        });
+
+        await prisma.reviewQueueItem.create({
+          data: {
+            counselorId: ctx.counselorId,
+            entityType: "profile_extraction",
+            entityId: doc.id,
+            aiOutputId: aiOutput.id,
+            title: `Profile extraction · ${doc.student.firstName} ${doc.student.lastName}`,
+            summary: `${extraction.detectedDocType.toLowerCase()} — ${doc.fileName}`,
+          },
+        });
+
+        return { detectedType: extraction.detectedDocType };
+      } catch (err) {
+        await prisma.document.update({
+          where: { id: doc.id },
+          data: {
+            extractionStatus: "FAILED",
+            extractionError: err instanceof Error ? err.message : String(err),
+          },
+        });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Extraction failed again. Please try later.",
+        });
       }
     }),
 
@@ -174,7 +275,7 @@ export const documentRouter = router({
           student: { counselorId: ctx.counselorId },
         },
       });
-      if (!doc) throw new Error("Document not found");
+      if (!doc) throw new TRPCError({ code: "NOT_FOUND", message: "Document not found" });
 
       // Delete the blob — swallow the error if it's already gone
       try {
@@ -183,12 +284,11 @@ export const documentRouter = router({
         console.warn("Blob delete failed (continuing):", err);
       }
 
-      // Remove any pending review queue items tied to this doc
+      // Remove all review queue items tied to this doc (entity is gone)
       await prisma.reviewQueueItem.deleteMany({
         where: {
           entityType: "profile_extraction",
           entityId: doc.id,
-          status: "PENDING",
         },
       });
 

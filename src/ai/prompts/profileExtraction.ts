@@ -124,8 +124,14 @@ to flag it and omit the fields.`;
 
   const response = result.response;
   const text = response.text();
-  const parsed = JSON.parse(text);
-  const extraction = ProfileExtractionSchema.parse(parsed);
+  let extraction;
+  try {
+    const parsed = JSON.parse(text);
+    extraction = ProfileExtractionSchema.parse(parsed);
+  } catch (err) {
+    console.error("[profileExtraction] AI response parsing failed:", err, "raw:", text.slice(0, 500));
+    throw new Error("AI returned an invalid response. Please try again.");
+  }
 
   const usage = response.usageMetadata;
   return {

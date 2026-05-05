@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc";
+import { TRPCError } from "@trpc/server";
+import { router, protectedProcedure, aiProtectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 import { verifyStudentOwnership } from "../lib/tenant";
 import { generateMeetingPrep } from "@/ai/prompts/meetingPrep";
@@ -25,7 +26,7 @@ export const meetingRouter = router({
         where: { id: input.id, counselorId: ctx.counselorId },
         include: { student: true },
       });
-      if (!meeting) throw new Error("Meeting not found");
+      if (!meeting) throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found" });
       return meeting;
     }),
 
@@ -41,10 +42,19 @@ export const meetingRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       await verifyStudentOwnership(ctx.counselorId, input.studentId);
+
+      const scheduledAt = new Date(input.scheduledAt);
+      if (scheduledAt.getTime() < Date.now() - 5 * 60_000) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Meeting cannot be scheduled in the past",
+        });
+      }
+
       return prisma.meeting.create({
         data: {
           ...input,
-          scheduledAt: new Date(input.scheduledAt),
+          scheduledAt,
           counselorId: ctx.counselorId,
         },
       });
@@ -56,7 +66,7 @@ export const meetingRouter = router({
       const meeting = await prisma.meeting.findFirst({
         where: { id: input.id, counselorId: ctx.counselorId },
       });
-      if (!meeting) throw new Error("Meeting not found");
+      if (!meeting) throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found" });
       await prisma.meeting.delete({ where: { id: input.id } });
       return { success: true };
     }),
@@ -65,7 +75,7 @@ export const meetingRouter = router({
   // brief inline. This avoids leaving orphan Meeting rows when Gemini
   // fails, and removes the prisma.meeting.update call that was crashing
   // when the user navigated away or the function timed out mid-request.
-  quickPrepBrief: protectedProcedure
+  quickPrepBrief: aiProtectedProcedure
     .input(z.object({ studentId: z.string(), meetingType: z.string().default("Check-in") }))
     .mutation(async ({ ctx, input }) => {
       await verifyStudentOwnership(ctx.counselorId, input.studentId);
@@ -157,7 +167,7 @@ export const meetingRouter = router({
       return { meetingId: meeting.id, prep };
     }),
 
-  generatePrepBrief: protectedProcedure
+  generatePrepBrief: aiProtectedProcedure
     .input(z.object({ meetingId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Fetch meeting + full student context
@@ -187,7 +197,7 @@ export const meetingRouter = router({
         },
       });
 
-      if (!meeting) throw new Error("Meeting not found");
+      if (!meeting) throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found" });
 
       const { prep, usage } = await generateMeetingPrep({
         student: meeting.student,
@@ -249,20 +259,26 @@ export const meetingRouter = router({
       return { prep, aiOutputId: aiOutput.id };
     }),
 
-  submitNotes: protectedProcedure
+  submitNotes: aiProtectedProcedure
     .input(
       z.object({
         meetingId: z.string(),
-        rawNotes: z.string().min(10, "Please provide more detailed notes"),
+        rawNotes: z.string().min(10, "Please provide more detailed notes").max(50000),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Verify ownership first
+      // Verify ownership and prevent duplicate processing
       const meeting = await prisma.meeting.findFirst({
         where: { id: input.meetingId, counselorId: ctx.counselorId },
-        select: { id: true },
+        select: { id: true, summary: true },
       });
-      if (!meeting) throw new Error("Meeting not found");
+      if (!meeting) throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found" });
+      if (meeting.summary) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This meeting already has a summary. Delete it first to reprocess.",
+        });
+      }
 
       const result = await processMeetingNotes({
         meetingId: input.meetingId,

@@ -90,6 +90,25 @@ export async function getRecallBot(botId: string): Promise<RecallBot> {
 }
 
 /**
+ * Fetch the bot's transcript with retry. Recall.ai processes transcripts
+ * asynchronously — even after the bot reaches a terminal status, the
+ * transcript may not be available for several seconds.
+ */
+export async function getRecallBotTranscriptWithRetry(
+  botId: string,
+  { maxAttempts = 3, delayMs = 3000 } = {},
+): Promise<string> {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const text = await getRecallBotTranscript(botId);
+    if (text.length >= 10) return text;
+    if (attempt < maxAttempts) {
+      await new Promise((r) => setTimeout(r, delayMs * attempt));
+    }
+  }
+  return ""; // Still empty after retries — caller decides what to do
+}
+
+/**
  * Fetch the bot's transcript as an array of { speaker, text, start, end } entries,
  * then flatten into a single plain-text string we can feed to the AI summary pipeline.
  */

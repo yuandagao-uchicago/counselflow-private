@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { prisma } from "@/lib/prisma";
 import { generateMeetingSummary } from "@/ai/prompts/meetingSummary";
 import { createAIOutput } from "@/ai/provenance";
@@ -27,7 +28,7 @@ export async function processMeetingNotes(opts: {
     where: { id: opts.meetingId, counselorId: opts.counselorId },
     include: { student: true },
   });
-  if (!meeting) throw new Error("Meeting not found");
+  if (!meeting) throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found" });
 
   const prevMeeting = await prisma.meeting.findFirst({
     where: {
@@ -70,10 +71,9 @@ export async function processMeetingNotes(opts: {
     tokenUsage: usage,
   });
 
-  // Use createMany inside a single round-trip so either all AI-extracted
-  // tasks land or none do. Previously Promise.all of N inserts could leave
-  // partial state if insert K of N failed — the meeting would be marked as
-  // summarized but only some action items would exist.
+  // Persist tasks, meeting update, and optional communication draft
+  // atomically. If the meeting was deleted while the AI was running,
+  // the transaction verifies it still exists before writing.
   const taskData = summary.actionItems.map((item) => ({
     studentId: meeting.studentId,
     title: item.title,
@@ -84,60 +84,79 @@ export async function processMeetingNotes(opts: {
     createdById: opts.counselorId,
     aiOutputId: aiOutput.id,
   }));
-  const createdTasks = taskData.length
-    ? await prisma.task.createMany({ data: taskData })
-    : { count: 0 };
 
-  // updateMany is a no-op (returns { count: 0 }) if the meeting was
-  // deleted while the AI was running. Fails silently instead of erroring.
-  await prisma.meeting.updateMany({
-    where: { id: opts.meetingId, counselorId: opts.counselorId },
-    data: {
-      rawNotes: opts.rawNotes,
-      summary: summary.summary,
-      summaryAiId: aiOutput.id,
-      actionItems: JSON.parse(JSON.stringify(summary.actionItems)),
-      decisions: JSON.parse(JSON.stringify(summary.keyDecisions)),
-    },
+  const result = await prisma.$transaction(async (tx) => {
+    // Re-verify the meeting still exists before persisting anything
+    const current = await tx.meeting.findFirst({
+      where: { id: opts.meetingId, counselorId: opts.counselorId },
+      select: { id: true },
+    });
+    if (!current) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Meeting was deleted while processing notes",
+      });
+    }
+
+    const createdTasks = taskData.length
+      ? await tx.task.createMany({ data: taskData })
+      : { count: 0 };
+
+    await tx.meeting.update({
+      where: { id: opts.meetingId },
+      data: {
+        rawNotes: opts.rawNotes,
+        summary: summary.summary,
+        summaryAiId: aiOutput.id,
+        actionItems: JSON.parse(JSON.stringify(summary.actionItems)),
+        decisions: JSON.parse(JSON.stringify(summary.keyDecisions)),
+      },
+    });
+
+    // Create a Communication draft from the AI's follow-up email suggestion,
+    // and queue it for counselor review.
+    let communicationDraftId: string | null = null;
+    let reviewQueueItemId: string | null = null;
+
+    if (summary.followUpDraft?.body?.trim()) {
+      const draft = await tx.communication.create({
+        data: {
+          counselorId: opts.counselorId,
+          studentId: meeting.studentId,
+          type: "EMAIL",
+          direction: "OUTBOUND",
+          subject: summary.followUpDraft.subject || `Follow-up: ${meeting.type}`,
+          body: summary.followUpDraft.body,
+          isDraft: true,
+          draftAiId: aiOutput.id,
+        },
+      });
+      communicationDraftId = draft.id;
+
+      const queueItem = await tx.reviewQueueItem.create({
+        data: {
+          counselorId: opts.counselorId,
+          entityType: "communication_draft",
+          entityId: draft.id,
+          aiOutputId: aiOutput.id,
+          title: `Follow-up email · ${meeting.student.firstName} ${meeting.student.lastName}`,
+          summary: draft.subject,
+        },
+      });
+      reviewQueueItemId = queueItem.id;
+    }
+
+    return {
+      tasksCreated: createdTasks.count,
+      communicationDraftId,
+      reviewQueueItemId,
+    };
   });
 
-  // Create a Communication draft from the AI's follow-up email suggestion,
-  // and queue it for counselor review.
-  let communicationDraftId: string | null = null;
-  let reviewQueueItemId: string | null = null;
-
-  if (summary.followUpDraft?.body?.trim()) {
-    const draft = await prisma.communication.create({
-      data: {
-        counselorId: opts.counselorId,
-        studentId: meeting.studentId,
-        type: "EMAIL",
-        direction: "OUTBOUND",
-        subject: summary.followUpDraft.subject || `Follow-up: ${meeting.type}`,
-        body: summary.followUpDraft.body,
-        isDraft: true,
-        draftAiId: aiOutput.id,
-      },
-    });
-    communicationDraftId = draft.id;
-
-    const queueItem = await prisma.reviewQueueItem.create({
-      data: {
-        counselorId: opts.counselorId,
-        entityType: "communication_draft",
-        entityId: draft.id,
-        aiOutputId: aiOutput.id,
-        title: `Follow-up email · ${meeting.student.firstName} ${meeting.student.lastName}`,
-        summary: draft.subject,
-      },
-    });
-    reviewQueueItemId = queueItem.id;
-  }
-
   return {
-    tasksCreated: createdTasks.count,
+    tasksCreated: result.tasksCreated,
     aiOutputId: aiOutput.id,
-    communicationDraftId,
-    reviewQueueItemId,
+    communicationDraftId: result.communicationDraftId,
+    reviewQueueItemId: result.reviewQueueItemId,
   };
 }

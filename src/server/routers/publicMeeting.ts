@@ -9,7 +9,7 @@
  *   - proposeAlt     : student proposes a different time → COUNTER_PROPOSED
  */
 import { z } from "zod";
-import { router, publicProcedure } from "../trpc";
+import { router, rateLimitedPublicProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
 import { TRPCError } from "@trpc/server";
 import { sendEmail, buildConfirmationEmail, buildCounterAcknowledgementEmail } from "@/lib/email";
@@ -45,7 +45,7 @@ function ensureOpen(req: { status: string; expiresAt: Date }) {
 }
 
 export const publicMeetingRouter = router({
-  getByToken: publicProcedure
+  getByToken: rateLimitedPublicProcedure
     .input(z.object({ token: z.string().min(8) }))
     .query(async ({ input }) => {
       const req = await loadByToken(input.token);
@@ -70,7 +70,7 @@ export const publicMeetingRouter = router({
       };
     }),
 
-  acceptSlot: publicProcedure
+  acceptSlot: rateLimitedPublicProcedure
     .input(z.object({ token: z.string().min(8), slotId: z.string() }))
     .mutation(async ({ input }) => {
       const req = await loadByToken(input.token);
@@ -201,7 +201,7 @@ export const publicMeetingRouter = router({
       };
     }),
 
-  proposeAlternative: publicProcedure
+  proposeAlternative: rateLimitedPublicProcedure
     .input(
       z.object({
         token: z.string().min(8),
