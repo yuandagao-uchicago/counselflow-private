@@ -257,6 +257,7 @@ export default function ApplicationDetailPage({
           applicationId={app.id}
           items={app.requirementItems}
           resolved={r.resolvedItems}
+          disabled={app.status === "SUBMITTED"}
         />
 
         {/* Notes / metadata footer */}

@@ -101,9 +101,11 @@ export const reviewRouter = router({
         take: limit,
       });
 
-      // Batch-load linked Communications
+      // Batch-load linked Communications. Recommender request/reminder items
+      // also point to a Communication via entityId.
+      const commTypes = ["communication_draft", "recommender_request", "recommender_reminder"];
       const commIds = items
-        .filter((i) => i.entityType === "communication_draft")
+        .filter((i) => commTypes.includes(i.entityType))
         .map((i) => i.entityId);
       const communications = commIds.length
         ? await prisma.communication.findMany({
@@ -155,10 +157,9 @@ export const reviewRouter = router({
 
       return items.map((item) => ({
         ...item,
-        communication:
-          item.entityType === "communication_draft"
-            ? commById.get(item.entityId) ?? null
-            : null,
+        communication: commTypes.includes(item.entityType)
+          ? commById.get(item.entityId) ?? null
+          : null,
         document:
           item.entityType === "profile_extraction"
             ? docById.get(item.entityId) ?? null
@@ -387,9 +388,15 @@ export const reviewRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: `Item is already ${item.status.toLowerCase()}` });
       }
 
-      // For communication drafts, delete the draft Communication so abandoned
-      // drafts don't pile up. Keep the ReviewQueueItem for audit.
-      if (item.entityType === "communication_draft") {
+      // For communication drafts and recommender request/reminder emails,
+      // delete the draft Communication so abandoned drafts don't pile up.
+      // Keep the ReviewQueueItem for audit.
+      const draftEntityTypes = [
+        "communication_draft",
+        "recommender_request",
+        "recommender_reminder",
+      ];
+      if (draftEntityTypes.includes(item.entityType)) {
         await prisma.communication.deleteMany({
           where: {
             id: item.entityId,

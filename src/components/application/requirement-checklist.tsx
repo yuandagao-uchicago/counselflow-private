@@ -68,10 +68,12 @@ export function RequirementChecklist({
   applicationId,
   items,
   resolved,
+  disabled = false,
 }: {
   applicationId: string;
   items: Item[];
   resolved: { id: string; status: string }[];
+  disabled?: boolean;
 }) {
   const utils = trpc.useUtils();
   const [adding, setAdding] = useState(false);
@@ -118,17 +120,19 @@ export function RequirementChecklist({
     <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 glow-card">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Checklist
+          Checklist {disabled && <span className="ml-2 text-[10px] normal-case font-normal text-muted-foreground/70">(read-only — application submitted)</span>}
         </h3>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setAdding(true)}
-          className="h-7 text-xs"
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          Add item
-        </Button>
+        {!disabled && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setAdding(true)}
+            className="h-7 text-xs"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Add item
+          </Button>
+        )}
       </div>
 
       {adding && (
@@ -186,7 +190,7 @@ export function RequirementChecklist({
                   });
                 }}
                 className="mt-0.5"
-                disabled={update.isPending}
+                disabled={disabled || update.isPending}
               />
 
               <div className="flex-1 min-w-0">
@@ -231,7 +235,7 @@ export function RequirementChecklist({
                     <button
                       title="Change status"
                       className="inline-flex items-center gap-1.5 rounded px-2 py-1 hover:bg-foreground/5 text-xs"
-                      disabled={update.isPending}
+                      disabled={disabled || update.isPending}
                     />
                   }
                 >
@@ -257,7 +261,7 @@ export function RequirementChecklist({
               </DropdownMenu>
 
               {/* Delete (custom items only — derived items would just respawn) */}
-              {item.kind === "CUSTOM" && (
+              {item.kind === "CUSTOM" && !disabled && (
                 <button
                   onClick={() => remove.mutate({ id: item.id })}
                   className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-red-400 p-1"
