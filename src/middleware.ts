@@ -1,6 +1,4 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-import { SECURITY_HEADERS } from "@/lib/security-headers";
 
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
@@ -22,13 +20,6 @@ export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect();
   }
-
-  // Apply security headers to all responses
-  const response = NextResponse.next();
-  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-    response.headers.set(key, value);
-  }
-  return response;
 });
 
 export const config = {
