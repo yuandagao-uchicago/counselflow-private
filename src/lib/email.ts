@@ -281,6 +281,82 @@ export function buildCounterAcknowledgementEmail(args: {
   };
 }
 
+// ---------- Recommender request emails ----------
+
+export function buildRecommenderRequestEmail(args: {
+  recommenderName: string;
+  studentFirstName: string;
+  studentLastName: string;
+  counselorName: string;
+  customBody: string;
+  deadline?: Date | null;
+  timezone?: string;
+}): { subject: string; html: string; text: string } {
+  const tz = args.timezone || "America/New_York";
+  const deadlineStr = args.deadline
+    ? formatSlotForEmail(args.deadline, tz, false)
+    : null;
+
+  const subject = `Recommendation request for ${escapeHtml(args.studentFirstName)} ${escapeHtml(args.studentLastName)}`;
+
+  const bodyHtml = escapeHtml(args.customBody).replace(/\n/g, "<br>");
+  const deadlineNote = deadlineStr
+    ? `<p style="margin-top:16px;padding:12px 16px;background:#f5f5f7;border-radius:8px;font-size:13px;color:#333;">
+        <strong>Deadline:</strong> ${escapeHtml(deadlineStr)}
+      </p>`
+    : "";
+
+  const html = shell(`
+    <h2 style="font-size:20px;margin:16px 0 8px;color:#111114;">Recommendation Request</h2>
+    <p style="font-size:14px;line-height:1.6;color:#333;">${bodyHtml}</p>
+    ${deadlineNote}
+    <p style="margin-top:20px;font-size:13px;color:#86868b;">
+      — ${escapeHtml(args.counselorName)}
+    </p>
+  `);
+
+  const text = `${subject}\n\n${args.customBody}${deadlineStr ? `\n\nDeadline: ${deadlineStr}` : ""}\n\n— ${args.counselorName}`;
+
+  return { subject, html, text };
+}
+
+export function buildRecommenderReminderEmail(args: {
+  recommenderName: string;
+  studentFirstName: string;
+  studentLastName: string;
+  counselorName: string;
+  customBody: string;
+  deadline?: Date | null;
+  timezone?: string;
+}): { subject: string; html: string; text: string } {
+  const tz = args.timezone || "America/New_York";
+  const deadlineStr = args.deadline
+    ? formatSlotForEmail(args.deadline, tz, false)
+    : null;
+
+  const subject = `Friendly reminder: recommendation for ${escapeHtml(args.studentFirstName)} ${escapeHtml(args.studentLastName)}`;
+
+  const bodyHtml = escapeHtml(args.customBody).replace(/\n/g, "<br>");
+  const deadlineNote = deadlineStr
+    ? `<p style="margin-top:16px;padding:12px 16px;background:#fff3e0;border-radius:8px;font-size:13px;color:#333;">
+        <strong>Deadline:</strong> ${escapeHtml(deadlineStr)}
+      </p>`
+    : "";
+
+  const html = shell(`
+    <h2 style="font-size:20px;margin:16px 0 8px;color:#111114;">Recommendation Reminder</h2>
+    <p style="font-size:14px;line-height:1.6;color:#333;">${bodyHtml}</p>
+    ${deadlineNote}
+    <p style="margin-top:20px;font-size:13px;color:#86868b;">
+      — ${escapeHtml(args.counselorName)}
+    </p>
+  `);
+
+  const text = `${subject}\n\n${args.customBody}${deadlineStr ? `\n\nDeadline: ${deadlineStr}` : ""}\n\n— ${args.counselorName}`;
+
+  return { subject, html, text };
+}
+
 // ---------- Time formatting ----------
 
 function formatSlotForEmail(d: Date, timezone: string, includeWeekday = true): string {

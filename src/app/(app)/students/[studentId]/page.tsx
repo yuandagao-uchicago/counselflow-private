@@ -15,6 +15,7 @@ import { QuickActions } from "@/components/student/quick-actions";
 import { UploadDocumentsPanel } from "@/components/document/upload-documents-panel";
 import { ExtractionReviewCard } from "@/components/document/extraction-review-card";
 import { ApplicationsCard } from "@/components/application/applications-card";
+import { RecommendersCard } from "@/components/student/recommenders-card";
 import { Sparkles } from "lucide-react";
 
 export default function StudentDetailPage({
@@ -89,6 +90,7 @@ export default function StudentDetailPage({
           <div className="space-y-5 lg:col-span-2">
             <StaggerItem><ProfileCard student={student} /></StaggerItem>
             <StaggerItem><ApplicationsCard studentId={student.id} /></StaggerItem>
+            <StaggerItem><RecommendersCard studentId={student.id} /></StaggerItem>
             <StaggerItem><UploadDocumentsPanel studentId={student.id} /></StaggerItem>
             <StaggerItem><TasksCard tasks={student.tasks} studentId={student.id} /></StaggerItem>
             <StaggerItem><MeetingsCard meetings={student.meetings} studentId={student.id} /></StaggerItem>

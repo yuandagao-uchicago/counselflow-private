@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import type { AIConfidence, AutonomyMode } from "@prisma/client";
 
 interface SourceRef {
-  type: "profile" | "meeting" | "document" | "task" | "milestone";
+  type: "profile" | "meeting" | "document" | "task" | "milestone" | "recommender";
   id: string;
   label: string;
 }

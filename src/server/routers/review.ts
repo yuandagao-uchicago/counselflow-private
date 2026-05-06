@@ -2,6 +2,11 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/prisma";
+import {
+  sendEmail,
+  buildRecommenderRequestEmail,
+  buildRecommenderReminderEmail,
+} from "@/lib/email";
 
 /** Fields the counselor is allowed to approve individually from an extraction. */
 const ApplicableExtractionFieldsSchema = z.object({
@@ -297,6 +302,70 @@ export const reviewRouter = router({
           },
           data: { extractionStatus: "APPLIED" },
         });
+      }
+
+      // Recommender request/reminder: approve the communication and send the email.
+      // item.aiOutputId stores the recommenderId (set by sendForReview).
+      if (
+        item.entityType === "recommender_request" ||
+        item.entityType === "recommender_reminder"
+      ) {
+        const comm = await prisma.communication.findFirst({
+          where: { id: item.entityId, counselorId: ctx.counselorId },
+          include: {
+            student: { select: { firstName: true, lastName: true } },
+          },
+        });
+        // Look up the recommender directly by the stored ID
+        const recommender = item.aiOutputId
+          ? await prisma.studentRecommender.findFirst({
+              where: { id: item.aiOutputId, student: { counselorId: ctx.counselorId } },
+            })
+          : null;
+
+        if (comm) {
+          await prisma.communication.update({
+            where: { id: comm.id },
+            data: { isDraft: false, approvedAt: now },
+          });
+
+          if (recommender?.email) {
+            const counselor = await prisma.user.findUnique({
+              where: { id: ctx.counselorId },
+              select: { name: true, email: true, timezone: true },
+            });
+
+            const isReminder = item.entityType === "recommender_reminder";
+            const buildEmail = isReminder
+              ? buildRecommenderReminderEmail
+              : buildRecommenderRequestEmail;
+
+            const emailContent = buildEmail({
+              recommenderName: recommender.name,
+              studentFirstName: comm.student.firstName,
+              studentLastName: comm.student.lastName,
+              counselorName: counselor?.name ?? "Your Counselor",
+              customBody: comm.body,
+              timezone: counselor?.timezone ?? undefined,
+            });
+
+            await sendEmail({
+              to: recommender.email,
+              replyTo: counselor?.email ?? undefined,
+              ...emailContent,
+            });
+
+            // Update recommender status
+            const statusUpdate = isReminder
+              ? { requestStatus: "REMINDED" as const, reminderSentAt: now }
+              : { requestStatus: "REQUESTED" as const, requestedAt: now };
+
+            await prisma.studentRecommender.update({
+              where: { id: recommender.id },
+              data: statusUpdate,
+            });
+          }
+        }
       }
 
       await prisma.reviewQueueItem.update({
