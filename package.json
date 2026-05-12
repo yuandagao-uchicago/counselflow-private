@@ -58,6 +58,9 @@
     "typescript": "^5"
   },
   "overrides": {
-    "postcss": "^8.5.10"
+    "postcss": "^8.5.10",
+    "@opentelemetry/otlp-transformer": {
+      "protobufjs": "^8.2.0"
+    }
   }
 }
