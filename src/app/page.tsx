@@ -39,13 +39,11 @@ function Header() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-[oklch(0.13_0.018_30)/_60%]">
       <div className="max-w-6xl mx-auto px-6 md:px-10 py-5 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] shadow-lg shadow-[oklch(0.34_0.13_25_/_25%)] ring-1 ring-white/10">
-            <Sparkles className="h-5 w-5 text-white" />
-          </div>
-          <span className="font-serif text-xl font-medium tracking-tight">
-            Counsel<span className="text-[oklch(0.66_0.15_75)]">Flow</span>
+        <Link href="/" className="group block">
+          <span className="font-display text-2xl font-semibold tracking-tight leading-none text-white">
+            Counselflow
           </span>
+          <span className="mt-1.5 block h-px w-8 bg-[oklch(0.66_0.15_75)] transition-all group-hover:w-16" />
         </Link>
         <nav className="flex items-center gap-3 md:gap-5 text-sm">
           <Link

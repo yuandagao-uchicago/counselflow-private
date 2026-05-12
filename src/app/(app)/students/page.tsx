@@ -19,17 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-
-const phaseConfig: Record<string, { label: string; color: string }> = {
-  EXPLORATION: { label: "Exploration", color: "from-blue-500 to-cyan-400" },
-  LIST_BUILDING: { label: "List Building", color: "from-violet-500 to-purple-400" },
-  TESTING: { label: "Testing", color: "from-amber-500 to-orange-400" },
-  APPLICATIONS: { label: "Applications", color: "from-emerald-500 to-green-400" },
-  ESSAYS: { label: "Essays", color: "from-pink-500 to-rose-400" },
-  SUBMISSIONS: { label: "Submissions", color: "from-indigo-500 to-blue-400" },
-  DECISIONS: { label: "Decisions", color: "from-yellow-500 to-amber-400" },
-  ENROLLMENT: { label: "Enrollment", color: "from-green-500 to-emerald-400" },
-};
+import { phaseTone, phaseAccentBar, phaseBg } from "@/lib/phase";
 
 export default function StudentsPage() {
   const [search, setSearch] = useState("");
@@ -42,21 +32,24 @@ export default function StudentsPage() {
   return (
     <PageTransition>
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <header className="flex items-end justify-between gap-6 border-b border-border pb-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Students</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your student caseload
+          <p className="section-eyebrow">The roster</p>
+          <h1 className="font-display text-4xl md:text-5xl font-medium tracking-tight mt-1.5">
+            Students
+          </h1>
+          <p className="text-sm text-muted-foreground mt-2">
+            Every active case file in your practice.
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger render={<Button className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0 shadow-lg shadow-[oklch(0.34_0.13_25_/_20%)] hover:brightness-110 transition-all" />}>
+          <DialogTrigger render={<Button className="bg-[var(--almanac-oxblood)] text-[var(--almanac-paper)] border-0 ring-1 ring-[var(--almanac-brass)]/40 shadow-md shadow-[var(--almanac-oxblood)]/20 hover:brightness-110 transition-all" />}>
             <Plus className="mr-2 h-4 w-4" />
             Add Student
           </DialogTrigger>
           <AddStudentDialog onClose={() => setDialogOpen(false)} />
         </Dialog>
-      </div>
+      </header>
 
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
@@ -77,51 +70,66 @@ export default function StudentsPage() {
           ))}
         </div>
       ) : !data?.students.length ? (
-        <div className="rounded-2xl border border-foreground/[0.06] bg-card p-16 text-center">
-          <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] flex items-center justify-center mb-4 shadow-lg shadow-[oklch(0.34_0.13_25_/_20%)]">
-            <GraduationCap className="h-8 w-8 text-white" />
+        <div className="paper-grain rounded-2xl border border-border bg-card p-16 text-center">
+          <div className="mx-auto h-14 w-14 rounded-xl bg-[var(--almanac-oxblood)] ring-1 ring-[var(--almanac-brass)]/40 flex items-center justify-center mb-5 shadow-md">
+            <GraduationCap className="h-6 w-6 text-[var(--almanac-paper)]" />
           </div>
-          <h3 className="text-lg font-semibold">No students yet</h3>
-          <p className="mt-2 text-sm text-muted-foreground max-w-sm mx-auto">
-            Click &quot;Add Student&quot; to start building your caseload. Each student gets their own case file with milestones, tasks, and AI-powered tools.
+          <h3 className="font-display text-2xl font-medium">No students yet</h3>
+          <p className="mt-2 text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
+            Click <span className="font-serif-italic text-foreground">Add Student</span> to start building your caseload. Each student gets their own case file with milestones, tasks, and AI-powered tools.
           </p>
         </div>
       ) : (
         <StaggerList className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {data.students.map((student) => {
-            const phase = phaseConfig[student.phase] || { label: student.phase, color: "from-gray-500 to-gray-400" };
+          {data.students.map((student, i) => {
+            const tone = phaseTone(student.phase);
             return (
               <AnimatedCard key={student.id}>
               <Link
                 href={`/students/${student.id}`}
-                className="block group relative overflow-hidden rounded-2xl border border-foreground/[0.06] bg-card p-5 transition-all hover:border-foreground/[0.12] hover:shadow-lg hover:shadow-black/20"
+                className="paper-grain block group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-[var(--almanac-brass)]/40 hover:shadow-[0_18px_40px_-12px_color-mix(in_oklab,var(--almanac-oxblood)_22%,transparent)]"
               >
-                {/* Gradient accent line */}
-                <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${phase.color} opacity-60`} />
+                {/* Phase accent rule — almanac tone, fades right */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-[3px]"
+                  style={phaseAccentBar(student.phase)}
+                />
 
-                <div className="flex items-start gap-4">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${phase.color} text-lg font-bold text-white shadow-md`}>
+                <div className="relative flex items-start gap-4">
+                  {/* Index numeral — newspaper-style */}
+                  <span className="absolute -top-1 -right-1 num-mono text-[10px] tabular-nums text-muted-foreground/40">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded-xl text-base font-display font-semibold text-[var(--almanac-paper)] shadow-md ring-1 ring-[var(--almanac-brass)]/30"
+                    style={phaseBg(student.phase)}
+                  >
                     {student.firstName[0]}{student.lastName[0]}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-base">
+                    <p className="font-display text-lg font-semibold tracking-tight leading-tight">
                       {student.firstName} {student.lastName}
                     </p>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {student.highSchool || "No school"} &middot; {student.graduationYear}
+                    <p className="text-xs text-muted-foreground mt-1 truncate">
+                      <span className="font-serif-italic">{student.highSchool || "No school"}</span>
+                      <span className="num-mono ml-1.5">· {student.graduationYear}</span>
                     </p>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0" />
                 </div>
 
-                <div className="mt-4 flex items-center gap-2">
-                  <Badge className={`bg-gradient-to-r ${phase.color} text-white border-0 text-[10px] px-2`}>
-                    {phase.label}
-                  </Badge>
+                <div className="mt-4 flex items-center gap-2 pt-3 border-t border-border/60">
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium uppercase tracking-wider text-[var(--almanac-paper)]"
+                    style={phaseBg(student.phase)}
+                  >
+                    <span className="h-1 w-1 rounded-full bg-[var(--almanac-paper)]/70" />
+                    {tone.label}
+                  </span>
                   {student._count.tasks > 0 && (
-                    <Badge variant="secondary" className="bg-foreground/5 text-muted-foreground border-foreground/10 text-[10px]">
-                      {student._count.tasks} tasks
-                    </Badge>
+                    <span className="num-mono text-[11px] tabular-nums text-muted-foreground">
+                      <span className="font-semibold text-foreground/80">{student._count.tasks}</span> tasks
+                    </span>
                   )}
                 </div>
               </Link>

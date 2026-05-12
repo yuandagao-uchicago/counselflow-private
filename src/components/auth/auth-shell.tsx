@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
-
 // Split-pane shell for sign-in / sign-up. Brand & positioning on the left,
 // the Clerk widget on the right. Renders the same cinematic backdrop as the
 // landing page so first-touch and sign-in feel like one product.
@@ -26,13 +24,11 @@ export function AuthShell({ eyebrow, title, blurb, altPrompt, altLabel, altHref,
       <div className="relative grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
         {/* Brand pane */}
         <aside className="relative hidden lg:flex flex-col justify-between p-10 xl:p-14 border-r border-white/[0.06]">
-          <Link href="/" className="flex items-center gap-3 group w-fit">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] shadow-lg shadow-[oklch(0.34_0.13_25_/_25%)] ring-1 ring-white/10">
-              <Sparkles className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-serif text-xl font-medium tracking-tight">
-              Counsel<span className="text-[oklch(0.66_0.15_75)]">Flow</span>
+          <Link href="/" className="group block w-fit">
+            <span className="font-display text-2xl font-semibold tracking-tight leading-none text-white">
+              Counselflow
             </span>
+            <span className="mt-1.5 block h-px w-8 bg-[oklch(0.66_0.15_75)] transition-all group-hover:w-16" />
           </Link>
 
           <div className="max-w-lg space-y-6">
@@ -52,13 +48,11 @@ export function AuthShell({ eyebrow, title, blurb, altPrompt, altLabel, altHref,
         <main className="relative flex items-center justify-center p-6 sm:p-10">
           <div className="w-full max-w-md space-y-8">
             {/* Mobile-only brand header — desktop has the side pane */}
-            <Link href="/" className="lg:hidden flex items-center gap-3 group">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] shadow ring-1 ring-white/10">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
-              <span className="font-serif text-xl font-medium tracking-tight">
-                Counsel<span className="text-[oklch(0.66_0.15_75)]">Flow</span>
+            <Link href="/" className="lg:hidden group block w-fit">
+              <span className="font-display text-2xl font-semibold tracking-tight leading-none text-white">
+                Counselflow
               </span>
+              <span className="mt-1.5 block h-px w-8 bg-[oklch(0.66_0.15_75)] transition-all group-hover:w-16" />
             </Link>
 
             {/* Clerk widget container — themed via the appearance prop on

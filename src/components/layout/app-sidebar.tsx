@@ -66,19 +66,12 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="px-5 py-5">
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          {/* Insignia — oxblood on cream with brass rim, like a leather cover stamp */}
-          <div className="relative flex h-11 w-11 items-center justify-center rounded-md bg-[var(--almanac-oxblood)] ring-1 ring-[var(--almanac-brass)]/40 shadow-md shadow-[var(--almanac-oxblood)]/20 transition-transform group-hover:rotate-[-3deg]">
-            <span className="font-display text-[1.1rem] font-bold text-[var(--almanac-paper)] leading-none">CF</span>
-            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-[var(--almanac-sage)] ring-2 ring-sidebar pulse-glow" />
-          </div>
-          <div className="leading-tight">
-            <span className="font-display text-xl font-semibold tracking-tight">
-              Counselflow
-            </span>
-            <p className="case-id mt-1 block">No. <span className="text-[var(--almanac-brass)]">∞</span> · vol. i</p>
-          </div>
+      <SidebarHeader className="px-5 pt-6 pb-4">
+        <Link href="/dashboard" className="group block">
+          <span className="font-display text-2xl font-semibold tracking-tight leading-none">
+            Counselflow
+          </span>
+          <span className="mt-1.5 block h-px w-8 bg-[var(--almanac-brass)] transition-all group-hover:w-16" />
         </Link>
       </SidebarHeader>
 

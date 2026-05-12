@@ -6,39 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CaseStats } from "./case-stats";
 import { EditProfileDialog } from "./edit-profile-dialog";
-
-const phaseOrder = [
-  "EXPLORATION",
-  "LIST_BUILDING",
-  "TESTING",
-  "APPLICATIONS",
-  "ESSAYS",
-  "SUBMISSIONS",
-  "DECISIONS",
-  "ENROLLMENT",
-] as const;
-
-const phaseLabel: Record<string, string> = {
-  EXPLORATION: "Exploration",
-  LIST_BUILDING: "List building",
-  TESTING: "Testing",
-  APPLICATIONS: "Applications",
-  ESSAYS: "Essays",
-  SUBMISSIONS: "Submissions",
-  DECISIONS: "Decisions",
-  ENROLLMENT: "Enrollment",
-};
-
-const phaseGradient: Record<string, string> = {
-  EXPLORATION: "from-sky-500 to-cyan-400",
-  LIST_BUILDING: "from-violet-500 to-fuchsia-400",
-  TESTING: "from-amber-500 to-orange-400",
-  APPLICATIONS: "from-emerald-500 to-teal-400",
-  ESSAYS: "from-rose-500 to-pink-400",
-  SUBMISSIONS: "from-indigo-500 to-blue-400",
-  DECISIONS: "from-yellow-500 to-amber-400",
-  ENROLLMENT: "from-emerald-500 to-green-400",
-};
+import { PHASE_ORDER, PHASE_TONES, phaseTone, phaseBg } from "@/lib/phase";
 
 interface StudentHeaderProps {
   student: {
@@ -72,9 +40,8 @@ export function StudentHeader({ student }: StudentHeaderProps) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const displayName = student.preferredName || student.firstName;
-  const currentPhaseIndex = phaseOrder.indexOf(student.phase as (typeof phaseOrder)[number]);
-  const phaseName = phaseLabel[student.phase] ?? student.phase;
-  const gradient = phaseGradient[student.phase] ?? "from-slate-500 to-slate-400";
+  const currentPhaseIndex = PHASE_ORDER.indexOf(student.phase as (typeof PHASE_ORDER)[number]);
+  const tone = phaseTone(student.phase);
 
   // The little case-file id is just first-name initials + last 4 of student.id —
   // it's purely visual (gives the page a "patient chart" / "dossier" feel).
@@ -85,9 +52,10 @@ export function StudentHeader({ student }: StudentHeaderProps) {
       <div className="paper-grain relative overflow-hidden rounded-3xl border border-border bg-card">
         {/* Phase wash + ledger lines + topographic backdrop */}
         <div
-          className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-[0.06] pointer-events-none`}
+          className="absolute inset-0 opacity-[0.07] pointer-events-none"
+          style={{ background: `radial-gradient(ellipse 80% 60% at 0% 0%, oklch(${tone.ink}), transparent 65%)` }}
         />
-        <div className="ledger-lines absolute inset-0 opacity-50 pointer-events-none" />
+        <div className="ledger-lines absolute inset-0 opacity-40 pointer-events-none" />
         <div className="topo-bg absolute inset-0 text-foreground opacity-[0.05] pointer-events-none" />
         <div className="absolute -top-32 -right-24 h-96 w-96 rounded-full bg-[var(--almanac-brass)]/10 blur-3xl pointer-events-none" />
 
@@ -122,16 +90,18 @@ export function StudentHeader({ student }: StudentHeaderProps) {
           {/* Avatar */}
           <div className="flex flex-col items-center md:items-start gap-3">
             <div
-              className={`flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} text-3xl font-semibold text-white shadow-xl shadow-black/20 ring-1 ring-white/20`}
+              className="flex h-24 w-24 items-center justify-center rounded-2xl text-3xl font-display font-semibold text-[var(--almanac-paper)] shadow-xl shadow-black/20 ring-1 ring-[var(--almanac-brass)]/40"
+              style={phaseBg(student.phase)}
             >
               {student.firstName[0]}
               {student.lastName[0]}
             </div>
             <div
-              className={`inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r ${gradient} px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-white`}
+              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--almanac-paper)] ring-1 ring-[var(--almanac-brass)]/30"
+              style={phaseBg(student.phase)}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-              {phaseName}
+              <span className="h-1 w-1 rounded-full bg-[var(--almanac-paper)]/70 pulse-glow" />
+              {tone.label}
             </div>
           </div>
 
@@ -203,19 +173,21 @@ export function StudentHeader({ student }: StudentHeaderProps) {
         <div className="relative px-6 pt-5 pb-3 md:px-8">
           <p className="section-eyebrow mb-3">Journey</p>
           <ol className="grid grid-cols-8 gap-1.5">
-            {phaseOrder.map((p, i) => {
+            {PHASE_ORDER.map((p, i) => {
               const isCurrent = i === currentPhaseIndex;
               const isComplete = i < currentPhaseIndex;
+              const t = PHASE_TONES[p];
               return (
                 <li key={p} className="flex flex-col items-start gap-1.5">
                   <div
-                    className={`h-1.5 w-full rounded-full transition-all ${
+                    className="h-1.5 w-full rounded-full transition-all"
+                    style={
                       isCurrent
-                        ? `bg-gradient-to-r ${gradient} shadow-md shadow-black/20`
+                        ? { backgroundColor: `oklch(${t.ink})`, boxShadow: `0 4px 12px -2px oklch(${t.ink} / 40%)` }
                         : isComplete
-                          ? "bg-emerald-500/70"
-                          : "bg-foreground/[0.06]"
-                    }`}
+                          ? { backgroundColor: "color-mix(in oklab, var(--almanac-sage) 70%, transparent)" }
+                          : { backgroundColor: "color-mix(in oklab, var(--almanac-ink) 8%, transparent)" }
+                    }
                   />
                   <span
                     className={`text-[10px] uppercase tracking-wider transition-colors ${
@@ -226,7 +198,7 @@ export function StudentHeader({ student }: StudentHeaderProps) {
                           : "text-muted-foreground/40"
                     }`}
                   >
-                    {phaseLabel[p]}
+                    {t.label}
                   </span>
                 </li>
               );
