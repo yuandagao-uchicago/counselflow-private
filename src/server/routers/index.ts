@@ -12,6 +12,7 @@ import { meetingRequestRouter } from "./meetingRequest";
 import { publicMeetingRouter } from "./publicMeeting";
 import { recommenderRouter } from "./recommender";
 import { weeklyUpdateRouter } from "./weeklyUpdate";
+import { guardianRouter } from "./guardian";
 
 export const appRouter = router({
   student: studentRouter,
@@ -27,6 +28,7 @@ export const appRouter = router({
   publicMeeting: publicMeetingRouter,
   recommender: recommenderRouter,
   weeklyUpdate: weeklyUpdateRouter,
+  guardian: guardianRouter,
 });
 
 export type AppRouter = typeof appRouter;
