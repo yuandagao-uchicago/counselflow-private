@@ -69,12 +69,17 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="px-5 py-5">
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] shadow-lg shadow-[oklch(0.65_0.2_265_/_20%)]">
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] shadow-lg shadow-[oklch(0.65_0.2_265_/_25%)] ring-1 ring-white/10">
             <Sparkles className="h-5 w-5 text-white" />
+            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-sidebar shadow-sm" />
           </div>
-          <div>
-            <span className="text-lg font-bold tracking-tight">CounselFlow</span>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Workflow AI</p>
+          <div className="leading-tight">
+            <span className="font-serif text-xl font-medium tracking-tight">
+              Counsel<span className="text-[oklch(0.75_0.18_280)]">Flow</span>
+            </span>
+            <p className="text-[9px] uppercase tracking-[0.28em] text-muted-foreground/70 mt-0.5">
+              Operating system
+            </p>
           </div>
         </Link>
       </SidebarHeader>

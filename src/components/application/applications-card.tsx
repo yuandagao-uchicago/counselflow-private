@@ -6,6 +6,7 @@ import { ArrowRight, FileSpreadsheet, Plus, Send, AlertTriangle } from "lucide-r
 import { ReadinessBar } from "./readiness-bar";
 import { stateMeta, urgencyMeta, applicationTypeLabel } from "./readiness-meta";
 import { AddApplicationDialog } from "./add-application-dialog";
+import { SchoolLogo } from "@/components/shared/school-logo";
 
 /**
  * Compact summary of a student's applications for the case overview page.
@@ -110,41 +111,47 @@ export function ApplicationsCard({ studentId }: { studentId: string }) {
                 <Link
                   key={a.id}
                   href={`/students/${studentId}/applications/${a.id}`}
-                  className="block rounded-lg border border-foreground/[0.04] hover:border-foreground/[0.08] hover:bg-foreground/[0.02] transition-all p-3"
+                  className="flex items-start gap-3 rounded-lg border border-foreground/[0.04] hover:border-foreground/[0.08] hover:bg-foreground/[0.02] transition-all p-3"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-medium text-sm truncate">
-                          {a.school.name}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground/70">
+                  <SchoolLogo
+                    name={a.school.commonName ?? a.school.name}
+                    website={a.school.website}
+                    size={36}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">
+                          {a.school.commonName ?? a.school.name}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/70">
                           {applicationTypeLabel(a.applicationType)}
-                        </span>
+                          {a.school.city && a.school.state ? ` · ${a.school.city}, ${a.school.state}` : ""}
+                        </p>
                       </div>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${s.chip}`}>
+                        {s.label}
+                      </span>
                     </div>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${s.chip}`}>
-                      {s.label}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="flex-1">
-                      <ReadinessBar
-                        pct={a.readiness.completionPct}
-                        state={a.readiness.state}
-                        doneRequired={a.readiness.doneRequired}
-                        totalRequired={a.readiness.totalRequired}
-                        size="sm"
-                        showLabel={false}
-                      />
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="flex-1">
+                        <ReadinessBar
+                          pct={a.readiness.completionPct}
+                          state={a.readiness.state}
+                          doneRequired={a.readiness.doneRequired}
+                          totalRequired={a.readiness.totalRequired}
+                          size="sm"
+                          showLabel={false}
+                        />
+                      </div>
+                      <span className={`text-[10px] tabular-nums ${u.tone}`}>
+                        {a.readiness.daysUntilDeadline != null
+                          ? a.readiness.urgency === "OVERDUE"
+                            ? `${Math.abs(a.readiness.daysUntilDeadline)}d late`
+                            : `${a.readiness.daysUntilDeadline}d`
+                          : ""}
+                      </span>
                     </div>
-                    <span className={`text-[10px] tabular-nums ${u.tone}`}>
-                      {a.readiness.daysUntilDeadline != null
-                        ? a.readiness.urgency === "OVERDUE"
-                          ? `${Math.abs(a.readiness.daysUntilDeadline)}d late`
-                          : `${a.readiness.daysUntilDeadline}d`
-                        : ""}
-                    </span>
                   </div>
                 </Link>
               );

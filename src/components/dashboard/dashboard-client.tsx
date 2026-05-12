@@ -21,6 +21,7 @@ import {
   motion,
 } from "@/components/shared/motion";
 import { SchedulingInboxCard } from "@/components/scheduling/scheduling-inbox-card";
+import { EmptyState } from "@/components/shared/empty-state";
 
 export function DashboardClient({
   greeting,
@@ -142,12 +143,11 @@ export function DashboardClient({
                 ))}
               </div>
             ) : !meetings?.length ? (
-              <div className="py-8 text-center">
-                <Calendar className="mx-auto h-8 w-8 text-muted-foreground/30 mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  No upcoming meetings.
-                </p>
-              </div>
+              <EmptyState
+                icon={Calendar}
+                title="No meetings on the calendar"
+                description="Schedule directly from a student page or send a request and let them pick a time."
+              />
             ) : (
               <div className="space-y-2">
                 {meetings.map((meeting) => {
@@ -218,12 +218,12 @@ export function DashboardClient({
                 ))}
               </div>
             ) : !students?.length ? (
-              <div className="py-8 text-center">
-                <Users className="mx-auto h-8 w-8 text-muted-foreground/30 mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  No students yet. Add your first student to get started.
-                </p>
-              </div>
+              <EmptyState
+                icon={Users}
+                title="No students on your roster"
+                description="Add your first student from the Students page to begin tracking their journey."
+                tone="primary"
+              />
             ) : (
               <div className="space-y-2">
                 {students.map((student) => (
@@ -277,16 +277,26 @@ function StatCard({
   href?: string;
 }) {
   const content = (
-    <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 hover:border-foreground/[0.12] transition-colors">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{title}</p>
-        <div
-          className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br ${gradient} shadow-md`}
-        >
-          <Icon className="h-4 w-4 text-white" />
+    <div className="group relative overflow-hidden rounded-2xl border border-foreground/[0.06] bg-card p-5 hover:border-foreground/[0.12] transition-all hover:-translate-y-0.5">
+      {/* Soft gradient corner — color-keyed to the stat */}
+      <div
+        className={`pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-gradient-to-br ${gradient} opacity-[0.10] blur-2xl group-hover:opacity-[0.18] transition-opacity`}
+      />
+      <div className="relative">
+        <div className="flex items-start justify-between mb-2">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80">
+            {title}
+          </p>
+          <div
+            className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br ${gradient} shadow-md ring-1 ring-white/10`}
+          >
+            <Icon className="h-4 w-4 text-white" />
+          </div>
         </div>
+        <p className="num-display text-4xl font-medium tracking-tight tabular-nums">
+          {value}
+        </p>
       </div>
-      <p className="text-3xl font-bold mt-2">{value}</p>
     </div>
   );
 

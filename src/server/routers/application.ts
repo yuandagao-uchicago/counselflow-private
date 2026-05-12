@@ -122,7 +122,7 @@ export const applicationRouter = router({
         where: { studentId: input.studentId },
         orderBy: [{ deadline: "asc" }, { createdAt: "desc" }],
         include: {
-          school: { select: { id: true, name: true, commonName: true, city: true, state: true } },
+          school: { select: { id: true, name: true, commonName: true, city: true, state: true, website: true } },
           ...READINESS_INCLUDE,
         },
       });
