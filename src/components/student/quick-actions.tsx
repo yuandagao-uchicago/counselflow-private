@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sparkles, Calendar, MessageSquare, FileText, Loader2, Map, CalendarPlus } from "lucide-react";
+import { Sparkles, Calendar, Loader2, Map, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -86,22 +86,6 @@ export function QuickActions({ studentId }: { studentId: string }) {
         >
           <Calendar className="mr-2 h-4 w-4" />
           Schedule directly
-        </Button>
-        <Button
-          variant="outline"
-          className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10 transition-colors"
-          onClick={() => toast.info("Draft communications coming soon!")}
-        >
-          <MessageSquare className="mr-2 h-4 w-4" />
-          Draft Update
-        </Button>
-        <Button
-          variant="outline"
-          className="border-foreground/10 bg-foreground/5 hover:bg-foreground/10 transition-colors"
-          onClick={() => toast.info("Quick notes coming soon!")}
-        >
-          <FileText className="mr-2 h-4 w-4" />
-          Quick Note
         </Button>
       </div>
 
