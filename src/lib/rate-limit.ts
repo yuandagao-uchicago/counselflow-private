@@ -9,11 +9,14 @@ function createRateLimiter(
   tokens: number,
   windowSeconds: number
 ): Ratelimit | null {
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+  const url = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+  const token =
+    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+  if (!url || !token) {
     return null;
   }
   return new Ratelimit({
-    redis: Redis.fromEnv(),
+    redis: new Redis({ url, token }),
     limiter: Ratelimit.slidingWindow(tokens, `${windowSeconds} s`),
     analytics: true,
   });
@@ -43,7 +46,7 @@ export async function checkRateLimit(
     if (process.env.NODE_ENV === "production") {
       console.error(
         "[rate-limit] Upstash not configured in production — failing closed. " +
-          "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN."
+          "Set UPSTASH_REDIS_REST_URL/TOKEN or KV_REST_API_URL/TOKEN."
       );
       return { success: false };
     }
