@@ -1,19 +1,43 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Mail, Phone, School } from "lucide-react";
+import { ArrowLeft, Mail, Phone, School, Pencil } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { CaseStats } from "./case-stats";
+import { EditProfileDialog } from "./edit-profile-dialog";
 
-const phaseConfig: Record<string, { label: string; color: string }> = {
-  EXPLORATION: { label: "Exploration", color: "from-blue-500 to-cyan-400" },
-  LIST_BUILDING: { label: "List Building", color: "from-violet-500 to-purple-400" },
-  TESTING: { label: "Testing", color: "from-amber-500 to-orange-400" },
-  APPLICATIONS: { label: "Applications", color: "from-emerald-500 to-green-400" },
-  ESSAYS: { label: "Essays", color: "from-pink-500 to-rose-400" },
-  SUBMISSIONS: { label: "Submissions", color: "from-indigo-500 to-blue-400" },
-  DECISIONS: { label: "Decisions", color: "from-yellow-500 to-amber-400" },
-  ENROLLMENT: { label: "Enrollment", color: "from-green-500 to-emerald-400" },
+const phaseOrder = [
+  "EXPLORATION",
+  "LIST_BUILDING",
+  "TESTING",
+  "APPLICATIONS",
+  "ESSAYS",
+  "SUBMISSIONS",
+  "DECISIONS",
+  "ENROLLMENT",
+] as const;
+
+const phaseLabel: Record<string, string> = {
+  EXPLORATION: "Exploration",
+  LIST_BUILDING: "List building",
+  TESTING: "Testing",
+  APPLICATIONS: "Applications",
+  ESSAYS: "Essays",
+  SUBMISSIONS: "Submissions",
+  DECISIONS: "Decisions",
+  ENROLLMENT: "Enrollment",
+};
+
+const phaseGradient: Record<string, string> = {
+  EXPLORATION: "from-sky-500 to-cyan-400",
+  LIST_BUILDING: "from-violet-500 to-fuchsia-400",
+  TESTING: "from-amber-500 to-orange-400",
+  APPLICATIONS: "from-emerald-500 to-teal-400",
+  ESSAYS: "from-rose-500 to-pink-400",
+  SUBMISSIONS: "from-indigo-500 to-blue-400",
+  DECISIONS: "from-yellow-500 to-amber-400",
+  ENROLLMENT: "from-emerald-500 to-green-400",
 };
 
 interface StudentHeaderProps {
@@ -31,94 +55,210 @@ interface StudentHeaderProps {
     gpaWeighted: number | null;
     satScore: number | null;
     actScore: number | null;
+    classRank: string | null;
+    courseRigor: string | null;
+    intendedMajors: string[];
+    interests: string[];
+    personalNotes: string | null;
     phase: string;
     status: string;
+    milestones?: { status: string }[];
+    tasks?: { status: string; dueDate: Date | null }[];
+    meetings?: { scheduledAt: Date }[];
   };
 }
 
 export function StudentHeader({ student }: StudentHeaderProps) {
   const router = useRouter();
-  const phase = phaseConfig[student.phase] || { label: student.phase, color: "from-gray-500 to-gray-400" };
+  const [editOpen, setEditOpen] = useState(false);
   const displayName = student.preferredName || student.firstName;
+  const currentPhaseIndex = phaseOrder.indexOf(student.phase as (typeof phaseOrder)[number]);
+  const phaseName = phaseLabel[student.phase] ?? student.phase;
+  const gradient = phaseGradient[student.phase] ?? "from-slate-500 to-slate-400";
+
+  // The little case-file id is just first-name initials + last 4 of student.id —
+  // it's purely visual (gives the page a "patient chart" / "dossier" feel).
+  const caseId = `${student.firstName[0] ?? ""}${student.lastName[0] ?? ""}-${student.id.slice(-4).toUpperCase()}`;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-foreground/[0.06] bg-gradient-to-br from-card to-card/80 p-6">
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.65_0.2_265_/_5%)] to-transparent pointer-events-none" />
+    <>
+      <div className="relative overflow-hidden rounded-3xl border border-foreground/[0.08] bg-card">
+        {/* Gradient wash + topographic backdrop */}
+        <div
+          className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-[0.07] pointer-events-none`}
+        />
+        <div className="topo-bg absolute inset-0 text-foreground/[0.5] opacity-[0.06] pointer-events-none" />
+        <div className="absolute -top-24 -right-24 h-80 w-80 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
 
-      <div className="relative">
-        {/* Back button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.push("/students")}
-          className="mb-4 -ml-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          Students
-        </Button>
+        {/* Top breadcrumb */}
+        <div className="relative flex items-center justify-between px-6 pt-5 md:px-8">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push("/students")}
+            className="-ml-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="mr-1 h-4 w-4" />
+            All students
+          </Button>
+          <div className="flex items-center gap-3">
+            <span className="num-display text-[10px] uppercase tracking-[0.28em] text-muted-foreground/60">
+              CASE · {caseId}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setEditOpen(true)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <Pencil className="h-3.5 w-3.5 mr-1.5" /> Edit
+            </Button>
+          </div>
+        </div>
 
-        <div className="flex items-start justify-between gap-6">
-          <div className="flex items-center gap-5">
-            {/* Avatar */}
-            <div className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${phase.color} text-2xl font-bold text-white shadow-lg`}>
-              {student.firstName[0]}{student.lastName[0]}
+        {/* Identity block — asymmetric editorial composition */}
+        <div className="relative grid gap-6 px-6 pt-5 pb-7 md:grid-cols-[auto_1fr] md:gap-8 md:px-8 md:pb-8">
+          {/* Avatar */}
+          <div className="flex flex-col items-center md:items-start gap-3">
+            <div
+              className={`flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} text-3xl font-semibold text-white shadow-xl shadow-black/20 ring-1 ring-white/20`}
+            >
+              {student.firstName[0]}
+              {student.lastName[0]}
             </div>
+            <div
+              className={`inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r ${gradient} px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-white`}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+              {phaseName}
+            </div>
+          </div>
 
+          {/* Name + meta */}
+          <div className="min-w-0 space-y-3">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">
-                {displayName} {student.lastName}
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-[3.5rem] font-medium tracking-tight leading-[1.05]">
+                {displayName} <span className="text-muted-foreground/80">{student.lastName}</span>
               </h1>
-              <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 {student.highSchool && (
-                  <span className="flex items-center gap-1">
+                  <span className="inline-flex items-center gap-1.5">
                     <School className="h-3.5 w-3.5" />
                     {student.highSchool}
                   </span>
                 )}
-                <span>Class of {student.graduationYear}</span>
+                <span className="num-display tabular-nums">Class of {student.graduationYear}</span>
                 {student.email && (
-                  <span className="flex items-center gap-1">
+                  <a
+                    href={`mailto:${student.email}`}
+                    className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+                  >
                     <Mail className="h-3.5 w-3.5" />
                     {student.email}
-                  </span>
+                  </a>
                 )}
                 {student.phone && (
-                  <span className="flex items-center gap-1">
+                  <span className="inline-flex items-center gap-1.5">
                     <Phone className="h-3.5 w-3.5" />
                     {student.phone}
                   </span>
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Stats pills */}
-          <div className="hidden md:flex items-center gap-2">
-            {student.gpaUnweighted && (
-              <div className="rounded-xl bg-foreground/5 px-3 py-1.5 text-center">
-                <p className="text-xs text-muted-foreground">GPA</p>
-                <p className="text-sm font-bold">{student.gpaUnweighted.toFixed(2)}</p>
-              </div>
-            )}
-            {student.satScore && (
-              <div className="rounded-xl bg-foreground/5 px-3 py-1.5 text-center">
-                <p className="text-xs text-muted-foreground">SAT</p>
-                <p className="text-sm font-bold">{student.satScore}</p>
-              </div>
-            )}
-            {student.actScore && (
-              <div className="rounded-xl bg-foreground/5 px-3 py-1.5 text-center">
-                <p className="text-xs text-muted-foreground">ACT</p>
-                <p className="text-sm font-bold">{student.actScore}</p>
-              </div>
-            )}
-            <Badge className={`bg-gradient-to-r ${phase.color} text-white border-0 px-3 py-1`}>
-              {phase.label}
-            </Badge>
+            {/* Academic facts row — editorial pulls */}
+            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2 pt-1">
+              {student.gpaUnweighted !== null && (
+                <FactPull eyebrow="GPA" value={student.gpaUnweighted.toFixed(2)} />
+              )}
+              {student.gpaWeighted !== null && (
+                <FactPull eyebrow="GPA·W" value={student.gpaWeighted.toFixed(2)} />
+              )}
+              {student.satScore !== null && (
+                <FactPull eyebrow="SAT" value={student.satScore.toString()} />
+              )}
+              {student.actScore !== null && (
+                <FactPull eyebrow="ACT" value={student.actScore.toString()} />
+              )}
+              {student.intendedMajors.length > 0 && (
+                <FactPull
+                  eyebrow="Intends"
+                  value={student.intendedMajors.slice(0, 2).join(" · ")}
+                />
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Hairline divider before journey + stats band */}
+        <div className="relative px-6 md:px-8">
+          <div className="border-t border-foreground/[0.06]" />
+        </div>
+
+        {/* Phase journey — horizontal narrative */}
+        <div className="relative px-6 pt-5 pb-3 md:px-8">
+          <p className="section-eyebrow mb-3">Journey</p>
+          <ol className="grid grid-cols-8 gap-1.5">
+            {phaseOrder.map((p, i) => {
+              const isCurrent = i === currentPhaseIndex;
+              const isComplete = i < currentPhaseIndex;
+              return (
+                <li key={p} className="flex flex-col items-start gap-1.5">
+                  <div
+                    className={`h-1.5 w-full rounded-full transition-all ${
+                      isCurrent
+                        ? `bg-gradient-to-r ${gradient} shadow-md shadow-black/20`
+                        : isComplete
+                          ? "bg-emerald-500/70"
+                          : "bg-foreground/[0.06]"
+                    }`}
+                  />
+                  <span
+                    className={`text-[10px] uppercase tracking-wider transition-colors ${
+                      isCurrent
+                        ? "text-foreground font-semibold"
+                        : isComplete
+                          ? "text-foreground/60"
+                          : "text-muted-foreground/40"
+                    }`}
+                  >
+                    {phaseLabel[p]}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+
+        {/* Case stats instrument panel */}
+        <div className="relative px-6 pt-5 pb-7 md:px-8">
+          <CaseStats
+            studentId={student.id}
+            milestones={student.milestones}
+            tasks={student.tasks}
+            meetings={student.meetings}
+          />
+        </div>
       </div>
+
+      <EditProfileDialog
+        student={student}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
+    </>
+  );
+}
+
+function FactPull({ eyebrow, value }: { eyebrow: string; value: string }) {
+  return (
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60">
+        {eyebrow}
+      </span>
+      <span className="num-display text-base font-medium text-foreground tabular-nums">
+        {value}
+      </span>
     </div>
   );
 }

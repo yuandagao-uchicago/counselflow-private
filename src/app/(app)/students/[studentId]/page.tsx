@@ -4,8 +4,8 @@ import { use } from "react";
 import { trpc } from "@/lib/trpc";
 import { PageTransition, StaggerList, StaggerItem, motion } from "@/components/shared/motion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SectionDivider } from "@/components/shared/section-divider";
 import { StudentHeader } from "@/components/student/student-header";
-import { PhaseCard } from "@/components/student/phase-card";
 import { TasksCard } from "@/components/student/tasks-card";
 import { MilestonesCard } from "@/components/student/milestones-card";
 import { MeetingsCard } from "@/components/student/meetings-card";
@@ -28,7 +28,6 @@ export default function StudentDetailPage({
 }) {
   const { studentId } = use(params);
   const { data: student, isLoading } = trpc.student.getById.useQuery({ id: studentId });
-  // Per-student pending extractions — same tRPC endpoint as /approvals, just scoped
   const { data: pendingReviews } = trpc.review.list.useQuery({
     status: "PENDING",
     studentId,
@@ -37,7 +36,7 @@ export default function StudentDetailPage({
   if (isLoading) {
     return (
       <div className="space-y-6 page-enter">
-        <Skeleton className="h-32 w-full rounded-2xl" />
+        <Skeleton className="h-72 w-full rounded-3xl" />
         <div className="grid gap-6 lg:grid-cols-3">
           <Skeleton className="h-48 rounded-2xl lg:col-span-2" />
           <Skeleton className="h-48 rounded-2xl" />
@@ -60,7 +59,7 @@ export default function StudentDetailPage({
 
   return (
     <PageTransition>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <StudentHeader student={student} />
 
         <motion.div
@@ -71,7 +70,6 @@ export default function StudentDetailPage({
           <QuickActions studentId={student.id} />
         </motion.div>
 
-        {/* Pending extractions — surfaces at the top when there's AI work awaiting approval */}
         {pendingExtractions.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -89,21 +87,29 @@ export default function StudentDetailPage({
           </div>
         )}
 
-        <StaggerList className="grid gap-5 lg:grid-cols-3">
-          <div className="space-y-5 lg:col-span-2">
+        <StaggerList className="grid gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            {/* I — Academic profile + family */}
+            <SectionDivider label="Profile" number="I" />
             <StaggerItem><ProfileCard student={student} /></StaggerItem>
+            <StaggerItem><GuardiansCard studentId={student.id} /></StaggerItem>
+
+            {/* II — Where the work is going */}
+            <SectionDivider label="Applications & funding" number="II" />
             <StaggerItem><ApplicationsCard studentId={student.id} /></StaggerItem>
             <StaggerItem><RecommendersCard studentId={student.id} /></StaggerItem>
-            <StaggerItem><GuardiansCard studentId={student.id} /></StaggerItem>
             <StaggerItem><ScholarshipsCard studentId={student.id} /></StaggerItem>
+
+            {/* III — Day-to-day operations */}
+            <SectionDivider label="Outreach & operations" number="III" />
             <StaggerItem><WeeklyUpdateCard studentId={student.id} /></StaggerItem>
-            <StaggerItem><UploadDocumentsPanel studentId={student.id} /></StaggerItem>
-            <StaggerItem><TasksCard tasks={student.tasks} studentId={student.id} /></StaggerItem>
             <StaggerItem><MeetingsCard meetings={student.meetings} studentId={student.id} /></StaggerItem>
+            <StaggerItem><TasksCard tasks={student.tasks} studentId={student.id} /></StaggerItem>
+            <StaggerItem><UploadDocumentsPanel studentId={student.id} /></StaggerItem>
           </div>
 
-          <div className="space-y-5">
-            <StaggerItem><PhaseCard phase={student.phase} /></StaggerItem>
+          <div className="space-y-6">
+            <SectionDivider label="Tracking" number="IV" />
             <StaggerItem><MilestonesCard milestones={student.milestones} studentId={student.id} /></StaggerItem>
             <StaggerItem><RisksCard risks={student.riskFlags} /></StaggerItem>
           </div>

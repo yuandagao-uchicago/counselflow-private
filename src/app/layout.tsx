@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk, Unbounded, JetBrains_Mono } from "next/font/google";
+import { Inter, Space_Grotesk, Unbounded, JetBrains_Mono, Fraunces } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "@/components/providers";
@@ -27,6 +27,15 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+// Editorial serif — used for student names and section markers. Gives a
+// "case file" / clinician's chart feel that signals considered work.
+const fraunces = Fraunces({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  axes: ["opsz", "SOFT"],
+});
+
 export const metadata: Metadata = {
   title: "CounselFlow",
   description:
@@ -43,7 +52,7 @@ export default function RootLayout({
       <html
         lang="en"
         suppressHydrationWarning
-        className={`${inter.variable} ${spaceGrotesk.variable} ${unbounded.variable} ${jetbrainsMono.variable} h-full antialiased`}
+        className={`${inter.variable} ${spaceGrotesk.variable} ${unbounded.variable} ${jetbrainsMono.variable} ${fraunces.variable} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col">
           <Providers>

@@ -11,6 +11,7 @@
   --font-mono: var(--font-mono);
   --font-heading: var(--font-heading);
   --font-display: var(--font-display);
+  --font-serif: var(--font-serif);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -188,6 +189,50 @@
 /* Use the display font for large hero headlines */
 .font-display {
   font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Editorial serif — for student names, section markers, magazine-y pulls */
+.font-serif {
+  font-family: var(--font-serif);
+  font-feature-settings: "ss01", "ss02";
+}
+
+/* Section eyebrow — small, all-caps, wide-tracked label that sits above
+   a content group. Borrowed from editorial design (think New Yorker section
+   markers). Use to break dense pages into thematic regions. */
+.section-eyebrow {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 0.7rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--foreground) 55%, transparent);
+}
+
+/* Hairline horizontal rule, used inside section dividers */
+.hair-rule {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--foreground) 18%, transparent),
+    transparent
+  );
+}
+
+/* Topographic line texture — subtle backdrop for "instrument panel" surfaces.
+   Renders inline via SVG so it adapts to background without an asset roundtrip. */
+.topo-bg {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'><g fill='none' stroke='currentColor' stroke-width='0.5' opacity='0.4'><path d='M0,80 Q100,60 200,80 T400,80'/><path d='M0,140 Q100,120 200,140 T400,140'/><path d='M0,200 Q100,180 200,200 T400,200'/><path d='M0,260 Q100,240 200,260 T400,260'/><path d='M0,320 Q100,300 200,320 T400,320'/></g></svg>");
+  background-size: 400px 400px;
+}
+
+/* Numeric display — tabular figures, slightly narrower for dashboard-y stats */
+.num-display {
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum", "lnum";
   letter-spacing: -0.02em;
 }
 
