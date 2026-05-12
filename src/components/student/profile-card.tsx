@@ -74,7 +74,7 @@ export function ProfileCard({ student }: ProfileCardProps) {
         {/* Academics */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium">
-            <BookOpen className="h-4 w-4 text-[oklch(0.65_0.2_265)]" />
+            <BookOpen className="h-4 w-4 text-[oklch(0.34_0.13_25)]" />
             Academics
           </div>
           <div className="space-y-2 text-sm">
@@ -95,7 +95,7 @@ export function ProfileCard({ student }: ProfileCardProps) {
         {/* Interests & Majors */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium">
-            <Target className="h-4 w-4 text-[oklch(0.7_0.18_155)]" />
+            <Target className="h-4 w-4 text-[oklch(0.46_0.09_155)]" />
             Interests & Direction
           </div>
           {student.intendedMajors.length > 0 && (
@@ -106,7 +106,7 @@ export function ProfileCard({ student }: ProfileCardProps) {
                   <Badge
                     key={major}
                     variant="secondary"
-                    className="bg-[oklch(0.65_0.2_265_/_10%)] text-[oklch(0.75_0.15_265)] border-[oklch(0.65_0.2_265_/_20%)]"
+                    className="bg-[oklch(0.34_0.13_25_/_10%)] text-[oklch(0.66_0.15_75)] border-[oklch(0.34_0.13_25_/_20%)]"
                   >
                     {major}
                   </Badge>

@@ -43,7 +43,7 @@ export function TagInput({
         <Badge
           key={tag}
           variant="secondary"
-          className={`gap-1 pr-1 ${badgeClassName || "bg-[oklch(0.65_0.2_265_/_10%)] text-[oklch(0.75_0.15_265)] border-[oklch(0.65_0.2_265_/_20%)]"}`}
+          className={`gap-1 pr-1 ${badgeClassName || "bg-[oklch(0.34_0.13_25_/_10%)] text-[oklch(0.66_0.15_75)] border-[oklch(0.34_0.13_25_/_20%)]"}`}
         >
           {tag}
           <button

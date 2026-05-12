@@ -24,7 +24,7 @@ interface Milestone {
 
 const statusConfig: Record<string, { icon: typeof Circle; color: string; label: string }> = {
   COMPLETED: { icon: CheckCircle2, color: "text-emerald-400", label: "Completed" },
-  IN_PROGRESS: { icon: Circle, color: "text-[oklch(0.65_0.2_265)]", label: "In progress" },
+  IN_PROGRESS: { icon: Circle, color: "text-[oklch(0.34_0.13_25)]", label: "In progress" },
   BLOCKED: { icon: Lock, color: "text-red-400", label: "Blocked" },
   SKIPPED: { icon: SkipForward, color: "text-muted-foreground", label: "Skipped" },
   NOT_STARTED: { icon: Circle, color: "text-foreground/20", label: "Not started" },
@@ -94,7 +94,7 @@ export function MilestonesCard({
           {milestones.length > 0 && (
             <Link
               href={`/students/${studentId}/journey`}
-              className="inline-flex items-center gap-1 text-xs text-[oklch(0.75_0.15_265)] hover:underline"
+              className="inline-flex items-center gap-1 text-xs text-[oklch(0.66_0.15_75)] hover:underline"
             >
               Journey
               <ArrowRight className="h-3 w-3" />

@@ -47,7 +47,7 @@ export function QuickActions({ studentId }: { studentId: string }) {
           onClick={() => quickPrep.mutate({ studentId })}
           disabled={quickPrep.isPending}
           title="Creates a new meeting (now) and generates an AI prep brief for it"
-          className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0 shadow-lg shadow-[oklch(0.65_0.2_265_/_20%)] hover:shadow-[oklch(0.65_0.2_265_/_30%)] hover:brightness-110 transition-all"
+          className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0 shadow-lg shadow-[oklch(0.34_0.13_25_/_20%)] hover:shadow-[oklch(0.34_0.13_25_/_30%)] hover:brightness-110 transition-all"
         >
           {quickPrep.isPending ? (
             <>
@@ -187,7 +187,7 @@ function MeetingDialog({
             <Button
               type="submit"
               disabled={createMeeting.isPending}
-              className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0"
+              className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0"
             >
               {createMeeting.isPending ? "Scheduling..." : "Schedule Meeting"}
             </Button>

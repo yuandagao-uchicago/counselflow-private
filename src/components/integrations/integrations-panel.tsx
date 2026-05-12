@@ -47,15 +47,15 @@ export function IntegrationsPanel() {
 
         {/* Recall.ai bot — coming soon */}
         <IntegrationRow
-          icon={<Bot className="h-5 w-5 text-[oklch(0.75_0.15_265)]" />}
+          icon={<Bot className="h-5 w-5 text-[oklch(0.66_0.15_75)]" />}
           name="AI meeting bot"
           status="coming_soon"
           description="A notetaker joins your Zoom / Meet / Teams calls, records, transcribes, and runs the AI summary automatically."
         />
       </div>
 
-      <div className="rounded-xl bg-gradient-to-br from-[oklch(0.65_0.2_265_/_10%)] to-transparent border border-[oklch(0.65_0.2_265_/_15%)] p-4 flex items-start gap-3">
-        <Sparkles className="h-4 w-4 text-[oklch(0.75_0.15_265)] shrink-0 mt-0.5" />
+      <div className="rounded-xl bg-gradient-to-br from-[oklch(0.34_0.13_25_/_10%)] to-transparent border border-[oklch(0.34_0.13_25_/_15%)] p-4 flex items-start gap-3">
+        <Sparkles className="h-4 w-4 text-[oklch(0.66_0.15_75)] shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground leading-relaxed">
           Every path feeds the same AI pipeline: a structured meeting summary, extracted tasks, and a draft follow-up email that enters the approval queue for your review.
         </p>

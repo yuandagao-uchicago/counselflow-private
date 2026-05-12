@@ -110,8 +110,8 @@ export default function ApplicationDetailPage({
           <div className="flex items-start justify-between gap-6 flex-wrap">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.65_0.2_265_/_15%)] to-[oklch(0.6_0.22_290_/_15%)] border border-[oklch(0.65_0.2_265_/_20%)]">
-                  <GraduationCap className="h-6 w-6 text-[oklch(0.75_0.15_265)]" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.34_0.13_25_/_15%)] to-[oklch(0.34_0.13_25_/_15%)] border border-[oklch(0.34_0.13_25_/_20%)]">
+                  <GraduationCap className="h-6 w-6 text-[oklch(0.66_0.15_75)]" />
                 </div>
                 <div className="min-w-0">
                   <h1 className="text-2xl font-bold tracking-tight truncate">
@@ -243,10 +243,10 @@ export default function ApplicationDetailPage({
         )}
 
         {/* Auto-sync banner */}
-        <div className="rounded-2xl border border-[oklch(0.65_0.2_265_/_20%)] bg-[oklch(0.65_0.2_265_/_5%)] p-3 flex items-center gap-3">
-          <Sparkles className="h-4 w-4 text-[oklch(0.75_0.15_265)] shrink-0" />
+        <div className="rounded-2xl border border-[oklch(0.34_0.13_25_/_20%)] bg-[oklch(0.34_0.13_25_/_5%)] p-3 flex items-center gap-3">
+          <Sparkles className="h-4 w-4 text-[oklch(0.66_0.15_75)] shrink-0" />
           <p className="text-xs text-muted-foreground">
-            Items marked <span className="text-[oklch(0.75_0.15_265)] font-medium">Auto</span> sync from
+            Items marked <span className="text-[oklch(0.66_0.15_75)] font-medium">Auto</span> sync from
             student data — uploading a transcript or marking a rec received here updates the checklist
             automatically.
           </p>

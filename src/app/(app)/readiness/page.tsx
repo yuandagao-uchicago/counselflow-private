@@ -138,7 +138,7 @@ export default function ReadinessPage() {
         {missingChips.length > 0 && (
           <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 glow-card">
             <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-4 w-4 text-[oklch(0.75_0.15_265)]" />
+              <Sparkles className="h-4 w-4 text-[oklch(0.66_0.15_75)]" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 Missing across roster
               </h2>
@@ -242,9 +242,9 @@ function StatTile({
       iconColor: "text-orange-400",
     },
     violet: {
-      ring: "ring-[oklch(0.65_0.2_265_/_20%)]",
-      iconBg: "bg-[oklch(0.65_0.2_265_/_15%)]",
-      iconColor: "text-[oklch(0.75_0.15_265)]",
+      ring: "ring-[oklch(0.34_0.13_25_/_20%)]",
+      iconBg: "bg-[oklch(0.34_0.13_25_/_15%)]",
+      iconColor: "text-[oklch(0.66_0.15_75)]",
     },
     emerald: {
       ring: "ring-emerald-500/20",

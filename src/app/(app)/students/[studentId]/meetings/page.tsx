@@ -59,7 +59,7 @@ export default function MeetingsPage({
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={
-            <Button className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0" />
+            <Button className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0" />
           }>
             <Plus className="mr-2 h-4 w-4" />
             New Meeting
@@ -111,7 +111,7 @@ export default function MeetingsPage({
                 </div>
                 <div className="flex gap-2">
                   {meeting.prepBrief && (
-                    <Badge className="bg-[oklch(0.65_0.2_265_/_15%)] text-[oklch(0.75_0.15_265)] border-0">
+                    <Badge className="bg-[oklch(0.34_0.13_25_/_15%)] text-[oklch(0.66_0.15_75)] border-0">
                       Prep Ready
                     </Badge>
                   )}
@@ -218,7 +218,7 @@ function NewMeetingDialog({ studentId, onClose }: { studentId: string; onClose: 
           <Button
             type="submit"
             disabled={createMeeting.isPending}
-            className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0"
+            className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0"
           >
             {createMeeting.isPending ? "Creating..." : "Schedule Meeting"}
           </Button>

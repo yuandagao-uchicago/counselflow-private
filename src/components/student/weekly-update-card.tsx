@@ -55,8 +55,8 @@ export function WeeklyUpdateCard({ studentId }: { studentId: string }) {
     <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 glow-card space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[oklch(0.65_0.2_265_/_15%)]">
-            <Mail className="h-4 w-4 text-[oklch(0.75_0.15_265)]" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[oklch(0.34_0.13_25_/_15%)]">
+            <Mail className="h-4 w-4 text-[oklch(0.66_0.15_75)]" />
           </div>
           <div>
             <h3 className="font-medium leading-tight">Weekly update</h3>
@@ -122,7 +122,7 @@ export function WeeklyUpdateCard({ studentId }: { studentId: string }) {
             })
           }
           disabled={generate.isPending}
-          className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0"
+          className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0"
         >
           {generate.isPending ? (
             <>

@@ -159,7 +159,7 @@ export default function MeetingDetailPage({
       </div>
 
       <div className="relative overflow-hidden rounded-2xl border border-foreground/[0.06] bg-gradient-to-br from-card to-card/80 p-6">
-        <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.65_0.2_265_/_5%)] to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.34_0.13_25_/_5%)] to-transparent pointer-events-none" />
         <div className="relative flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">{format(date, "EEEE, MMMM d, yyyy")}</p>
@@ -185,13 +185,13 @@ export default function MeetingDetailPage({
       {/* Phase 1: Prep Brief */}
       {!prepBrief && (
         <div className="rounded-2xl border border-dashed border-foreground/10 bg-card/50 p-8 text-center">
-          <Sparkles className="mx-auto h-10 w-10 text-[oklch(0.65_0.2_265)] mb-3" />
+          <Sparkles className="mx-auto h-10 w-10 text-[oklch(0.34_0.13_25)] mb-3" />
           <h2 className="text-lg font-semibold">Generate Prep Brief</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
             AI will analyze the student&apos;s profile, open tasks, milestones, and previous meetings to create a comprehensive preparation brief.
           </p>
           <Button
-            className="mt-5 bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0 shadow-lg shadow-[oklch(0.65_0.2_265_/_20%)]"
+            className="mt-5 bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0 shadow-lg shadow-[oklch(0.34_0.13_25_/_20%)]"
             size="lg"
             onClick={() => generatePrep.mutate({ meetingId })}
             disabled={generatePrep.isPending}
@@ -219,7 +219,7 @@ export default function MeetingDetailPage({
         <div className="rounded-2xl border border-foreground/[0.06] bg-card p-6 space-y-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-[oklch(0.65_0.2_265)]" />
+              <FileText className="h-5 w-5 text-[oklch(0.34_0.13_25)]" />
               <h2 className="text-lg font-semibold">Post-Meeting Notes</h2>
             </div>
             <div className="flex items-center gap-2">
@@ -265,7 +265,7 @@ export default function MeetingDetailPage({
               {rawNotes.length > 0 && `${rawNotes.length.toLocaleString()} characters`}
             </p>
             <Button
-              className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0 shadow-lg shadow-[oklch(0.65_0.2_265_/_20%)]"
+              className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0 shadow-lg shadow-[oklch(0.34_0.13_25_/_20%)]"
               onClick={() => submitNotes.mutate({ meetingId, rawNotes })}
               disabled={submitNotes.isPending || rawNotes.length < 10}
             >
@@ -315,7 +315,7 @@ function UpcomingIntegrations() {
   return (
     <div className="rounded-2xl border border-dashed border-foreground/10 bg-card/40 p-5 space-y-3">
       <div className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-[oklch(0.75_0.15_265)]" />
+        <Sparkles className="h-4 w-4 text-[oklch(0.66_0.15_75)]" />
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Coming soon
         </h3>
@@ -327,7 +327,7 @@ function UpcomingIntegrations() {
           copy="Pull cloud recording transcripts with one click after each Zoom meeting."
         />
         <UpcomingCard
-          icon={<Bot className="h-4 w-4 text-[oklch(0.75_0.15_265)]" />}
+          icon={<Bot className="h-4 w-4 text-[oklch(0.66_0.15_75)]" />}
           title="AI meeting bot"
           copy="A bot joins live Zoom / Meet / Teams calls, records, and summarizes automatically."
         />
@@ -357,7 +357,7 @@ function PhaseStep({ label, done, active }: { label: string; done: boolean; acti
         done
           ? "bg-emerald-500/20 text-emerald-400"
           : active
-          ? "bg-[oklch(0.65_0.2_265_/_20%)] text-[oklch(0.75_0.15_265)] ring-2 ring-[oklch(0.65_0.2_265_/_30%)]"
+          ? "bg-[oklch(0.34_0.13_25_/_20%)] text-[oklch(0.66_0.15_75)] ring-2 ring-[oklch(0.34_0.13_25_/_30%)]"
           : "bg-foreground/5 text-muted-foreground/50"
       }`}>
         {done ? <CheckCircle2 className="h-4 w-4" /> : <span>{label[0]}</span>}

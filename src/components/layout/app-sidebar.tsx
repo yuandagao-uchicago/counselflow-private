@@ -7,7 +7,6 @@ import {
   Users,
   CheckCircle,
   Settings,
-  Sparkles,
   FileSpreadsheet,
 } from "lucide-react";
 import {
@@ -69,17 +68,16 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="px-5 py-5">
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] shadow-lg shadow-[oklch(0.65_0.2_265_/_25%)] ring-1 ring-white/10">
-            <Sparkles className="h-5 w-5 text-white" />
-            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-sidebar shadow-sm" />
+          {/* Insignia — oxblood on cream with brass rim, like a leather cover stamp */}
+          <div className="relative flex h-11 w-11 items-center justify-center rounded-md bg-[var(--almanac-oxblood)] ring-1 ring-[var(--almanac-brass)]/40 shadow-md shadow-[var(--almanac-oxblood)]/20 transition-transform group-hover:rotate-[-3deg]">
+            <span className="font-display text-[1.1rem] font-bold text-[var(--almanac-paper)] leading-none">CF</span>
+            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-[var(--almanac-sage)] ring-2 ring-sidebar pulse-glow" />
           </div>
           <div className="leading-tight">
-            <span className="font-serif text-xl font-medium tracking-tight">
-              Counsel<span className="text-[oklch(0.75_0.18_280)]">Flow</span>
+            <span className="font-display text-xl font-semibold tracking-tight">
+              Counselflow
             </span>
-            <p className="text-[9px] uppercase tracking-[0.28em] text-muted-foreground/70 mt-0.5">
-              Operating system
-            </p>
+            <p className="case-id mt-1 block">No. <span className="text-[var(--almanac-brass)]">∞</span> · vol. i</p>
           </div>
         </Link>
       </SidebarHeader>
@@ -99,14 +97,14 @@ export function AppSidebar() {
                       render={<Link href={item.href} />}
                       className={
                         isActive
-                          ? "bg-gradient-to-r from-[oklch(0.65_0.2_265_/_15%)] to-transparent border-l-2 border-[oklch(0.65_0.2_265)] text-white"
-                          : "text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+                          ? "relative bg-[var(--almanac-oxblood)]/[0.08] border-l-2 border-[var(--almanac-oxblood)] text-foreground font-medium"
+                          : "text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors border-l-2 border-transparent"
                       }
                     >
                       <item.icon className="h-4 w-4" />
-                      <span className="font-medium">{item.title}</span>
+                      <span>{item.title}</span>
                       {item.badge && badgeCount > 0 && (
-                        <Badge className="ml-auto h-5 min-w-5 px-1.5 text-[10px] font-bold bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.6_0.22_290)] text-white border-0">
+                        <Badge className="ml-auto h-5 min-w-5 px-1.5 num-mono text-[10px] font-medium bg-[var(--almanac-oxblood)] text-[var(--almanac-paper)] border-0 ring-1 ring-[var(--almanac-brass)]/30">
                           {badgeCount}
                         </Badge>
                       )}

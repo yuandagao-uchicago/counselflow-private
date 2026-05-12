@@ -56,7 +56,7 @@ export function ApplicationsCard({ studentId }: { studentId: string }) {
         {list.length > 0 ? (
           <Link
             href={`/students/${studentId}/applications`}
-            className="inline-flex items-center gap-1 text-xs text-[oklch(0.75_0.15_265)] hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-[oklch(0.66_0.15_75)] hover:underline"
           >
             View all
             <ArrowRight className="h-3 w-3" />
@@ -84,7 +84,7 @@ export function ApplicationsCard({ studentId }: { studentId: string }) {
               </span>
             )}
             {readyCount > 0 && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[oklch(0.65_0.2_265_/_15%)] text-[oklch(0.85_0.1_265)] border border-[oklch(0.65_0.2_265_/_25%)]">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[oklch(0.34_0.13_25_/_15%)] text-[oklch(0.85_0.1_265)] border border-[oklch(0.34_0.13_25_/_25%)]">
                 {readyCount} ready
               </span>
             )}

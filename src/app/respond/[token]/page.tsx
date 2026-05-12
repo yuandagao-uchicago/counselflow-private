@@ -133,7 +133,7 @@ export default function RespondPage({
     return (
       <Shell>
         <Center>
-          <Send className="h-10 w-10 text-[oklch(0.75_0.15_265)] mb-3" />
+          <Send className="h-10 w-10 text-[oklch(0.66_0.15_75)] mb-3" />
           <h1 className="text-lg font-semibold mb-1">Sent to {data.counselor.name}</h1>
           <p className="text-sm text-muted-foreground/70 max-w-sm">
             You proposed{" "}
@@ -154,7 +154,7 @@ export default function RespondPage({
     <Shell>
       <header className="mb-6">
         <p className="text-xs uppercase tracking-widest text-muted-foreground/70 mb-2 flex items-center gap-1.5">
-          <Sparkles className="h-3 w-3 text-[oklch(0.75_0.15_265)]" />
+          <Sparkles className="h-3 w-3 text-[oklch(0.66_0.15_75)]" />
           {data.counselor.name} via CounselFlow
         </p>
         <h1 className="text-2xl font-bold tracking-tight">
@@ -170,7 +170,7 @@ export default function RespondPage({
       </header>
 
       {data.message && (
-        <div className="mb-6 rounded-xl border border-[oklch(0.65_0.2_265_/_20%)] bg-[oklch(0.65_0.2_265_/_6%)] p-4">
+        <div className="mb-6 rounded-xl border border-[oklch(0.34_0.13_25_/_20%)] bg-[oklch(0.34_0.13_25_/_6%)] p-4">
           <p className="text-sm text-muted-foreground italic leading-relaxed whitespace-pre-wrap">
             &ldquo;{data.message}&rdquo;
           </p>
@@ -185,10 +185,10 @@ export default function RespondPage({
               key={slot.id}
               onClick={() => accept.mutate({ token, slotId: slot.id })}
               disabled={accept.isPending || isPast}
-              className="group w-full flex items-center justify-between gap-4 rounded-xl border border-foreground/[0.08] bg-card hover:border-[oklch(0.65_0.2_265_/_40%)] hover:bg-[oklch(0.65_0.2_265_/_5%)] transition-all p-4 text-left disabled:opacity-40 disabled:cursor-not-allowed"
+              className="group w-full flex items-center justify-between gap-4 rounded-xl border border-foreground/[0.08] bg-card hover:border-[oklch(0.34_0.13_25_/_40%)] hover:bg-[oklch(0.34_0.13_25_/_5%)] transition-all p-4 text-left disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-foreground/[0.04] group-hover:bg-[oklch(0.65_0.2_265_/_15%)] group-hover:text-[oklch(0.75_0.15_265)] transition-colors">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-foreground/[0.04] group-hover:bg-[oklch(0.34_0.13_25_/_15%)] group-hover:text-[oklch(0.66_0.15_75)] transition-colors">
                   <Calendar className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
@@ -200,7 +200,7 @@ export default function RespondPage({
                   )}
                 </div>
               </div>
-              <span className="shrink-0 text-xs text-muted-foreground group-hover:text-[oklch(0.75_0.15_265)] font-medium">
+              <span className="shrink-0 text-xs text-muted-foreground group-hover:text-[oklch(0.66_0.15_75)] font-medium">
                 {accept.isPending && accept.variables?.slotId === slot.id ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
@@ -216,7 +216,7 @@ export default function RespondPage({
       {!showCounter ? (
         <button
           onClick={() => setShowCounter(true)}
-          className="text-sm text-[oklch(0.75_0.15_265)] hover:underline"
+          className="text-sm text-[oklch(0.66_0.15_75)] hover:underline"
         >
           None of these work? Propose a different time →
         </button>

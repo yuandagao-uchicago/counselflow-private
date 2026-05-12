@@ -23,7 +23,7 @@ const priorityConfig: Record<string, { color: string; label: string }> = {
 };
 
 const sourceLabels: Record<string, { label: string; style: string }> = {
-  AI_EXTRACTED: { label: "AI", style: "bg-[oklch(0.65_0.2_265_/_15%)] text-[oklch(0.75_0.15_265)]" },
+  AI_EXTRACTED: { label: "AI", style: "bg-[oklch(0.34_0.13_25_/_15%)] text-[oklch(0.66_0.15_75)]" },
   SYSTEM_GENERATED: { label: "System", style: "bg-foreground/5 text-muted-foreground" },
   MANUAL: { label: "Manual", style: "bg-foreground/5 text-muted-foreground" },
 };

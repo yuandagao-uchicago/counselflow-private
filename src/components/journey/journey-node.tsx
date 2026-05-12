@@ -134,7 +134,7 @@ export function JourneyNode({ milestone, side, isLast, studentId, isCurrent }: J
             render={
               <button
                 title="Change status"
-                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(0.65_0.2_265)] focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-full"
+                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(0.34_0.13_25)] focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-full"
               />
             }
           >
@@ -205,8 +205,8 @@ export function JourneyNode({ milestone, side, isLast, studentId, isCurrent }: J
             )}
             <defs>
               <linearGradient id="journeyLine" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="oklch(0.65 0.2 265)" stopOpacity={isLocked ? 0.15 : 0.5} />
-                <stop offset="100%" stopColor="oklch(0.55 0.22 290)" stopOpacity={isLocked ? 0.1 : 0.3} />
+                <stop offset="0%" stopColor="oklch(0.34 0.13 25)" stopOpacity={isLocked ? 0.15 : 0.5} />
+                <stop offset="100%" stopColor="oklch(0.34 0.13 25)" stopOpacity={isLocked ? 0.1 : 0.3} />
               </linearGradient>
             </defs>
           </svg>
@@ -269,7 +269,7 @@ function NodeVisual({
     return (
       <div className="relative">
         <div
-          className={`flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br ${catStyle.gradient} shadow-xl ${catStyle.glow} ring-4 ring-[oklch(0.65_0.2_265_/_20%)] transition-transform hover:scale-105`}
+          className={`flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br ${catStyle.gradient} shadow-xl ${catStyle.glow} ring-4 ring-[oklch(0.34_0.13_25_/_20%)] transition-transform hover:scale-105`}
         >
           <Icon className="h-7 w-7 text-white" strokeWidth={2.5} />
         </div>
@@ -318,7 +318,7 @@ function ProgressCard({
   const accent = isDone
     ? "text-emerald-400"
     : isActive
-    ? "text-[oklch(0.75_0.15_265)]"
+    ? "text-[oklch(0.66_0.15_75)]"
     : isBlocked
     ? "text-red-400"
     : "text-muted-foreground";
@@ -345,7 +345,7 @@ function ProgressCard({
               ? "bg-gradient-to-r from-emerald-500 to-green-400"
               : isBlocked
               ? "bg-gradient-to-r from-red-500 to-rose-500"
-              : "bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)]"
+              : "bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)]"
           }`}
           style={{ width: `${completion}%` }}
         />

@@ -50,7 +50,7 @@ export default function StudentsPage() {
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger render={<Button className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0 shadow-lg shadow-[oklch(0.65_0.2_265_/_20%)] hover:brightness-110 transition-all" />}>
+          <DialogTrigger render={<Button className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0 shadow-lg shadow-[oklch(0.34_0.13_25_/_20%)] hover:brightness-110 transition-all" />}>
             <Plus className="mr-2 h-4 w-4" />
             Add Student
           </DialogTrigger>
@@ -78,7 +78,7 @@ export default function StudentsPage() {
         </div>
       ) : !data?.students.length ? (
         <div className="rounded-2xl border border-foreground/[0.06] bg-card p-16 text-center">
-          <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] flex items-center justify-center mb-4 shadow-lg shadow-[oklch(0.65_0.2_265_/_20%)]">
+          <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] flex items-center justify-center mb-4 shadow-lg shadow-[oklch(0.34_0.13_25_/_20%)]">
             <GraduationCap className="h-8 w-8 text-white" />
           </div>
           <h3 className="text-lg font-semibold">No students yet</h3>
@@ -231,7 +231,7 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
           <Button
             type="submit"
             disabled={createStudent.isPending}
-            className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0"
+            className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0"
           >
             {createStudent.isPending ? "Creating..." : "Add Student"}
           </Button>

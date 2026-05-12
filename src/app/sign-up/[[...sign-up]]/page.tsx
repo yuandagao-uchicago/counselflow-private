@@ -8,7 +8,7 @@ export default function SignUpPage() {
       eyebrow="Request access"
       title={
         <>
-          A workspace built for the parts of the work <span className="italic text-[oklch(0.85_0.15_280)]">only you</span> can do.
+          A workspace built for the parts of the work <span className="italic text-[oklch(0.66_0.15_75)]">only you</span> can do.
         </>
       }
       blurb="We're onboarding a small group of independent counselors. Create your account and we'll be in touch."
@@ -27,8 +27,8 @@ export default function SignUpPage() {
             socialButtonsBlockButton: "border-white/10 hover:bg-white/[0.04]",
             formFieldInput: "bg-white/[0.03] border-white/10",
             formButtonPrimary:
-              "bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.6_0.22_290)] hover:brightness-110 shadow-lg shadow-[oklch(0.65_0.2_265_/_25%)]",
-            footerActionLink: "text-[oklch(0.85_0.15_280)] hover:underline",
+              "bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] hover:brightness-110 shadow-lg shadow-[oklch(0.34_0.13_25_/_25%)]",
+            footerActionLink: "text-[oklch(0.66_0.15_75)] hover:underline",
           },
         }}
       />

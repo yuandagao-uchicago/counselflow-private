@@ -71,7 +71,7 @@ export function JourneyHeader({ student, completed, total, inProgress }: Journey
           label="Progress"
           value={`${completed}/${total}`}
           hint={`${pct}% complete`}
-          accent="from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)]"
+          accent="from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)]"
         />
         <StatTile
           icon={<Flame className="h-4 w-4" />}
@@ -93,11 +93,11 @@ export function JourneyHeader({ student, completed, total, inProgress }: Journey
       <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5">
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-medium">Overall progress</p>
-          <p className="text-sm font-bold text-[oklch(0.75_0.15_265)]">{pct}%</p>
+          <p className="text-sm font-bold text-[oklch(0.66_0.15_75)]">{pct}%</p>
         </div>
         <div className="relative h-2 rounded-full bg-foreground/5 overflow-hidden">
           <div
-            className="absolute inset-y-0 left-0 bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] transition-all duration-500 rounded-full"
+            className="absolute inset-y-0 left-0 bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] transition-all duration-500 rounded-full"
             style={{ width: `${pct}%` }}
           />
         </div>

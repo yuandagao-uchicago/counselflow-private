@@ -16,7 +16,7 @@ interface Decision {
 }
 
 const ownerConfig: Record<string, { icon: typeof Users; color: string }> = {
-  counselor: { icon: Users, color: "text-[oklch(0.65_0.2_265)]" },
+  counselor: { icon: Users, color: "text-[oklch(0.34_0.13_25)]" },
   student: { icon: Users, color: "text-emerald-400" },
   parent: { icon: Users, color: "text-amber-400" },
   other: { icon: Users, color: "text-muted-foreground" },
@@ -81,10 +81,10 @@ export function SummaryView({
         <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Circle className="h-4 w-4 text-[oklch(0.65_0.2_265)]" />
+              <Circle className="h-4 w-4 text-[oklch(0.34_0.13_25)]" />
               <h3 className="font-semibold">Action Items</h3>
             </div>
-            <Badge variant="secondary" className="bg-[oklch(0.65_0.2_265_/_10%)] text-[oklch(0.75_0.15_265)] border-0 text-[10px]">
+            <Badge variant="secondary" className="bg-[oklch(0.34_0.13_25_/_10%)] text-[oklch(0.66_0.15_75)] border-0 text-[10px]">
               AI Extracted
             </Badge>
           </div>
@@ -101,7 +101,7 @@ export function SummaryView({
                     <p className="text-sm font-medium">{item.title}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 h-4 capitalize ${
-                        item.owner === "counselor" ? "bg-[oklch(0.65_0.2_265_/_10%)] text-[oklch(0.75_0.15_265)]" :
+                        item.owner === "counselor" ? "bg-[oklch(0.34_0.13_25_/_10%)] text-[oklch(0.66_0.15_75)]" :
                         item.owner === "student" ? "bg-emerald-500/10 text-emerald-400" :
                         "bg-foreground/5 text-muted-foreground"
                       }`}>

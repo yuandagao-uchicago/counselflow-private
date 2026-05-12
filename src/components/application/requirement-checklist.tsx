@@ -38,7 +38,7 @@ type ResolvedItem = Item & { resolvedStatus: string };
 
 const STATUS_CONFIG: Record<string, { icon: typeof Circle; tone: string; label: string }> = {
   DONE: { icon: CheckCircle2, tone: "text-emerald-400", label: "Done" },
-  IN_PROGRESS: { icon: Circle, tone: "text-[oklch(0.75_0.15_265)]", label: "In progress" },
+  IN_PROGRESS: { icon: Circle, tone: "text-[oklch(0.66_0.15_75)]", label: "In progress" },
   WAITING_ON_EXTERNAL: { icon: Clock, tone: "text-amber-300", label: "Waiting" },
   PENDING: { icon: Circle, tone: "text-foreground/30", label: "Pending" },
   NOT_APPLICABLE: { icon: MinusCircle, tone: "text-muted-foreground/50", label: "N/A" },
@@ -219,7 +219,7 @@ export function RequirementChecklist({
                   {isAuto && (
                     <span
                       title="Status auto-syncs from student data"
-                      className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-[oklch(0.65_0.2_265_/_10%)] text-[oklch(0.75_0.15_265)] border border-[oklch(0.65_0.2_265_/_20%)]"
+                      className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-[oklch(0.34_0.13_25_/_10%)] text-[oklch(0.66_0.15_75)] border border-[oklch(0.34_0.13_25_/_20%)]"
                     >
                       <Sparkles className="h-2.5 w-2.5" />
                       Auto

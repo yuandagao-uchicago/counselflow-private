@@ -136,13 +136,13 @@ function ReviewCard({ item }: { item: ReviewItem }) {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex items-start gap-3 min-w-0">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[oklch(0.65_0.2_265_/_15%)]">
-            <Mail className="h-5 w-5 text-[oklch(0.75_0.15_265)]" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[oklch(0.34_0.13_25_/_15%)]">
+            <Mail className="h-5 w-5 text-[oklch(0.66_0.15_75)]" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="font-medium">{item.title}</p>
-              <Badge className="bg-[oklch(0.65_0.2_265_/_10%)] text-[oklch(0.75_0.15_265)] border-0 text-[10px]">
+              <Badge className="bg-[oklch(0.34_0.13_25_/_10%)] text-[oklch(0.66_0.15_75)] border-0 text-[10px]">
                 AI draft · email
               </Badge>
               {item.status === "APPROVED" && (
@@ -236,7 +236,7 @@ function ReviewCard({ item }: { item: ReviewItem }) {
               </Button>
               <Button
                 size="sm"
-                className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0"
+                className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0"
                 disabled={updateDraft.isPending || !body.trim()}
                 onClick={() =>
                   updateDraft.mutate({
@@ -276,7 +276,7 @@ function ReviewCard({ item }: { item: ReviewItem }) {
               </Button>
               <Button
                 size="sm"
-                className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0"
+                className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0"
                 onClick={() => approve.mutate({ id: item.id })}
                 disabled={approve.isPending || reject.isPending}
               >

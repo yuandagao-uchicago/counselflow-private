@@ -50,7 +50,7 @@ export function MeetingsCard({ meetings, studentId }: { meetings: Meeting[]; stu
           <p className="text-sm text-muted-foreground">No meetings yet.</p>
           <Link
             href={`/students/${studentId}/meetings`}
-            className="text-xs text-[oklch(0.75_0.15_265)] hover:underline mt-1 inline-block"
+            className="text-xs text-[oklch(0.66_0.15_75)] hover:underline mt-1 inline-block"
           >
             Schedule a meeting
           </Link>
@@ -95,7 +95,7 @@ export function MeetingsCard({ meetings, studentId }: { meetings: Meeting[]; stu
                   {/* Status badges */}
                   <div className="flex items-center gap-2">
                     {meeting.prepBrief && (
-                      <Badge variant="secondary" className="text-[10px] bg-[oklch(0.65_0.2_265_/_10%)] text-[oklch(0.75_0.15_265)] border-0">
+                      <Badge variant="secondary" className="text-[10px] bg-[oklch(0.34_0.13_25_/_10%)] text-[oklch(0.66_0.15_75)] border-0">
                         Brief
                       </Badge>
                     )}

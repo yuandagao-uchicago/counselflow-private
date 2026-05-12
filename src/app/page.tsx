@@ -18,7 +18,7 @@ export default async function Home() {
   if (userId) redirect("/dashboard");
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[oklch(0.08_0.02_280)] text-[oklch(0.96_0.005_280)]">
+    <div className="relative min-h-screen overflow-hidden bg-[oklch(0.13_0.018_30)] text-[oklch(0.95_0.018_80)]">
       {/* Cinematic backdrop — three radial pools + grain (mirrors the app shell) */}
       <div className="ambient-backdrop" />
       <div className="topo-bg pointer-events-none absolute inset-0 text-white/[0.5] opacity-[0.04]" />
@@ -37,14 +37,14 @@ export default async function Home() {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-[oklch(0.08_0.02_280)/_60%]">
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-[oklch(0.13_0.018_30)/_60%]">
       <div className="max-w-6xl mx-auto px-6 md:px-10 py-5 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] shadow-lg shadow-[oklch(0.65_0.2_265_/_25%)] ring-1 ring-white/10">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] shadow-lg shadow-[oklch(0.34_0.13_25_/_25%)] ring-1 ring-white/10">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <span className="font-serif text-xl font-medium tracking-tight">
-            Counsel<span className="text-[oklch(0.78_0.18_280)]">Flow</span>
+            Counsel<span className="text-[oklch(0.66_0.15_75)]">Flow</span>
           </span>
         </Link>
         <nav className="flex items-center gap-3 md:gap-5 text-sm">
@@ -56,7 +56,7 @@ function Header() {
           </Link>
           <Link
             href="/sign-up"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-[oklch(0.18_0.02_265)] font-medium hover:bg-white/90 transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-[oklch(0.18_0.022_30)] font-medium hover:bg-white/90 transition-colors"
           >
             Request access
             <ArrowRight className="h-3.5 w-3.5" />
@@ -81,7 +81,7 @@ function Hero() {
           <h1 className="font-serif text-5xl md:text-7xl lg:text-[5.25rem] leading-[0.95] tracking-tight font-medium">
             An operating system <br />
             for the{" "}
-            <span className="italic text-[oklch(0.85_0.15_280)]">counselor&apos;s</span>{" "}
+            <span className="italic text-[oklch(0.66_0.15_75)]">counselor&apos;s</span>{" "}
             most <br className="hidden md:inline" /> considered work.
           </h1>
           <p className="mt-8 max-w-xl text-base md:text-lg text-white/70 leading-relaxed">
@@ -92,7 +92,7 @@ function Hero() {
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.6_0.22_290)] text-white font-medium shadow-xl shadow-[oklch(0.65_0.2_265_/_30%)] hover:brightness-110 transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white font-medium shadow-xl shadow-[oklch(0.34_0.13_25_/_30%)] hover:brightness-110 transition-all"
             >
               Request access
               <ArrowRight className="h-4 w-4" />
@@ -181,9 +181,9 @@ function PullQuote() {
       <div className="max-w-4xl mx-auto px-6 md:px-10 text-center">
         <p className="font-serif text-2xl md:text-4xl leading-snug tracking-tight text-white/90">
           &ldquo;We&apos;re building the operating system{" "}
-          <span className="italic text-[oklch(0.85_0.15_280)]">around</span>{" "}
+          <span className="italic text-[oklch(0.66_0.15_75)]">around</span>{" "}
           a great counselor — not trying to{" "}
-          <span className="italic text-[oklch(0.85_0.15_280)]">replace</span>{" "}
+          <span className="italic text-[oklch(0.66_0.15_75)]">replace</span>{" "}
           one.&rdquo;
         </p>
         <p className="mt-6 text-xs uppercase tracking-[0.32em] text-white/45">
@@ -263,9 +263,9 @@ function FeatureCell({
   copy: string;
 }) {
   return (
-    <div className="group relative bg-[oklch(0.08_0.02_280)] p-7 md:p-8 hover:bg-white/[0.02] transition-colors">
+    <div className="group relative bg-[oklch(0.13_0.018_30)] p-7 md:p-8 hover:bg-white/[0.02] transition-colors">
       <div className="flex items-center gap-2.5 mb-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 ring-1 ring-white/10 text-white/80 group-hover:text-[oklch(0.85_0.15_280)] transition-colors">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 ring-1 ring-white/10 text-white/80 group-hover:text-[oklch(0.66_0.15_75)] transition-colors">
           <Icon className="h-3.5 w-3.5" strokeWidth={1.8} />
         </div>
         <span className="section-eyebrow">{eyebrow}</span>
@@ -281,7 +281,7 @@ function FeatureCell({
 function ClosingCTA() {
   return (
     <section className="relative max-w-4xl mx-auto px-6 md:px-10 py-24 md:py-32 text-center">
-      <Bookmark className="h-6 w-6 text-[oklch(0.78_0.18_280)] mx-auto mb-6 opacity-70" />
+      <Bookmark className="h-6 w-6 text-[oklch(0.66_0.15_75)] mx-auto mb-6 opacity-70" />
       <h2 className="font-serif text-4xl md:text-6xl tracking-tight font-medium leading-[1.05]">
         For the counselors <br />
         whose <span className="italic">work</span> deserves a tool to match.
@@ -293,7 +293,7 @@ function ClosingCTA() {
       <div className="mt-10">
         <Link
           href="/sign-up"
-          className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.6_0.22_290)] text-white font-medium shadow-xl shadow-[oklch(0.65_0.2_265_/_30%)] hover:brightness-110 transition-all"
+          className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white font-medium shadow-xl shadow-[oklch(0.34_0.13_25_/_30%)] hover:brightness-110 transition-all"
         >
           Request access
           <ArrowRight className="h-4 w-4" />

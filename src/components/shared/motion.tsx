@@ -145,9 +145,9 @@ export function PulseGlow({ children, className }: { children: ReactNode; classN
     <motion.div
       animate={{
         boxShadow: [
-          "0 0 0px oklch(0.65 0.2 265 / 0%)",
-          "0 0 20px oklch(0.65 0.2 265 / 15%)",
-          "0 0 0px oklch(0.65 0.2 265 / 0%)",
+          "0 0 0px oklch(0.34 0.13 25 / 0%)",
+          "0 0 20px oklch(0.34 0.13 25 / 15%)",
+          "0 0 0px oklch(0.34 0.13 25 / 0%)",
         ],
       }}
       transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}

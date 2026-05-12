@@ -82,13 +82,14 @@ export function StudentHeader({ student }: StudentHeaderProps) {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-3xl border border-foreground/[0.08] bg-card">
-        {/* Gradient wash + topographic backdrop */}
+      <div className="paper-grain relative overflow-hidden rounded-3xl border border-border bg-card">
+        {/* Phase wash + ledger lines + topographic backdrop */}
         <div
-          className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-[0.07] pointer-events-none`}
+          className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-[0.06] pointer-events-none`}
         />
-        <div className="topo-bg absolute inset-0 text-foreground/[0.5] opacity-[0.06] pointer-events-none" />
-        <div className="absolute -top-24 -right-24 h-80 w-80 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+        <div className="ledger-lines absolute inset-0 opacity-50 pointer-events-none" />
+        <div className="topo-bg absolute inset-0 text-foreground opacity-[0.05] pointer-events-none" />
+        <div className="absolute -top-32 -right-24 h-96 w-96 rounded-full bg-[var(--almanac-brass)]/10 blur-3xl pointer-events-none" />
 
         {/* Top breadcrumb */}
         <div className="relative flex items-center justify-between px-6 pt-5 md:px-8">
@@ -102,8 +103,8 @@ export function StudentHeader({ student }: StudentHeaderProps) {
             All students
           </Button>
           <div className="flex items-center gap-3">
-            <span className="num-display text-[10px] uppercase tracking-[0.28em] text-muted-foreground/60">
-              CASE · {caseId}
+            <span className="case-id">
+              Case · <span className="text-[var(--almanac-oxblood)]">{caseId}</span>
             </span>
             <Button
               variant="ghost"
@@ -137,8 +138,11 @@ export function StudentHeader({ student }: StudentHeaderProps) {
           {/* Name + meta */}
           <div className="min-w-0 space-y-3">
             <div>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-[3.5rem] font-medium tracking-tight leading-[1.05]">
-                {displayName} <span className="text-muted-foreground/80">{student.lastName}</span>
+              <h1 className="font-display text-5xl md:text-6xl lg:text-[4rem] font-medium tracking-tight leading-[0.98]">
+                {displayName}{" "}
+                <span className="font-serif-italic text-[var(--almanac-oxblood)]">
+                  {student.lastName}
+                </span>
               </h1>
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 {student.highSchool && (

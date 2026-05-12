@@ -52,7 +52,7 @@ export const stateMeta: Record<
   READY_FOR_REVIEW: {
     label: "Ready to submit",
     chip:
-      "bg-gradient-to-r from-[oklch(0.65_0.2_265_/_15%)] to-[oklch(0.6_0.22_290_/_15%)] text-[oklch(0.85_0.1_265)] border border-[oklch(0.65_0.2_265_/_30%)]",
+      "bg-gradient-to-r from-[oklch(0.34_0.13_25_/_15%)] to-[oklch(0.34_0.13_25_/_15%)] text-[oklch(0.85_0.1_265)] border border-[oklch(0.34_0.13_25_/_30%)]",
     icon: CheckCircle2,
   },
   IN_PROGRESS: {

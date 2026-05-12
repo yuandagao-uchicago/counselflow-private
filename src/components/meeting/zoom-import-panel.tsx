@@ -103,7 +103,7 @@ export function ZoomImportPanel({
                     </div>
                     <Button
                       size="sm"
-                      className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0"
+                      className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0"
                       disabled={
                         rec.fileStatus !== "completed" || importMutation.isPending
                       }

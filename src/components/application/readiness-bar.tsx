@@ -31,7 +31,7 @@ export function ReadinessBar({
     ? "bg-gradient-to-r from-emerald-500/80 to-emerald-400"
     : pct === 0
       ? "bg-foreground/10"
-      : "bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.6_0.22_290)]";
+      : "bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)]";
 
   const trackHeight = size === "sm" ? "h-1.5" : "h-2";
 

@@ -21,7 +21,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
   return (
     <StaggerList className="space-y-5">
       <StaggerItem className="flex items-center gap-2">
-        <div className="h-2 w-2 rounded-full bg-[oklch(0.65_0.2_265)] pulse-glow" />
+        <div className="h-2 w-2 rounded-full bg-[oklch(0.34_0.13_25)] pulse-glow" />
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           AI Prep Brief
         </h2>
@@ -30,7 +30,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
       {/* Student Snapshot */}
       <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5">
         <div className="flex items-center gap-2 mb-3">
-          <User className="h-4 w-4 text-[oklch(0.65_0.2_265)]" />
+          <User className="h-4 w-4 text-[oklch(0.34_0.13_25)]" />
           <h3 className="font-semibold">Student Snapshot</h3>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
@@ -46,7 +46,7 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
         {/* Changes Since Last Meeting */}
         <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5">
           <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="h-4 w-4 text-[oklch(0.7_0.18_155)]" />
+            <TrendingUp className="h-4 w-4 text-[oklch(0.46_0.09_155)]" />
             <h3 className="font-semibold">What Changed</h3>
           </div>
           {prep.changesSinceLastMeeting.length === 0 ? (
@@ -93,13 +93,13 @@ export function PrepBriefView({ prep }: { prep: MeetingPrep }) {
       {/* Suggested Agenda */}
       <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5">
         <div className="flex items-center gap-2 mb-3">
-          <MessageSquare className="h-4 w-4 text-[oklch(0.65_0.2_265)]" />
+          <MessageSquare className="h-4 w-4 text-[oklch(0.34_0.13_25)]" />
           <h3 className="font-semibold">Suggested Agenda</h3>
         </div>
         <div className="space-y-3">
           {prep.suggestedAgenda.map((item, i) => (
             <div key={i} className="flex items-start gap-3">
-              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[oklch(0.65_0.2_265_/_15%)] text-[oklch(0.75_0.15_265)] text-xs font-bold shrink-0">
+              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[oklch(0.34_0.13_25_/_15%)] text-[oklch(0.66_0.15_75)] text-xs font-bold shrink-0">
                 {i + 1}
               </span>
               <div>

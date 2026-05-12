@@ -32,14 +32,14 @@ export function PhaseCard({ phase }: { phase: string }) {
                 <div
                   className={`h-3 w-3 rounded-full transition-all ${
                     isCurrent
-                      ? "bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.6_0.22_290)] shadow-lg shadow-[oklch(0.65_0.2_265_/_40%)]"
+                      ? "bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] shadow-lg shadow-[oklch(0.34_0.13_25_/_40%)]"
                       : isComplete
                       ? "bg-emerald-500"
                       : "bg-foreground/10"
                   }`}
                 />
                 {isCurrent && (
-                  <div className="absolute h-3 w-3 rounded-full bg-[oklch(0.65_0.2_265)] animate-ping opacity-30" />
+                  <div className="absolute h-3 w-3 rounded-full bg-[oklch(0.34_0.13_25)] animate-ping opacity-30" />
                 )}
               </div>
 

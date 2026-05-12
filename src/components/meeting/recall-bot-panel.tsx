@@ -68,7 +68,7 @@ export function RecallBotPanel({
     <div className="rounded-2xl border border-foreground/[0.06] bg-card p-5 space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Bot className="h-4 w-4 text-[oklch(0.75_0.15_265)]" />
+          <Bot className="h-4 w-4 text-[oklch(0.66_0.15_75)]" />
           <h3 className="font-semibold">AI Meeting Bot</h3>
         </div>
         {statusMeta && (
@@ -119,7 +119,7 @@ export function RecallBotPanel({
               className="bg-foreground/5 border-foreground/10 text-sm"
             />
             <Button
-              className="bg-gradient-to-r from-[oklch(0.65_0.2_265)] to-[oklch(0.55_0.22_290)] text-white border-0 shrink-0"
+              className="bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] text-white border-0 shrink-0"
               disabled={!url || sendBot.isPending}
               onClick={() =>
                 sendBot.mutate({ meetingId, meetingUrl: url })
