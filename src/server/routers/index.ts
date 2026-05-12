@@ -13,6 +13,7 @@ import { publicMeetingRouter } from "./publicMeeting";
 import { recommenderRouter } from "./recommender";
 import { weeklyUpdateRouter } from "./weeklyUpdate";
 import { guardianRouter } from "./guardian";
+import { scholarshipRouter } from "./scholarship";
 
 export const appRouter = router({
   student: studentRouter,
@@ -29,6 +30,7 @@ export const appRouter = router({
   recommender: recommenderRouter,
   weeklyUpdate: weeklyUpdateRouter,
   guardian: guardianRouter,
+  scholarship: scholarshipRouter,
 });
 
 export type AppRouter = typeof appRouter;

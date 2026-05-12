@@ -17,6 +17,7 @@ import { ExtractionReviewCard } from "@/components/document/extraction-review-ca
 import { ApplicationsCard } from "@/components/application/applications-card";
 import { RecommendersCard } from "@/components/student/recommenders-card";
 import { GuardiansCard } from "@/components/student/guardians-card";
+import { ScholarshipsCard } from "@/components/student/scholarships-card";
 import { WeeklyUpdateCard } from "@/components/student/weekly-update-card";
 import { Sparkles } from "lucide-react";
 
@@ -94,6 +95,7 @@ export default function StudentDetailPage({
             <StaggerItem><ApplicationsCard studentId={student.id} /></StaggerItem>
             <StaggerItem><RecommendersCard studentId={student.id} /></StaggerItem>
             <StaggerItem><GuardiansCard studentId={student.id} /></StaggerItem>
+            <StaggerItem><ScholarshipsCard studentId={student.id} /></StaggerItem>
             <StaggerItem><WeeklyUpdateCard studentId={student.id} /></StaggerItem>
             <StaggerItem><UploadDocumentsPanel studentId={student.id} /></StaggerItem>
             <StaggerItem><TasksCard tasks={student.tasks} studentId={student.id} /></StaggerItem>

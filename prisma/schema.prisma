@@ -208,6 +208,12 @@ enum MeetingRequestSlotStatus {
   REJECTED
 }
 
+enum SavedScholarshipStatus {
+  INTERESTED
+  APPLYING
+  SUBMITTED
+}
+
 // =============================================
 // USER (synced from Clerk on first login)
 // =============================================
@@ -310,6 +316,7 @@ model Student {
   recommenders   StudentRecommender[]
   riskFlags      RiskFlag[]
   meetingRequests MeetingRequest[]
+  savedScholarships SavedScholarship[]
 
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -933,4 +940,39 @@ model MilestoneTemplate {
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+// =============================================
+// SCHOLARSHIP MATCHER
+// Catalog lives in code (src/lib/scholarship/catalog.ts) so updates ship via
+// PR. Only the per-student tracker is persisted. Fields are denormalized from
+// the catalog at save-time so a later catalog edit doesn't rewrite history.
+// =============================================
+
+model SavedScholarship {
+  id              String   @id @default(cuid())
+  studentId       String
+  student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  // null for ad-hoc entries the counselor added manually
+  catalogId       String?
+
+  title           String
+  url             String
+  amount          Float?
+  deadline        DateTime?
+  eligibilityTags String[]
+  requirements    String[]
+  estimatedEffort Int
+  description     String?
+  source          String   @default("custom")
+
+  status          SavedScholarshipStatus @default(INTERESTED)
+  notes           String?
+
+  savedAt         DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([studentId])
+  @@unique([studentId, catalogId])
 }
