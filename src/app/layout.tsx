@@ -29,10 +29,11 @@ const jetbrainsMono = JetBrains_Mono({
 
 // Editorial serif — used for student names and section markers. Gives a
 // "case file" / clinician's chart feel that signals considered work.
+// Loaded as a variable font so the optical-size axis works; CSS picks the
+// weight per use site via font-weight.
 const fraunces = Fraunces({
   variable: "--font-serif",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
   axes: ["opsz", "SOFT"],
 });
 
