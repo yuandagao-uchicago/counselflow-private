@@ -33,6 +33,10 @@ export default function RespondPage({
   const [counterAt, setCounterAt] = useState<string>("");
   const [counterNote, setCounterNote] = useState<string>("");
   const [showCounter, setShowCounter] = useState(false);
+  // Snapshot "now" at mount so we don't call Date.now() during render
+  // (impure-function lint). Stale-after-mount is fine — slots that flip
+  // to past during the same session are vanishingly rare.
+  const [nowMs] = useState(() => Date.now());
 
   const accept = trpc.publicMeeting.acceptSlot.useMutation({
     onSuccess: () => {
@@ -175,7 +179,7 @@ export default function RespondPage({
 
       <div className="space-y-2 mb-6">
         {data.slots.map((slot) => {
-          const isPast = new Date(slot.startAt).getTime() < Date.now();
+          const isPast = new Date(slot.startAt).getTime() < nowMs;
           return (
             <button
               key={slot.id}

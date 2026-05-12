@@ -10,6 +10,31 @@ import { MODEL } from "@/ai/client";
 import type { DocumentType } from "@prisma/client";
 
 /**
+ * Reject storage URLs that aren't Vercel Blob — otherwise the server would
+ * fetch arbitrary attacker-supplied URLs (cloud metadata, internal services)
+ * and feed the bytes to Gemini, surfacing the response back to the user.
+ */
+function assertVercelBlobUrl(rawUrl: string) {
+  let host: string;
+  try {
+    const u = new URL(rawUrl);
+    if (u.protocol !== "https:") {
+      throw new Error("non-https");
+    }
+    host = u.hostname.toLowerCase();
+  } catch {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid storage URL" });
+  }
+  // Vercel Blob public URLs: <hash>.public.blob.vercel-storage.com
+  if (!host.endsWith(".public.blob.vercel-storage.com")) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Storage URL must be a Vercel Blob URL",
+    });
+  }
+}
+
+/**
  * Map Gemini's detectedDocType (string) to our Prisma enum.
  */
 function mapDocType(detected: string): DocumentType {
@@ -70,6 +95,7 @@ export const documentRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      assertVercelBlobUrl(input.storageUrl);
       const student = await verifyStudentOwnership(ctx.counselorId, input.studentId);
 
       // Dedup: reject if a document with this storageKey already exists

@@ -2,6 +2,7 @@ import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { isAllowedMime, MAX_UPLOAD_BYTES } from "@/lib/integrations/blob";
+import { prisma } from "@/lib/prisma";
 
 /**
  * Vercel Blob's client-upload handshake.
@@ -59,6 +60,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         if (!studentId) {
           console.error("[blob/upload] missing studentId in clientPayload");
           throw new Error("Missing studentId in clientPayload");
+        }
+
+        // Verify the signed-in counselor owns this student before minting a
+        // token. Without this, a counselor (or any logged-in user) could
+        // mint blob tokens for studentIds they don't own.
+        const owned = await prisma.student.findFirst({
+          where: { id: studentId, counselorId: userId },
+          select: { id: true },
+        });
+        if (!owned) {
+          console.error("[blob/upload] student ownership check failed", {
+            userId,
+            studentId,
+          });
+          throw new Error("Student not found or you don't have access");
         }
 
         console.log("[blob/upload] minting token", {

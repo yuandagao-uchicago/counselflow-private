@@ -35,10 +35,14 @@ function verifyWebhookSignature(
   hmac.update(rawBody);
   const expectedSignature = hmac.digest("hex");
 
-  return crypto.timingSafeEqual(
-    Buffer.from(signatureHeader),
-    Buffer.from(expectedSignature)
-  );
+  // timingSafeEqual throws RangeError when buffers differ in length, which
+  // would surface as a 500 instead of a clean 401. Reject mismatched-length
+  // signatures explicitly.
+  const sigBuf = Buffer.from(signatureHeader);
+  const expBuf = Buffer.from(expectedSignature);
+  if (sigBuf.length !== expBuf.length) return false;
+
+  return crypto.timingSafeEqual(sigBuf, expBuf);
 }
 
 /**
