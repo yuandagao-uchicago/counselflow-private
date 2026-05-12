@@ -6,6 +6,7 @@ import {
   sendEmail,
   buildRecommenderRequestEmail,
   buildRecommenderReminderEmail,
+  buildWeeklyUpdateEmail,
 } from "@/lib/email";
 
 /** Fields the counselor is allowed to approve individually from an extraction. */
@@ -101,9 +102,14 @@ export const reviewRouter = router({
         take: limit,
       });
 
-      // Batch-load linked Communications. Recommender request/reminder items
-      // also point to a Communication via entityId.
-      const commTypes = ["communication_draft", "recommender_request", "recommender_reminder"];
+      // Batch-load linked Communications. Recommender request/reminder and
+      // weekly update items also point to a Communication via entityId.
+      const commTypes = [
+        "communication_draft",
+        "recommender_request",
+        "recommender_reminder",
+        "weekly_update",
+      ];
       const commIds = items
         .filter((i) => commTypes.includes(i.entityType))
         .map((i) => i.entityId);
@@ -184,7 +190,14 @@ export const reviewRouter = router({
       if (item.status !== "PENDING") {
         throw new TRPCError({ code: "BAD_REQUEST", message: `Item is already ${item.status.toLowerCase()}` });
       }
-      if (item.entityType !== "communication_draft") {
+      // All Communication-backed draft types are editable in the review queue.
+      const editableTypes = [
+        "communication_draft",
+        "recommender_request",
+        "recommender_reminder",
+        "weekly_update",
+      ];
+      if (!editableTypes.includes(item.entityType)) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "This review item is not a communication draft" });
       }
       // Defense-in-depth: scope the update by counselorId on the Communication
@@ -305,6 +318,57 @@ export const reviewRouter = router({
         });
       }
 
+      // Weekly update: approve the communication, look up recipient
+      // (parent via guardianId, else student.email), and send via Resend.
+      if (item.entityType === "weekly_update") {
+        const comm = await prisma.communication.findFirst({
+          where: { id: item.entityId, counselorId: ctx.counselorId },
+          include: {
+            student: { select: { email: true, firstName: true, lastName: true } },
+            guardian: { select: { email: true, firstName: true } },
+          },
+        });
+        if (comm) {
+          // Parent draft → guardian.email; student draft → student.email
+          const toEmail = comm.guardianId
+            ? comm.guardian?.email
+            : comm.student.email;
+
+          if (!toEmail) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Recipient no longer has an email on file. Add one or reject this draft.",
+            });
+          }
+
+          const counselor = await prisma.user.findUnique({
+            where: { id: ctx.counselorId },
+            select: { name: true, email: true },
+          });
+
+          const built = buildWeeklyUpdateEmail({
+            subject: comm.subject ?? `Update on ${comm.student.firstName}`,
+            body: comm.body,
+          });
+
+          const sendResult = await sendEmail({
+            to: toEmail,
+            replyTo: counselor?.email ?? undefined,
+            ...built,
+          });
+
+          await prisma.communication.update({
+            where: { id: comm.id },
+            data: {
+              isDraft: false,
+              approvedAt: now,
+              ...(sendResult.sent && { sentAt: now }),
+            },
+          });
+        }
+      }
+
       // Recommender request/reminder: approve the communication and send the email.
       // item.aiOutputId stores the recommenderId (set by sendForReview).
       if (
@@ -395,6 +459,7 @@ export const reviewRouter = router({
         "communication_draft",
         "recommender_request",
         "recommender_reminder",
+        "weekly_update",
       ];
       if (draftEntityTypes.includes(item.entityType)) {
         await prisma.communication.deleteMany({

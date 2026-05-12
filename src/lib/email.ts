@@ -357,6 +357,24 @@ export function buildRecommenderReminderEmail(args: {
   return { subject, html, text };
 }
 
+// ---------- Weekly update emails ----------
+
+export function buildWeeklyUpdateEmail(args: {
+  subject: string;
+  /** Plain-text body, newline-separated. AI generates this; counselor edits in review queue. */
+  body: string;
+}): { subject: string; html: string; text: string } {
+  // AI returns plain-text body with explicit \n line breaks. Render those as
+  // <br> in HTML; escape everything else to prevent injection from edited drafts.
+  const bodyHtml = escapeHtml(args.body).replace(/\n/g, "<br>");
+
+  const html = shell(`
+    <p style="font-size:14px;line-height:1.7;color:#3a3a3f;margin:8px 0 16px 0;">${bodyHtml}</p>
+  `);
+
+  return { subject: args.subject, html, text: args.body };
+}
+
 // ---------- Time formatting ----------
 
 function formatSlotForEmail(d: Date, timezone: string, includeWeekday = true): string {

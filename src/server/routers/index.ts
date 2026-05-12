@@ -11,6 +11,7 @@ import { applicationRouter } from "./application";
 import { meetingRequestRouter } from "./meetingRequest";
 import { publicMeetingRouter } from "./publicMeeting";
 import { recommenderRouter } from "./recommender";
+import { weeklyUpdateRouter } from "./weeklyUpdate";
 
 export const appRouter = router({
   student: studentRouter,
@@ -25,6 +26,7 @@ export const appRouter = router({
   meetingRequest: meetingRequestRouter,
   publicMeeting: publicMeetingRouter,
   recommender: recommenderRouter,
+  weeklyUpdate: weeklyUpdateRouter,
 });
 
 export type AppRouter = typeof appRouter;
