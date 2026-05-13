@@ -53,7 +53,7 @@ export function StudentHeader({ student }: StudentHeaderProps) {
         {/* Phase wash + ledger lines + topographic backdrop */}
         <div
           className="absolute inset-0 opacity-[0.07] pointer-events-none"
-          style={{ background: `radial-gradient(ellipse 80% 60% at 0% 0%, oklch(${tone.ink}), transparent 65%)` }}
+          style={{ background: `radial-gradient(ellipse 80% 60% at 0% 0%, var(${tone.cssVar}), transparent 65%)` }}
         />
         <div className="ledger-lines absolute inset-0 opacity-40 pointer-events-none" />
         <div className="topo-bg absolute inset-0 text-foreground opacity-[0.05] pointer-events-none" />
@@ -183,10 +183,13 @@ export function StudentHeader({ student }: StudentHeaderProps) {
                     className="h-1.5 w-full rounded-full transition-all"
                     style={
                       isCurrent
-                        ? { backgroundColor: `oklch(${t.ink})`, boxShadow: `0 4px 12px -2px oklch(${t.ink} / 40%)` }
+                        ? {
+                            backgroundColor: `var(${t.cssVar})`,
+                            boxShadow: `0 4px 12px -2px color-mix(in oklab, var(${t.cssVar}) 40%, transparent)`,
+                          }
                         : isComplete
                           ? { backgroundColor: "color-mix(in oklab, var(--almanac-sage) 70%, transparent)" }
-                          : { backgroundColor: "color-mix(in oklab, var(--almanac-ink) 8%, transparent)" }
+                          : { backgroundColor: "color-mix(in oklab, var(--foreground) 8%, transparent)" }
                     }
                   />
                   <span

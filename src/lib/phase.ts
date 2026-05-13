@@ -1,6 +1,7 @@
 // Single source of truth for phase styling. Used by student lists, the
 // student header, the dashboard, and anywhere a student avatar/phase pill
-// renders. Almanac palette only — no rainbow Tailwind gradients.
+// renders. Phase colors are CSS custom properties so light + dark themes
+// each provide values that read well against their respective backgrounds.
 
 export type PhaseKey =
   | "EXPLORATION"
@@ -14,24 +15,19 @@ export type PhaseKey =
 
 export type PhaseTone = {
   label: string;
-  /** Background-tint OKLCH triplet (no alpha, alpha is applied by callers). */
-  ink: string;
-  /** Almanac CSS var name backing this phase. */
-  varName: "--almanac-oxblood" | "--almanac-oxblood-soft" | "--almanac-brass" | "--almanac-sage" | "--almanac-ink" | "--phase-navy" | "--phase-terracotta";
+  /** CSS variable name backing this phase. Resolved per theme in globals.css. */
+  cssVar: `--phase-${string}`;
 };
 
-// Each phase maps to a single almanac tone. Picks reflect "where in the
-// arc" the phase sits — exploration is open/brass, applications is the
-// heaviest oxblood, decisions glow brass, enrollment is the green resolution.
 export const PHASE_TONES: Record<PhaseKey, PhaseTone> = {
-  EXPLORATION:   { label: "Exploration",   ink: "0.66 0.15 75",   varName: "--almanac-brass" },
-  LIST_BUILDING: { label: "List Building", ink: "0.42 0.10 250",  varName: "--phase-navy" },
-  TESTING:       { label: "Testing",       ink: "0.55 0.16 50",   varName: "--phase-terracotta" },
-  APPLICATIONS:  { label: "Applications",  ink: "0.34 0.13 25",   varName: "--almanac-oxblood" },
-  ESSAYS:        { label: "Essays",        ink: "0.50 0.16 25",   varName: "--almanac-oxblood-soft" },
-  SUBMISSIONS:   { label: "Submissions",   ink: "0.32 0.10 250",  varName: "--phase-navy" },
-  DECISIONS:     { label: "Decisions",     ink: "0.55 0.15 75",   varName: "--almanac-brass" },
-  ENROLLMENT:    { label: "Enrollment",    ink: "0.46 0.09 155",  varName: "--almanac-sage" },
+  EXPLORATION:   { label: "Exploration",   cssVar: "--phase-exploration" },
+  LIST_BUILDING: { label: "List Building", cssVar: "--phase-list-building" },
+  TESTING:       { label: "Testing",       cssVar: "--phase-testing" },
+  APPLICATIONS:  { label: "Applications",  cssVar: "--phase-applications" },
+  ESSAYS:        { label: "Essays",        cssVar: "--phase-essays" },
+  SUBMISSIONS:   { label: "Submissions",   cssVar: "--phase-submissions" },
+  DECISIONS:     { label: "Decisions",     cssVar: "--phase-decisions" },
+  ENROLLMENT:    { label: "Enrollment",    cssVar: "--phase-enrollment" },
 };
 
 export const PHASE_ORDER: PhaseKey[] = [
@@ -45,24 +41,29 @@ export const PHASE_ORDER: PhaseKey[] = [
   "ENROLLMENT",
 ];
 
+const FALLBACK: PhaseTone = { label: "Unknown", cssVar: "--almanac-ink" as `--phase-${string}` };
+
 export function phaseTone(phase: string): PhaseTone {
-  return PHASE_TONES[phase as PhaseKey] ?? {
-    label: phase,
-    ink: "0.40 0.02 30",
-    varName: "--almanac-ink",
-  };
+  return PHASE_TONES[phase as PhaseKey] ?? { ...FALLBACK, label: phase };
 }
 
-/** Inline style for a solid almanac-tinted swatch (used by avatars + pills). */
+/** Inline style for a solid phase-tinted swatch (avatars + pills). */
 export function phaseBg(phase: string): React.CSSProperties {
-  const t = phaseTone(phase);
-  return { backgroundColor: `oklch(${t.ink})` };
+  return { backgroundColor: `var(${phaseTone(phase).cssVar})` };
 }
 
 /** Inline style for a tinted-rule top accent bar above cards. */
 export function phaseAccentBar(phase: string): React.CSSProperties {
-  const t = phaseTone(phase);
+  const v = phaseTone(phase).cssVar;
   return {
-    background: `linear-gradient(to right, oklch(${t.ink}) 0%, oklch(${t.ink} / 30%) 60%, transparent)`,
+    background: `linear-gradient(to right, var(${v}) 0%, color-mix(in oklab, var(${v}) 30%, transparent) 60%, transparent)`,
+  };
+}
+
+/** Inline style for a glow that picks up the phase color. */
+export function phaseGlow(phase: string, alpha = 22): React.CSSProperties {
+  const v = phaseTone(phase).cssVar;
+  return {
+    boxShadow: `0 18px 40px -12px color-mix(in oklab, var(${v}) ${alpha}%, transparent)`,
   };
 }
