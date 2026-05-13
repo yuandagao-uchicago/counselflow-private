@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CaseStats } from "./case-stats";
 import { EditProfileDialog } from "./edit-profile-dialog";
-import { PHASE_ORDER, PHASE_TONES, phaseTone, phaseBg } from "@/lib/phase";
+import { PHASE_ORDER, PHASE_TONES, phaseTone, phaseBg, phaseChip } from "@/lib/phase";
 
 interface StudentHeaderProps {
   student: {
@@ -97,10 +97,13 @@ export function StudentHeader({ student }: StudentHeaderProps) {
               {student.lastName[0]}
             </div>
             <div
-              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--almanac-paper)] ring-1 ring-[var(--almanac-brass)]/30"
-              style={phaseBg(student.phase)}
+              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em]"
+              style={phaseChip(student.phase)}
             >
-              <span className="h-1 w-1 rounded-full bg-[var(--almanac-paper)]/70 pulse-glow" />
+              <span
+                className="h-1 w-1 rounded-full pulse-glow"
+                style={{ backgroundColor: "currentColor" }}
+              />
               {tone.label}
             </div>
           </div>

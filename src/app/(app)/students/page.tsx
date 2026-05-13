@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { phaseTone, phaseAccentBar, phaseBg } from "@/lib/phase";
+import { phaseTone, phaseAccentBar, phaseBg, phaseChip } from "@/lib/phase";
 
 export default function StudentsPage() {
   const [search, setSearch] = useState("");
@@ -120,10 +120,13 @@ export default function StudentsPage() {
 
                 <div className="mt-4 flex items-center gap-2 pt-3 border-t border-border/60">
                   <span
-                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium uppercase tracking-wider text-[var(--almanac-paper)]"
-                    style={phaseBg(student.phase)}
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium uppercase tracking-wider"
+                    style={phaseChip(student.phase)}
                   >
-                    <span className="h-1 w-1 rounded-full bg-[var(--almanac-paper)]/70" />
+                    <span
+                      className="h-1 w-1 rounded-full"
+                      style={{ backgroundColor: "currentColor" }}
+                    />
                     {tone.label}
                   </span>
                   {student._count.tasks > 0 && (

@@ -67,3 +67,18 @@ export function phaseGlow(phase: string, alpha = 22): React.CSSProperties {
     boxShadow: `0 18px 40px -12px color-mix(in oklab, var(${v}) ${alpha}%, transparent)`,
   };
 }
+
+/**
+ * Tinted-chip pattern (Spotify / Linear / Notion style) — colored bg at
+ * low opacity + colored text + colored border. Far more readable than a
+ * solid saturated chip with dark text laid over it, and feels native to a
+ * dark-mode interface where every solid-colored block screams.
+ */
+export function phaseChip(phase: string): React.CSSProperties {
+  const v = phaseTone(phase).cssVar;
+  return {
+    backgroundColor: `color-mix(in oklab, var(${v}) 16%, transparent)`,
+    color: `var(${v})`,
+    boxShadow: `inset 0 0 0 1px color-mix(in oklab, var(${v}) 30%, transparent)`,
+  };
+}
