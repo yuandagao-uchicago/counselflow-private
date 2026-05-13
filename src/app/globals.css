@@ -128,80 +128,81 @@
 }
 
 /* =============================================
-   ALMANAC — dark theme : "Midnight Atlas"
-   Deep cool navy base · brass primary · warm cream type.
-   The natural night-mode complement to the daytime parchment palette —
-   a counselor's library after sundown, brass desk lamp on, gold-leaf
-   chapter marks catching the light. No warm-on-warm mud.
+   DARK THEME — "Highlighter"
+   Spotify-style energy: near-black canvas, clearly lifted cards, clean
+   white type, ONE signature accent that does all the heavy lifting —
+   bright modern yellow (oklch 0.90 0.19 100) — like a highlighter pulled
+   across a black notebook. Phase chips ride a vivid neutral-on-neutral
+   palette (cyan / coral / lime / violet) so the page feels alive without
+   muddying the signature.
    ============================================= */
 .dark {
-  --background: oklch(0.135 0.025 248);          /* midnight navy */
-  --foreground: oklch(0.97 0.012 80);            /* warm cream */
-  --card: oklch(0.195 0.030 248);                /* clearly lifted */
-  --card-foreground: oklch(0.97 0.012 80);
-  --popover: oklch(0.215 0.032 248);
-  --popover-foreground: oklch(0.97 0.012 80);
+  --background: oklch(0.105 0.003 250);          /* near-black, slight cool tint */
+  --foreground: oklch(0.98 0 0);                 /* pure white type */
+  --card: oklch(0.165 0.004 250);                /* clearly lifted card surface */
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.185 0.004 250);
+  --popover-foreground: oklch(0.98 0 0);
 
-  --primary: oklch(0.84 0.15 78);                /* brass — gold against navy */
-  --primary-foreground: oklch(0.135 0.025 248);
+  --primary: oklch(0.90 0.19 100);               /* signature highlighter yellow */
+  --primary-foreground: oklch(0.105 0 0);        /* black text on yellow */
 
-  --secondary: oklch(0.245 0.025 248);
-  --secondary-foreground: oklch(0.95 0.012 80);
+  --secondary: oklch(0.22 0.004 250);
+  --secondary-foreground: oklch(0.96 0 0);
 
-  --muted: oklch(0.235 0.022 248);
-  --muted-foreground: oklch(0.78 0.018 78);      /* warm gray, readable */
+  --muted: oklch(0.22 0.004 250);
+  --muted-foreground: oklch(0.68 0 0);           /* neutral readable gray */
 
-  --accent: oklch(0.78 0.16 32);                 /* warm coral — secondary action */
-  --accent-foreground: oklch(0.135 0.025 248);
+  --accent: oklch(0.78 0.18 200);                /* electric cyan, secondary punch */
+  --accent-foreground: oklch(0.105 0 0);
 
-  --destructive: oklch(0.72 0.20 25);
+  --destructive: oklch(0.72 0.21 22);            /* coral red */
 
-  --border: oklch(0.97 0.012 80 / 12%);
-  --input: oklch(0.97 0.012 80 / 14%);
-  --ring: oklch(0.84 0.15 78);
+  --border: oklch(1 0 0 / 9%);                   /* clean white at low alpha */
+  --input: oklch(1 0 0 / 11%);
+  --ring: oklch(0.90 0.19 100);
 
-  --chart-1: oklch(0.84 0.15 78);
-  --chart-2: oklch(0.74 0.13 155);
-  --chart-3: oklch(0.78 0.16 32);
-  --chart-4: oklch(0.74 0.14 250);
-  --chart-5: oklch(0.78 0.17 320);
+  --chart-1: oklch(0.90 0.19 100);               /* yellow */
+  --chart-2: oklch(0.82 0.20 145);               /* spring green */
+  --chart-3: oklch(0.78 0.18 200);               /* cyan */
+  --chart-4: oklch(0.76 0.20 0);                 /* magenta */
+  --chart-5: oklch(0.80 0.18 50);                /* amber */
 
-  --sidebar: oklch(0.155 0.028 248);
-  --sidebar-foreground: oklch(0.94 0.012 80);
-  --sidebar-primary: oklch(0.84 0.15 78);
-  --sidebar-primary-foreground: oklch(0.135 0.025 248);
-  --sidebar-accent: oklch(0.235 0.028 248);
-  --sidebar-accent-foreground: oklch(0.97 0.012 80);
-  --sidebar-border: oklch(0.97 0.012 80 / 10%);
-  --sidebar-ring: oklch(0.84 0.15 78);
+  --sidebar: oklch(0.085 0.003 250);             /* deeper than bg, like Spotify */
+  --sidebar-foreground: oklch(0.94 0 0);
+  --sidebar-primary: oklch(0.90 0.19 100);
+  --sidebar-primary-foreground: oklch(0.105 0 0);
+  --sidebar-accent: oklch(0.20 0.004 250);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.90 0.19 100);
 
-  /* Component utility tokens — re-keyed so warm rust becomes brass-leaning,
-     and the "oxblood" alias now resolves to a coral that reads on navy. */
-  --almanac-oxblood: oklch(0.78 0.16 32);        /* warm coral */
-  --almanac-oxblood-soft: oklch(0.86 0.13 32);
-  --almanac-sage: oklch(0.74 0.13 155);
-  --almanac-brass: oklch(0.84 0.15 78);          /* gold leaf */
-  --almanac-ink: oklch(0.97 0.012 80);
-  --almanac-paper: oklch(0.135 0.025 248);
+  /* The almanac-* tokens are reused across components, but in dark mode
+     they re-key to the highlighter palette so the same component code
+     paints the right color. */
+  --almanac-oxblood: oklch(0.90 0.19 100);       /* signature yellow */
+  --almanac-oxblood-soft: oklch(0.94 0.16 100);
+  --almanac-sage: oklch(0.82 0.20 145);          /* go-signal green */
+  --almanac-brass: oklch(0.90 0.19 100);         /* aliased to the signature */
+  --almanac-ink: oklch(0.98 0 0);
+  --almanac-paper: oklch(0.105 0 0);
 
-  /* Per-phase tokens — every value retuned to read against midnight navy.
-     LIST_BUILDING and SUBMISSIONS swap navy for lavender / sky so they
-     don't blend into the bg. */
-  --phase-exploration: oklch(0.84 0.15 78);      /* brass */
-  --phase-list-building: oklch(0.74 0.12 268);   /* lavender */
-  --phase-testing: oklch(0.78 0.17 52);          /* terracotta */
-  --phase-applications: oklch(0.78 0.16 32);     /* coral */
-  --phase-essays: oklch(0.86 0.13 32);           /* coral-soft */
-  --phase-submissions: oklch(0.74 0.14 232);     /* sky */
-  --phase-decisions: oklch(0.86 0.14 78);        /* gold */
-  --phase-enrollment: oklch(0.74 0.13 155);      /* sage */
+  /* Per-phase tokens — vivid, distinct, all pop against near-black */
+  --phase-exploration: oklch(0.90 0.19 100);     /* yellow — fresh start */
+  --phase-list-building: oklch(0.78 0.18 200);   /* cyan */
+  --phase-testing: oklch(0.80 0.18 50);          /* amber */
+  --phase-applications: oklch(0.76 0.20 0);      /* magenta */
+  --phase-essays: oklch(0.74 0.20 305);          /* violet */
+  --phase-submissions: oklch(0.78 0.20 245);     /* electric blue */
+  --phase-decisions: oklch(0.94 0.16 100);       /* light gold */
+  --phase-enrollment: oklch(0.82 0.20 145);      /* spring green */
   --phase-navy: var(--phase-list-building);
   --phase-terracotta: var(--phase-testing);
 
-  --ambient-a: oklch(0.84 0.15 78 / 10%);
-  --ambient-b: oklch(0.78 0.16 32 / 8%);
-  --ambient-c: oklch(0.74 0.14 232 / 8%);
-  --surface-grain: 0.025;
+  --ambient-a: oklch(0.90 0.19 100 / 8%);
+  --ambient-b: oklch(0.78 0.18 200 / 6%);
+  --ambient-c: oklch(0.82 0.20 145 / 5%);
+  --surface-grain: 0.022;
 }
 
 @layer base {
