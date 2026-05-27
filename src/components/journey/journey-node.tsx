@@ -36,28 +36,19 @@ export interface JourneyMilestone {
   templateKey: string | null;
 }
 
+// Map journey categories onto the Almanac phase color tokens so the journey
+// reads as part of the same design system as the rest of the app (instead of
+// the previous saturated rainbow Tailwind gradients).
 const categoryStyle: Record<
   string,
-  { gradient: string; glow: string; Icon: typeof Sparkles }
+  { cssVar: string; Icon: typeof Sparkles }
 > = {
-  Research: { gradient: "from-blue-500 to-cyan-400", glow: "shadow-blue-500/30", Icon: BookOpen },
-  Testing: { gradient: "from-amber-500 to-orange-400", glow: "shadow-amber-500/30", Icon: Target },
-  Application: {
-    gradient: "from-violet-500 to-purple-400",
-    glow: "shadow-violet-500/30",
-    Icon: Landmark,
-  },
-  Essay: { gradient: "from-pink-500 to-rose-400", glow: "shadow-pink-500/30", Icon: PenLine },
-  Recommendation: {
-    gradient: "from-indigo-500 to-blue-400",
-    glow: "shadow-indigo-500/30",
-    Icon: Users,
-  },
-  "Financial Aid": {
-    gradient: "from-emerald-500 to-green-400",
-    glow: "shadow-emerald-500/30",
-    Icon: Banknote,
-  },
+  Research:        { cssVar: "--phase-exploration",  Icon: BookOpen },
+  Testing:         { cssVar: "--phase-testing",      Icon: Target },
+  Application:     { cssVar: "--phase-applications", Icon: Landmark },
+  Essay:           { cssVar: "--phase-essays",       Icon: PenLine },
+  Recommendation:  { cssVar: "--phase-list-building", Icon: Users },
+  "Financial Aid": { cssVar: "--phase-enrollment",   Icon: Banknote },
 };
 
 // Per-template overrides for more bespoke iconography
@@ -86,7 +77,7 @@ interface JourneyNodeProps {
   isCurrent: boolean;
 }
 
-export function JourneyNode({ milestone, side, isLast, studentId, isCurrent }: JourneyNodeProps) {
+export function JourneyNode({ milestone, side, studentId, isCurrent }: JourneyNodeProps) {
   const utils = trpc.useUtils();
   const updateStatus = trpc.milestone.updateStatus.useMutation({
     onSuccess: () => {
@@ -113,28 +104,18 @@ export function JourneyNode({ milestone, side, isLast, studentId, isCurrent }: J
       {/* Left card slot */}
       <div className="col-span-4">
         {side === "left" && !isLocked && !isSkipped && (
-          <ProgressCard milestone={milestone} status={status} />
+          <ProgressCard milestone={milestone} status={status} cssVar={catStyle.cssVar} />
         )}
       </div>
 
-      {/* Center: node + vertical connector */}
+      {/* Center: node */}
       <div className="col-span-1 flex flex-col items-center gap-0 relative z-10">
-        {/* Floating badge (only on completed + current) */}
-        {(isDone || isCurrent) && (
-          <div
-            className={`absolute -top-4 -right-3 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br ${catStyle.gradient} shadow-lg ${catStyle.glow} rotate-12 z-20`}
-          >
-            <Sparkles className="h-4 w-4 text-white" />
-          </div>
-        )}
-
-        {/* Node */}
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
               <button
                 title="Change status"
-                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(0.34_0.13_25)] focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-full"
+                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--almanac-oxblood)] focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-full"
               />
             }
           >
@@ -146,7 +127,7 @@ export function JourneyNode({ milestone, side, isLast, studentId, isCurrent }: J
               isBlocked={isBlocked}
               isSkipped={isSkipped}
               isLocked={isLocked}
-              catStyle={catStyle}
+              cssVar={catStyle.cssVar}
             />
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -166,57 +147,20 @@ export function JourneyNode({ milestone, side, isLast, studentId, isCurrent }: J
         </DropdownMenu>
 
         {/* Label below node */}
-        <p className="text-[11px] font-medium text-center mt-2 max-w-[120px] leading-tight">
+        <p className="text-[11px] font-medium text-center mt-3 max-w-[120px] leading-tight">
           {milestone.title}
         </p>
         {targetDate && (
-          <p className="text-[10px] text-muted-foreground mt-0.5">
+          <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">
             {format(targetDate, "MMM yyyy")}
           </p>
-        )}
-
-        {/* Connecting line to next node */}
-        {!isLast && (
-          <svg
-            className="absolute left-1/2 -translate-x-1/2 top-full pointer-events-none"
-            width="240"
-            height="180"
-            viewBox="0 0 240 180"
-            style={{ zIndex: 0 }}
-          >
-            {side === "left" ? (
-              <path
-                d="M 120 0 C 120 60, 80 120, 40 170"
-                stroke="url(#journeyLine)"
-                strokeWidth="3"
-                strokeDasharray={isLocked ? "6 6" : "0"}
-                fill="none"
-                strokeLinecap="round"
-              />
-            ) : (
-              <path
-                d="M 120 0 C 120 60, 160 120, 200 170"
-                stroke="url(#journeyLine)"
-                strokeWidth="3"
-                strokeDasharray={isLocked ? "6 6" : "0"}
-                fill="none"
-                strokeLinecap="round"
-              />
-            )}
-            <defs>
-              <linearGradient id="journeyLine" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="oklch(0.34 0.13 25)" stopOpacity={isLocked ? 0.15 : 0.5} />
-                <stop offset="100%" stopColor="oklch(0.34 0.13 25)" stopOpacity={isLocked ? 0.1 : 0.3} />
-              </linearGradient>
-            </defs>
-          </svg>
         )}
       </div>
 
       {/* Right card slot */}
       <div className="col-span-4">
         {side === "right" && !isLocked && !isSkipped && (
-          <ProgressCard milestone={milestone} status={status} />
+          <ProgressCard milestone={milestone} status={status} cssVar={catStyle.cssVar} />
         )}
       </div>
     </div>
@@ -231,7 +175,7 @@ function NodeVisual({
   isBlocked,
   isSkipped,
   isLocked,
-  catStyle,
+  cssVar,
 }: {
   Icon: typeof Sparkles;
   isDone: boolean;
@@ -240,56 +184,73 @@ function NodeVisual({
   isBlocked: boolean;
   isSkipped: boolean;
   isLocked: boolean;
-  catStyle: { gradient: string; glow: string };
+  cssVar: string;
 }) {
   if (isDone) {
     return (
-      <div className="relative">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-green-500 shadow-xl shadow-emerald-500/40 transition-transform hover:scale-105">
-          <Check className="h-7 w-7 text-white" strokeWidth={3} />
-        </div>
+      <div
+        className="flex h-14 w-14 items-center justify-center rounded-full shadow-md transition-transform hover:scale-105"
+        style={{
+          backgroundColor: `var(${cssVar})`,
+          boxShadow: `0 6px 18px -6px color-mix(in oklab, var(${cssVar}) 50%, transparent)`,
+        }}
+      >
+        <Check className="h-6 w-6 text-white" strokeWidth={3} />
       </div>
     );
   }
   if (isBlocked) {
     return (
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-rose-500 shadow-xl shadow-red-500/30 transition-transform hover:scale-105">
-        <Lock className="h-6 w-6 text-white" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-card border-2 border-destructive/60 transition-transform hover:scale-105">
+        <Lock className="h-5 w-5 text-destructive" />
       </div>
     );
   }
   if (isSkipped) {
     return (
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground/5 border-2 border-dashed border-foreground/20 transition-transform hover:scale-105">
-        <SkipForward className="h-6 w-6 text-muted-foreground" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-foreground/5 border-2 border-dashed border-foreground/20 transition-transform hover:scale-105">
+        <SkipForward className="h-5 w-5 text-muted-foreground" />
       </div>
     );
   }
   if (isCurrent || isActive) {
     return (
       <div className="relative">
-        <div
-          className={`flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br ${catStyle.gradient} shadow-xl ${catStyle.glow} ring-4 ring-[oklch(0.34_0.13_25_/_20%)] transition-transform hover:scale-105`}
-        >
-          <Icon className="h-7 w-7 text-white" strokeWidth={2.5} />
-        </div>
-        {/* Pulsing halo */}
-        <div
-          className={`absolute inset-0 rounded-full bg-gradient-to-br ${catStyle.gradient} animate-ping opacity-20`}
+        {/* Outer breathing ring */}
+        <span
+          className="pulse-glow absolute -inset-1.5 rounded-full"
+          style={{
+            boxShadow: `0 0 0 2px color-mix(in oklab, var(${cssVar}) 28%, transparent)`,
+          }}
+          aria-hidden="true"
         />
+        {/* Node */}
+        <div
+          className="relative flex h-14 w-14 items-center justify-center rounded-full transition-transform hover:scale-105"
+          style={{
+            backgroundColor: `color-mix(in oklab, var(${cssVar}) 14%, var(--card))`,
+            boxShadow: `inset 0 0 0 2px var(${cssVar}), 0 8px 20px -8px color-mix(in oklab, var(${cssVar}) 45%, transparent)`,
+          }}
+        >
+          <Icon
+            className="h-6 w-6"
+            strokeWidth={2.25}
+            style={{ color: `var(${cssVar})` }}
+          />
+        </div>
       </div>
     );
   }
   if (isLocked) {
     return (
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground/5 border border-foreground/10 transition-transform hover:scale-105">
-        <Lock className="h-5 w-5 text-muted-foreground/50" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-foreground/[0.04] border border-foreground/10 transition-transform hover:scale-105">
+        <Lock className="h-4 w-4 text-muted-foreground/50" />
       </div>
     );
   }
   return (
-    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground/10 transition-transform hover:scale-105">
-      <Circle className="h-6 w-6 text-muted-foreground" />
+    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-foreground/[0.06] transition-transform hover:scale-105">
+      <Circle className="h-5 w-5 text-muted-foreground" />
     </div>
   );
 }
@@ -297,9 +258,11 @@ function NodeVisual({
 function ProgressCard({
   milestone,
   status,
+  cssVar,
 }: {
   milestone: JourneyMilestone;
   status: string;
+  cssVar: string;
 }) {
   const isDone = status === "COMPLETED";
   const isActive = status === "IN_PROGRESS";
@@ -307,7 +270,7 @@ function ProgressCard({
 
   const completion = isDone ? 100 : isActive ? 50 : isBlocked ? 25 : 0;
 
-  const statusLabel = isDone
+  const statusText = isDone
     ? "Complete"
     : isActive
     ? "In progress"
@@ -315,13 +278,11 @@ function ProgressCard({
     ? "Blocked"
     : "Not started";
 
-  const accent = isDone
-    ? "text-emerald-400"
-    : isActive
-    ? "text-[oklch(0.66_0.15_75)]"
+  const accentColor = isDone || isActive
+    ? `var(${cssVar})`
     : isBlocked
-    ? "text-red-400"
-    : "text-muted-foreground";
+    ? "var(--destructive)"
+    : "var(--muted-foreground)";
 
   return (
     <div className="rounded-2xl border border-foreground/[0.06] bg-card p-4 glow-card">
@@ -330,24 +291,26 @@ function ProgressCard({
           <p className="text-sm font-semibold leading-tight truncate">{milestone.title}</p>
           <p className="text-[11px] text-muted-foreground mt-0.5">{milestone.category}</p>
         </div>
-        <span className={`text-[10px] uppercase tracking-wider font-bold ${accent} shrink-0`}>
-          {statusLabel}
+        <span
+          className="text-[10px] uppercase tracking-wider font-bold shrink-0"
+          style={{ color: accentColor }}
+        >
+          {statusText}
         </span>
       </div>
       <div className="flex items-center justify-between text-xs mb-1">
         <span className="text-muted-foreground">Completion</span>
-        <span className={`font-bold font-mono ${accent}`}>{completion}%</span>
+        <span className="font-bold font-mono" style={{ color: accentColor }}>
+          {completion}%
+        </span>
       </div>
       <div className="relative h-1.5 rounded-full bg-foreground/5 overflow-hidden mb-3">
         <div
-          className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${
-            isDone
-              ? "bg-gradient-to-r from-emerald-500 to-green-400"
-              : isBlocked
-              ? "bg-gradient-to-r from-red-500 to-rose-500"
-              : "bg-gradient-to-r from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)]"
-          }`}
-          style={{ width: `${completion}%` }}
+          className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+          style={{
+            width: `${completion}%`,
+            backgroundColor: isBlocked ? "var(--destructive)" : `var(${cssVar})`,
+          }}
         />
       </div>
       {milestone.description && (
@@ -373,4 +336,3 @@ function statusLabel(s: (typeof STATUS_OPTIONS)[number]): string {
       return "Skipped";
   }
 }
-

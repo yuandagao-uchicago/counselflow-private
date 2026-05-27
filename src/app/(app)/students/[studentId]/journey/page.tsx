@@ -104,16 +104,51 @@ export default function JourneyPage({
           </div>
         ) : (
           <div className="relative py-4">
-            {milestones.map((m, i) => (
-              <JourneyNode
-                key={m.id}
-                milestone={m}
-                side={i % 2 === 0 ? "right" : "left"}
-                isLast={i === milestones.length - 1}
-                studentId={studentId}
-                isCurrent={i === currentIndex}
+            {/* Central spine — single continuous line behind every node.
+                Replaces the old per-node SVGs which curved away from the
+                next node and couldn't track responsive grid widths. */}
+            <div
+              className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-[60px] bottom-[60px] w-[2px]"
+              style={{
+                background: `repeating-linear-gradient(
+                  to bottom,
+                  color-mix(in oklab, var(--foreground) 18%, transparent) 0px,
+                  color-mix(in oklab, var(--foreground) 18%, transparent) 5px,
+                  transparent 5px,
+                  transparent 11px
+                )`,
+              }}
+              aria-hidden="true"
+            />
+            {/* Progress fill — solid colored segment up through completed
+                milestones, drawn in on mount via journey-spine-grow. */}
+            {completed > 0 && (
+              <div
+                className="journey-spine-grow pointer-events-none absolute left-1/2 -translate-x-1/2 top-[60px] w-[2px] rounded-full"
+                style={{
+                  height: `calc((100% - 120px) * ${completed / total})`,
+                  background:
+                    "linear-gradient(to bottom, var(--almanac-oxblood), color-mix(in oklab, var(--almanac-oxblood) 80%, var(--almanac-brass)))",
+                  boxShadow:
+                    "0 0 14px color-mix(in oklab, var(--almanac-oxblood) 45%, transparent)",
+                }}
+                aria-hidden="true"
               />
-            ))}
+            )}
+
+            <div className="stagger-rise relative">
+              {milestones.map((m, i) => (
+                <div key={m.id} style={{ "--i": i } as React.CSSProperties}>
+                  <JourneyNode
+                    milestone={m}
+                    side={i % 2 === 0 ? "right" : "left"}
+                    isLast={i === milestones.length - 1}
+                    studentId={studentId}
+                    isCurrent={i === currentIndex}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

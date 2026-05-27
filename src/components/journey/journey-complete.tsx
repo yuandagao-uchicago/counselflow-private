@@ -20,7 +20,7 @@ export function JourneyComplete({ completed, total, nextTitle }: JourneyComplete
         <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[oklch(0.34_0.13_25)] to-[oklch(0.34_0.13_25)] shadow-xl shadow-[oklch(0.34_0.13_25_/_40%)] rotate-6">
           <GraduationCap className="h-8 w-8 text-white" />
         </div>
-        <h2 className="text-3xl md:text-4xl font-black tracking-tight uppercase">
+        <h2 className="text-3xl md:text-4xl font-black tracking-tight uppercase text-white">
           {allDone ? (
             <>
               <span className="gradient-text">Application Complete</span>
@@ -31,7 +31,7 @@ export function JourneyComplete({ completed, total, nextTitle }: JourneyComplete
             </>
           )}
         </h2>
-        <p className="text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
+        <p className="text-base text-white/75 max-w-lg mx-auto leading-relaxed">
           {allDone
             ? "All checkpoints complete. Time to submit and wait for good news."
             : `You've knocked out ${completed} of ${total} checkpoints. Every step forward compounds — keep pushing.`}

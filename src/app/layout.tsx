@@ -51,7 +51,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${dmSans.variable} ${bodoniModa.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} h-full antialiased`}
       >
-        <body className="min-h-full flex flex-col">
+        <body className="min-h-full flex flex-col" suppressHydrationWarning>
           <Providers>
             {children}
             <Toaster position="bottom-right" />
